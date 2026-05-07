@@ -14,6 +14,7 @@ import Transactions from "./pages/Transactions";
 import NewTransaction from "./pages/NewTransaction";
 import Expenses from "./pages/Expenses";
 import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 import Branches from "./pages/Branches";
 import BranchDetail from "./pages/BranchDetail";
 import AdminPanel from "./pages/AdminPanel";
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/transactions/new" element={<NewTransaction />} />
               <Route path="/expenses" element={<Expenses />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/branches" element={<Branches />} />
               <Route path="/branches/:id" element={<BranchDetail />} />
               <Route path="/admin" element={<AdminPanel />} />

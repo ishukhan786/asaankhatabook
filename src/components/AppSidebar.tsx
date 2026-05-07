@@ -21,6 +21,7 @@ export function AppSidebar() {
     { title: "Transactions", url: "/transactions", icon: Receipt },
     { title: "Expenses", url: "/expenses", icon: Wallet },
     { title: "Reports", url: "/reports", icon: FileBarChart },
+    { title: "Settings", url: "/settings", icon: SettingsIcon },
     // Admin Items
     { title: "Admin Panel", url: "/admin", icon: Shield, admin: true, exact: true },
     { title: "Users", url: "/admin/users", icon: UserCog, admin: true },
