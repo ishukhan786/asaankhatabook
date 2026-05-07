@@ -32,7 +32,7 @@ export default function Transactions() {
   const debouncedQ = useDebounce(q, 300);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const { role } = useAuth();
+  const { role, profile } = useAuth();
   const [busy, setBusy] = useState(false);
 
   // Edit/Delete state
@@ -54,7 +54,7 @@ export default function Transactions() {
     
     setBusy(true);
     const { data } = await supabase.from("transactions")
-      .select("id, txn_code, txn_date, details, debit, credit, account_id, accounts(name, account_no, currency)")
+      .select("id, txn_code, txn_date, details, debit, credit, account_id, created_by, accounts(name, account_no, currency)")
       .order("txn_date", { ascending: false })
       .order("created_at", { ascending: false })
       .range(start, end);
@@ -167,7 +167,7 @@ export default function Transactions() {
                     <td className="px-4 py-2.5 hidden md:table-cell text-muted-foreground truncate max-w-md">{t.details}</td>
                     <td className="px-4 py-2.5 text-right num text-destructive">{Number(t.debit) > 0 ? formatMoney(Number(t.debit), t.accounts?.currency) : "—"}</td>
                     <td className="px-4 py-2.5 text-right num text-success">{Number(t.credit) > 0 ? formatMoney(Number(t.credit), t.accounts?.currency) : "—"}</td>
-                    {role === "admin" && (
+                    {(role === "admin" || t.created_by === profile?.id) && (
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)}><Pencil className="w-3.5 h-3.5" /></Button>

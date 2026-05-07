@@ -30,7 +30,7 @@ import { Label } from "@/components/ui/label";
 export default function AccountDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { role, profile } = useAuth();
   const [account, setAccount] = useState<any | null>(null);
   const [txns, setTxns] = useState<any[] | null>(null);
   const [from, setFrom] = useState("");
@@ -227,7 +227,7 @@ export default function AccountDetail() {
                   <td className={`px-6 py-4 text-right num font-bold ${t.balance >= 0 ? "text-success" : "text-destructive"}`}>
                     {formatMoney(t.balance)} <span className="text-[10px] opacity-60 ml-0.5">{balanceLabel(t.balance)}</span>
                   </td>
-                  {role === "admin" && (
+                  {(role === "admin" || t.created_by === profile?.id) && (
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)}><Pencil className="w-3.5 h-3.5" /></Button>
