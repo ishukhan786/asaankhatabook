@@ -17,6 +17,8 @@ interface Stats {
   netAED: number;
   todayPKR: { debit: number; credit: number };
   todayAED: { debit: number; credit: number };
+  totalExpensePKR: number;
+  totalExpenseAED: number;
   byBranch: { name: string; pkr: number; aed: number; accounts: number }[];
   trend: { date: string; pkr: number; aed: number }[];
 }
@@ -26,37 +28,49 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<any[]>([]);
 
-  useEffect(() => {
-    (async () => {
+  const load = async () => {
+    try {
       const today = new Date().toISOString().slice(0, 10);
-      const [{ data: accounts }, { data: branches }, { data: txns }, { data: recentTx }] = await Promise.all([
-        supabase.from("accounts").select("id, currency, branch_id, branches(name)"),
-        supabase.from("branches").select("id, name"),
-        supabase.from("transactions").select("debit, credit, txn_date, account_id, accounts(currency, branch_id)"),
-        supabase.from("transactions").select("id, txn_code, txn_date, details, debit, credit, accounts(name, account_no, currency)").order("created_at", { ascending: false }).limit(8),
+      const [{ data: accounts }, { data: branches }, { data: txns }, { data: recentTx }, { data: expenses }] = await Promise.all([
+        supabase.from("accounts").select("*"),
+        supabase.from("branches").select("*"),
+        supabase.from("transactions").select("*, accounts(currency, branch_id)"),
+        supabase.from("transactions").select("*, accounts(name, account_no, currency)").order("created_at", { ascending: false }).limit(5),
+        supabase.from("expenses").select("*"),
       ]);
 
       let netPKR = 0, netAED = 0;
       let todayPKR = { debit: 0, credit: 0 }, todayAED = { debit: 0, credit: 0 };
+      let totalExpensePKR = 0, totalExpenseAED = 0;
       const branchMap: Record<string, { name: string; pkr: number; aed: number; accounts: number }> = {};
       (branches ?? []).forEach((b: any) => (branchMap[b.id] = { name: b.name, pkr: 0, aed: 0, accounts: 0 }));
       (accounts ?? []).forEach((a: any) => { if (branchMap[a.branch_id]) branchMap[a.branch_id].accounts++; });
-      (txns ?? []).forEach((t: any) => {
-        const d = Number(t.debit), c = Number(t.credit);
-        const net = c - d;
+      (txns ?? []).forEach(t => {
+        const net = Number(t.credit) - Number(t.debit);
         const currency = t.accounts?.currency;
-        if (currency === "PKR") {
-          netPKR += net;
-          if (t.txn_date === today) { todayPKR.debit += d; todayPKR.credit += c; }
-        } else {
-          netAED += net;
-          if (t.txn_date === today) { todayAED.debit += d; todayCredit += c; } // Wait, credit is fixed below
+        if (currency === "PKR") netPKR += net;
+        else netAED += net;
+
+        if (t.txn_date === today) {
+          if (currency === "PKR") {
+            todayPKR.debit += Number(t.debit);
+            todayPKR.credit += Number(t.credit);
+          } else {
+            todayAED.debit += Number(t.debit);
+            todayAED.credit += Number(t.credit);
+          }
         }
+
         const bid = t.accounts?.branch_id;
         if (bid && branchMap[bid]) {
           if (currency === "PKR") branchMap[bid].pkr += net;
           else branchMap[bid].aed += net;
         }
+      });
+
+      (expenses ?? []).forEach(e => {
+        if (e.currency === "PKR") totalExpensePKR += Number(e.amount);
+        else totalExpenseAED += Number(e.amount);
       });
 
       // Trend calculation (Last 15 days for better visibility)
@@ -83,6 +97,7 @@ export default function Dashboard() {
         accounts: accounts?.length ?? 0,
         branches: branches?.length ?? 0,
         netPKR, netAED, todayPKR, todayAED,
+        totalExpensePKR, totalExpenseAED,
         byBranch: Object.values(branchMap),
         trend: trendData
       });
@@ -123,12 +138,13 @@ export default function Dashboard() {
     { label: "Total Accounts", value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} branches` },
     { label: "Net Balance (PKR)", value: formatMoney(stats.netPKR, "PKR"), icon: Wallet, gradient: "from-accent to-accent-glow", sub: balanceLabel(stats.netPKR), positive: stats.netPKR >= 0 },
     { label: "Net Balance (AED)", value: formatMoney(stats.netAED, "AED"), icon: TrendingUp, gradient: "from-emerald-600 to-teal-500", sub: balanceLabel(stats.netAED), positive: stats.netAED >= 0 },
-    { 
-      label: "Today's Activity", 
-      value: (stats.todayPKR.credit + stats.todayPKR.debit + stats.todayAED.credit + stats.todayAED.debit) > 0 ? "Active" : "No Activity", 
-      icon: Receipt, 
-      gradient: "from-indigo-600 to-violet-500", 
-      sub: `PKR: ↓${formatNumber(stats.todayPKR.debit)} ↑${formatNumber(stats.todayPKR.credit)} | AED: ↓${formatNumber(stats.todayAED.debit)} ↑${formatNumber(stats.todayAED.credit)}` 
+    {
+      label: "Total Expenses",
+      value: formatMoney(stats.totalExpensePKR, "PKR"),
+      sub: stats.totalExpenseAED > 0 ? `+ ${formatMoney(stats.totalExpenseAED, "AED")}` : "0 AED",
+      icon: Receipt,
+      gradient: "from-rose-500 to-orange-500",
+      positive: false
     },
   ];
 

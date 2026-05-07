@@ -19,6 +19,7 @@ export function AppSidebar() {
     { title: "Dashboard", url: "/", icon: LayoutDashboard },
     { title: "Accounts", url: "/accounts", icon: Users },
     { title: "Transactions", url: "/transactions", icon: Receipt },
+    { title: "Expenses", url: "/expenses", icon: Wallet },
     { title: "Reports", url: "/reports", icon: FileBarChart },
     // Admin Items
     { title: "Admin Panel", url: "/admin", icon: Shield, admin: true, exact: true },
