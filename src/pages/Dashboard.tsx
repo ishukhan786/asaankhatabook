@@ -87,7 +87,25 @@ export default function Dashboard() {
         trend: trendData
       });
       setRecent(recentTx ?? []);
-    })();
+    } catch (err) {
+      console.error("Dashboard load error:", err);
+    }
+  };
+
+  useEffect(() => {
+    load();
+
+    // Setup Realtime Subscriptions
+    const channel = supabase
+      .channel('dashboard-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'branches' }, () => load())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   if (!stats) {

@@ -54,7 +54,13 @@ export default function Accounts() {
     setBranches(brs ?? []);
   };
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => {
+    reload();
+    const sub = supabase.channel('accounts-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, () => reload())
+      .subscribe();
+    return () => { supabase.removeChannel(sub); };
+  }, []);
 
   const openEdit = (a: any) => {
     setEditing(a);

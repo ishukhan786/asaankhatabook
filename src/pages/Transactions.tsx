@@ -68,7 +68,13 @@ export default function Transactions() {
     setBusy(false);
   };
 
-  useEffect(() => { load(true); }, []);
+  useEffect(() => {
+    load(true);
+    const sub = supabase.channel('txns-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => load(true))
+      .subscribe();
+    return () => { supabase.removeChannel(sub); };
+  }, []);
 
   const openEditTx = (t: any) => {
     setEditingTx(t);
