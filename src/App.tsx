@@ -1,0 +1,54 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
+import AppLayout from "@/components/AppLayout";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Accounts from "./pages/Accounts";
+import NewAccount from "./pages/NewAccount";
+import AccountDetail from "./pages/AccountDetail";
+import Transactions from "./pages/Transactions";
+import NewTransaction from "./pages/NewTransaction";
+import Reports from "./pages/Reports";
+import Branches from "./pages/Branches";
+import BranchDetail from "./pages/BranchDetail";
+import AdminPanel from "./pages/AdminPanel";
+import AdminUsers from "./pages/AdminUsers";
+import NotFound from "./pages/NotFound";
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/accounts" element={<Accounts />} />
+              <Route path="/accounts/new" element={<NewAccount />} />
+              <Route path="/accounts/:id" element={<AccountDetail />} />
+              <Route path="/transactions" element={<Transactions />} />
+              <Route path="/transactions/new" element={<NewTransaction />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/branches" element={<Branches />} />
+              <Route path="/branches/:id" element={<BranchDetail />} />
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;

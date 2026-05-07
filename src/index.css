@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* AsaanKhata — Modern Fintech Design System
+   Deep teal + amber, geometric typography, glass surfaces.
+   All colors HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 180 25% 97%;
+    --foreground: 195 50% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 195 50% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 195 50% 10%;
+
+    /* Deep teal */
+    --primary: 184 80% 22%;
+    --primary-foreground: 180 40% 98%;
+    --primary-glow: 178 70% 40%;
+
+    /* Amber */
+    --accent: 38 95% 55%;
+    --accent-foreground: 195 50% 10%;
+    --accent-glow: 38 100% 65%;
+
+    --secondary: 184 30% 94%;
+    --secondary-foreground: 184 80% 18%;
+
+    --muted: 184 20% 94%;
+    --muted-foreground: 195 15% 42%;
+
+    --success: 158 70% 38%;
+    --success-foreground: 158 60% 96%;
+
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 184 20% 88%;
+    --input: 184 20% 90%;
+    --ring: 184 80% 30%;
+
+    --radius: 0.875rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(184 80% 22%) 0%, hsl(178 70% 40%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(38 95% 55%) 0%, hsl(28 95% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(184 80% 18%) 0%, hsl(195 60% 25%) 50%, hsl(184 80% 30%) 100%);
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.85) 0%, hsl(0 0% 100% / 0.65) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px -2px hsl(184 80% 22% / 0.08);
+    --shadow-md: 0 8px 24px -8px hsl(184 80% 22% / 0.18);
+    --shadow-lg: 0 20px 48px -12px hsl(184 80% 22% / 0.28);
+    --shadow-glow: 0 0 40px hsl(178 70% 40% / 0.35);
+    --shadow-amber: 0 8px 24px -8px hsl(38 95% 55% / 0.4);
+
+    --sidebar-background: 195 60% 8%;
+    --sidebar-foreground: 184 30% 88%;
+    --sidebar-primary: 38 95% 55%;
+    --sidebar-primary-foreground: 195 50% 10%;
+    --sidebar-accent: 195 50% 14%;
+    --sidebar-accent-foreground: 184 30% 95%;
+    --sidebar-border: 195 50% 16%;
+    --sidebar-ring: 38 95% 55%;
+  }
+
+  .dark {
+    --background: 195 50% 6%;
+    --foreground: 184 30% 95%;
+    --card: 195 50% 9%;
+    --card-foreground: 184 30% 95%;
+    --popover: 195 50% 9%;
+    --popover-foreground: 184 30% 95%;
+    --primary: 178 70% 45%;
+    --primary-foreground: 195 50% 8%;
+    --accent: 38 95% 60%;
+    --accent-foreground: 195 50% 8%;
+    --secondary: 195 40% 14%;
+    --secondary-foreground: 184 30% 95%;
+    --muted: 195 40% 14%;
+    --muted-foreground: 184 15% 65%;
+    --border: 195 40% 18%;
+    --input: 195 40% 16%;
+    --ring: 178 70% 45%;
+    --gradient-glass: linear-gradient(135deg, hsl(195 50% 12% / 0.7) 0%, hsl(195 50% 9% / 0.5) 100%);
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Sora', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .glass {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-md);
+  }
+  .gradient-primary { background: var(--gradient-primary); }
+  .gradient-accent { background: var(--gradient-accent); }
+  .gradient-hero { background: var(--gradient-hero); }
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+}
