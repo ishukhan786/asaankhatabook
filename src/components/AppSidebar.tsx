@@ -23,6 +23,7 @@ export function AppSidebar() {
     // Admin Items
     { title: "Admin Panel", url: "/admin", icon: Shield, admin: true, exact: true },
     { title: "Users", url: "/admin/users", icon: UserCog, admin: true },
+    { title: "Audit Logs", url: "/admin/audit", icon: History, admin: true },
     { title: "Branches", url: "/branches", icon: Building2, admin: true },
   ];
 
