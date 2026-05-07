@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil } from "lucide-react";
+import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil, MessageSquare } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { exportStatementPDF } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
@@ -123,9 +123,20 @@ export default function AccountDetail() {
       toast.success("Transaction deleted");
       setDeletingTx(null);
       load();
-    } catch (e: any) {
-      toast.error(e.message);
     }
+  };
+
+  const sendWhatsApp = (t: any) => {
+    if (!account.mobile) {
+      toast.error("Is account ka mobile number save nahi hai.");
+      return;
+    }
+    const amount = Number(t.credit) > 0 ? t.credit : t.debit;
+    const type = Number(t.credit) > 0 ? "Jama (Credit)" : "Nikala (Debit)";
+    const message = `*Assalam-o-Alaikum!*\n\n*Aasaan Khatabook Entry Update*\n---------------------------\n*Account:* ${account.name}\n*Date:* ${formatDate(t.txn_date)}\n*Amount:* ${formatMoney(amount, account.currency)}\n*Type:* ${type}\n*Details:* ${t.details}\n---------------------------\n*Current Balance:* ${formatMoney(t.balance, account.currency)} (${balanceLabel(t.balance)})\n\nShukriya!`;
+    const encoded = encodeURIComponent(message);
+    const phone = account.mobile.replace(/\D/g, "");
+    window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
   };
 
   return (
@@ -230,6 +241,7 @@ export default function AccountDetail() {
                   {(role === "admin" || t.created_by === profile?.id) && (
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-success" onClick={() => sendWhatsApp(t)} title="WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)}><Pencil className="w-3.5 h-3.5" /></Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingTx(t)}><Trash2 className="w-3.5 h-3.5" /></Button>
                       </div>

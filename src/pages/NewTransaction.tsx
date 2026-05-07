@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageSquare } from "lucide-react";
+import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { z } from "zod";
 
 const schema = z.object({
@@ -33,8 +34,18 @@ export default function NewTransaction() {
   });
 
   useEffect(() => {
-    supabase.from("accounts").select("id, account_no, name, currency").order("name").then(({ data }) => setAccounts(data ?? []));
+    supabase.from("accounts").select("id, account_no, name, currency, mobile").order("name").then(({ data }) => setAccounts(data ?? []));
   }, []);
+
+  const sendWhatsApp = (t: any, acc: any) => {
+    if (!acc.mobile) return;
+    const amount = Number(form.credit) > 0 ? form.credit : form.debit;
+    const type = Number(form.credit) > 0 ? "Jama (Credit)" : "Nikala (Debit)";
+    const message = `*Assalam-o-Alaikum!*\n\n*Aasaan Khatabook Entry Update*\n---------------------------\n*Account:* ${acc.name}\n*Date:* ${formatDate(t.txn_date)}\n*Amount:* ${formatMoney(Number(amount), acc.currency)}\n*Type:* ${type}\n*Details:* ${t.details}\n---------------------------\n\nShukriya!`;
+    const encoded = encodeURIComponent(message);
+    const phone = acc.mobile.replace(/\D/g, "");
+    window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +66,12 @@ export default function NewTransaction() {
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     toast.success(`${data?.txn_code} recorded`);
+    
+    const acc = accounts.find(a => a.id === form.account_id);
+    if ((e.nativeEvent as any).submitter?.name === "whatsapp" && acc?.mobile) {
+      sendWhatsApp({ txn_date: form.txn_date, details: form.details.trim() }, acc);
+    }
+    
     nav(`/accounts/${data?.account_id}`);
   };
 
@@ -101,8 +118,19 @@ export default function NewTransaction() {
             </div>
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground shadow-soft">{busy ? "Saving..." : "Record transaction"}</Button>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground shadow-soft">
+              {busy ? "Saving..." : "Record transaction"}
+            </Button>
+            <Button 
+              type="submit" 
+              name="whatsapp" 
+              variant="outline" 
+              disabled={busy || !accounts.find(a => a.id === form.account_id)?.mobile} 
+              className="border-success text-success hover:bg-success/5"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" /> Record & WhatsApp
+            </Button>
             <Link to="/transactions"><Button type="button" variant="ghost">Cancel</Button></Link>
           </div>
         </form>
