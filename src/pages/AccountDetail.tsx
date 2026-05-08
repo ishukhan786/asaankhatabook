@@ -132,7 +132,7 @@ export default function AccountDetail() {
       toast.success("Transaction deleted");
       setDeletingTx(null);
       load();
-    }
+    } catch (err: any) { toast.error(err.message); }
   };
 
   const sendWhatsApp = (t: any) => {
