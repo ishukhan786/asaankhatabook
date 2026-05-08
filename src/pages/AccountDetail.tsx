@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil, MessageSquare } from "lucide-react";
+import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil, MessageSquare, Receipt } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { exportStatementPDF } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
