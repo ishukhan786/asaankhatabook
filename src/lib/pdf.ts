@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatMoney, balanceLabel } from "./format";
+import { formatMoney, balanceLabel, formatDate } from "./format";
 
 export function exportStatementPDF(account: any, rows: any[]) {
   const doc = new jsPDF();
@@ -96,7 +96,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
     startY: 95,
     head: [["DATE", "DETAILS", "DEBIT", "CREDIT", "BALANCE"]],
     body: rows.map((r) => [
-      r.txn_date,
+      formatDate(r.txn_date),
       r.details,
       Number(r.debit) > 0 ? formatMoney(Number(r.debit)) : "—",
       Number(r.credit) > 0 ? formatMoney(Number(r.credit)) : "—",
