@@ -82,7 +82,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
   
   doc.setTextColor(71, 85, 105);
   doc.text("Total Credit:", summaryBoxX + 5, 62);
-  doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
+  doc.setTextColor(22, 101, 52); // Professional Green
   doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 15, 62, { align: "right" });
 
   doc.setTextColor(71, 85, 105);
@@ -99,7 +99,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
   doc.text("NET BALANCE:", summaryBoxX + 5, 82);
   
   const netVal = `${account.currency} ${fmtInt(net)} ${balanceLabel(net)}`;
-  const netColor = net >= 0 ? accentColor : dangerColor;
+  const netColor = net >= 0 ? [22, 101, 52] : dangerColor;
   doc.setTextColor(netColor[0], netColor[1], netColor[2]);
   doc.text(netVal, W - 15, 82, { align: "right" });
 
@@ -143,7 +143,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
       if (data.section === "body") {
         if (data.column.index === 4) {
           const r = rows[data.row.index];
-          data.cell.styles.textColor = r.balance >= 0 ? accentColor : dangerColor;
+          data.cell.styles.textColor = r.balance >= 0 ? [22, 101, 52] : dangerColor;
           data.cell.styles.fontStyle = "bold";
         }
       }
