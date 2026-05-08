@@ -87,18 +87,24 @@ export function AppSidebar() {
                 <div className="text-[10px] text-sidebar-foreground/60 uppercase tracking-widest font-bold">Session</div>
                 {loading && <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />}
               </div>
-              <div className="text-sm font-bold text-sidebar-foreground truncate mt-0.5">
-                {profile?.full_name ?? "User"}
-              </div>
-              <div className="flex items-center gap-1.5 mt-1">
-                <div className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${role === "admin" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
-                  {role === "admin" ? "Administrator" : role === "branch_user" ? "Branch User" : "No Role"}
+              <div className="flex items-center gap-2.5 mt-1">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 overflow-hidden flex items-center justify-center">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <Users className="w-4 h-4 text-primary" />
+                  )}
                 </div>
-                {!role && !loading && (
-                  <div className="text-[9px] text-destructive font-bold flex items-center gap-0.5">
-                    <Lock className="w-2.5 h-2.5" /> Restricted
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-sidebar-foreground truncate">
+                    {profile?.full_name ?? "User"}
                   </div>
-                )}
+                  <div className="flex items-center gap-1.5">
+                    <div className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${role === "admin" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
+                      {role === "admin" ? "Admin" : role === "branch_user" ? "Branch" : "Guest"}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <Button onClick={signOut} variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
