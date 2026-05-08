@@ -14,6 +14,7 @@ export default function Settings() {
   const { theme, setTheme } = useTheme();
   const { profile, user, refresh } = useAuth();
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
   
   // Profile state
   const [fullName, setFullName] = useState("");
@@ -40,6 +41,41 @@ export default function Settings() {
       await refresh();
     } catch (err: any) { toast.error(err.message); }
     setBusy(false);
+  };
+
+  const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+      if (!e.target.files || e.target.files.length === 0) throw new Error("Select an image to upload");
+      
+      const file = e.target.files[0];
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${user?.id}-${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user?.id);
+
+      if (updateError) throw updateError;
+      
+      toast.success("Avatar updated");
+      await refresh();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const changePassword = async (e: React.FormEvent) => {
@@ -79,11 +115,21 @@ export default function Settings() {
               <div className="flex flex-col md:flex-row gap-6 items-center">
                 <div className="relative group">
                   <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center border-4 border-background shadow-lg overflow-hidden">
-                    <User className="w-12 h-12 text-muted-foreground" />
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-12 h-12 text-muted-foreground" />
+                    )}
+                    {uploading && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
                   </div>
-                  <button type="button" className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-110 transition-transform">
+                  <label className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-110 transition-transform cursor-pointer">
                     <Camera className="w-4 h-4" />
-                  </button>
+                    <input type="file" className="hidden" accept="image/*" onChange={uploadAvatar} disabled={uploading} />
+                  </label>
                 </div>
                 <div className="flex-1 space-y-4 w-full">
                   <div className="grid gap-1.5">
