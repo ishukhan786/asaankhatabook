@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Users, ArrowRight, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function Accounts() {
+  const navigate = useNavigate();
   const { role } = useAuth();
   const [rows, setRows] = useState<any[] | null>(null);
   const [branches, setBranches] = useState<any[]>([]);
@@ -146,22 +147,23 @@ export default function Accounts() {
               </thead>
               <tbody>
                 {filtered.map((r) => (
-                  <tr key={r.id} className="border-t border-border/50 hover:bg-muted/30">
+                  <tr 
+                    key={r.id} 
+                    className="border-t border-border/50 hover:bg-muted/40 cursor-pointer transition-colors group"
+                    onClick={() => navigate(`/accounts/${r.id}`)}
+                  >
                     <td className="px-4 py-3 font-mono text-xs">{r.account_no}</td>
-                    <td className="px-4 py-3 font-medium">{r.name}</td>
+                    <td className="px-4 py-3 font-bold text-primary group-hover:underline">{r.name}</td>
                     <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{r.mobile ?? "—"}</td>
                     <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{r.branches?.name ?? "—"}</td>
                     <td className="px-4 py-3"><Badge variant="secondary" className="font-mono">{r.currency}</Badge></td>
-                    <td className="px-4 py-3 text-right space-x-1">
+                    <td className="px-4 py-3 text-right space-x-1" onClick={(e) => e.stopPropagation()}>
                       {role === "admin" && (
                         <>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-8 w-8"><Pencil className="w-3.5 h-3.5" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => setDeleting({ id: r.id, name: r.name })} className="h-8 w-8 text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
                         </>
                       )}
-                      <Link to={`/accounts/${r.id}`} className="inline-flex items-center justify-center h-8 px-2 text-primary hover:underline text-xs font-medium">
-                        Ledger <ArrowRight className="w-3 h-3 ml-1" />
-                      </Link>
                     </td>
                   </tr>
                 ))}
