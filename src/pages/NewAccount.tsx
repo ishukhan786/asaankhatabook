@@ -25,7 +25,13 @@ export default function NewAccount() {
   const { role, profile } = useAuth();
   const [branches, setBranches] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ name: "", mobile: "", address: "", currency: "PKR" as "PKR" | "AED", branch_id: "" });
+  const [form, setForm] = useState({ 
+    name: "", 
+    mobile: "", 
+    address: "", 
+    currency: "PKR" as "PKR" | "AED", 
+    branch_id: profile?.branch_id || "" 
+  });
 
   useEffect(() => {
     supabase.from("branches").select("id, name").order("name").then(({ data }) => {
@@ -108,9 +114,13 @@ export default function NewAccount() {
             </div>
             <div className="space-y-1.5">
               <Label>Branch {role === "admin" ? "(Optional)" : ""}</Label>
-              <Select value={form.branch_id} onValueChange={(v) => setForm({ ...form, branch_id: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder={branches.length ? "Select branch (Default: Current)" : "No branches yet"} />
+              <Select 
+                value={form.branch_id} 
+                onValueChange={(v) => setForm({ ...form, branch_id: v })}
+                disabled={role !== "admin"}
+              >
+                <SelectTrigger className={role !== "admin" ? "bg-muted/50 cursor-not-allowed" : ""}>
+                  <SelectValue placeholder={branches.length ? "Select branch" : "Loading branches..."} />
                 </SelectTrigger>
                 <SelectContent>
                   {branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
