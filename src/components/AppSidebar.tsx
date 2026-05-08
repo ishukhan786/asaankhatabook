@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Receipt, FileBarChart, Building2, Wallet, LogOut, Shield, UserCog, Lock } from "lucide-react";
+import { LayoutDashboard, Users, Receipt, FileBarChart, Building2, Wallet, LogOut, Shield, UserCog, Lock, Settings as SettingsIcon, History } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
