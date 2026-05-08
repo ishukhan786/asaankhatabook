@@ -65,39 +65,43 @@ export function exportStatementPDF(account: any, rows: any[]) {
   const totalCredit = rows.reduce((s, r) => s + Number(r.credit), 0);
   const net = totalCredit - totalDebit;
 
+  const summaryBoxWidth = 80;
+  const summaryBoxX = W - summaryBoxWidth - 15;
   doc.setFillColor(245, 248, 255);
-  doc.roundedRect(W - 85, 48, 70, 40, 3, 3, "F");
+  doc.roundedRect(summaryBoxX, 48, summaryBoxWidth, 40, 3, 3, "F");
   doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.roundedRect(W - 85, 48, 70, 40, 3, 3, "D");
+  doc.roundedRect(summaryBoxX, 48, summaryBoxWidth, 40, 3, 3, "D");
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  doc.text("STATEMENT SUMMARY", W - 78, 55);
+  doc.text("STATEMENT SUMMARY", summaryBoxX + 5, 55);
 
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   const fmtInt = (n: number) => Math.round(Math.abs(n)).toLocaleString();
   
-  doc.text("Total Credit:", W - 80, 60);
+  doc.setTextColor(71, 85, 105);
+  doc.text("Total Credit:", summaryBoxX + 5, 62);
   doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-  doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 22, 60, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 20, 62, { align: "right" });
 
   doc.setTextColor(71, 85, 105);
-  doc.text("Total Debit:", W - 80, 68);
+  doc.text("Total Debit:", summaryBoxX + 5, 70);
   doc.setTextColor(dangerColor[0], dangerColor[1], dangerColor[2]);
-  doc.text(`${account.currency} ${fmtInt(totalDebit)}`, W - 22, 68, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalDebit)}`, W - 20, 70, { align: "right" });
 
   doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.line(W - 80, 72, W - 20, 72);
+  doc.line(summaryBoxX + 5, 74, W - 20, 74);
 
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("NET BALANCE:", W - 80, 80);
+  doc.text("NET BALANCE:", summaryBoxX + 5, 82);
   
   const netVal = `${account.currency} ${fmtInt(net)} ${balanceLabel(net)}`;
   const netColor = net >= 0 ? accentColor : dangerColor;
   doc.setTextColor(netColor[0], netColor[1], netColor[2]);
-  doc.text(netVal, W - 22, 80, { align: "right" });
+  doc.text(netVal, W - 20, 82, { align: "right" });
 
   // Main Transaction Table
   autoTable(doc, {
