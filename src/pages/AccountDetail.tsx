@@ -21,11 +21,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function AccountDetail() {
   const { id } = useParams();
@@ -46,6 +45,15 @@ export default function AccountDetail() {
   
   // Deletion state
   const [deletingTx, setDeletingTx] = useState<any>(null);
+  
+  // Quick Entry state
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [quickForm, setQuickForm] = useState({
+    txn_date: new Date().toISOString().slice(0, 10),
+    details: "",
+    debit: "",
+    credit: "",
+  });
 
   const load = async () => {
     if (!id) return;
@@ -135,8 +143,40 @@ export default function AccountDetail() {
     const type = Number(t.credit) > 0 ? "Jama (Credit)" : "Nikala (Debit)";
     const message = `*Assalam-o-Alaikum!*\n\n*Aasaan Khatabook Entry Update*\n---------------------------\n*Account:* ${account.name}\n*Date:* ${formatDate(t.txn_date)}\n*Amount:* ${formatMoney(amount, account.currency)}\n*Type:* ${type}\n*Details:* ${t.details}\n---------------------------\n*Current Balance:* ${formatMoney(t.balance, account.currency)} (${balanceLabel(t.balance)})\n\nShukriya!`;
     const encoded = encodeURIComponent(message);
-    const phone = account.mobile.replace(/\D/g, "");
     window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
+  };
+
+  const submitQuick = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const debit = Number(quickForm.debit || 0);
+    const credit = Number(quickForm.credit || 0);
+    if (!quickForm.details.trim()) { toast.error("Details required"); return; }
+    if (debit <= 0 && credit <= 0) { toast.error("Enter amount"); return; }
+    
+    setBusy(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.from("transactions").insert([{
+        txn_code: "",
+        account_id: id,
+        txn_date: quickForm.txn_date,
+        details: quickForm.details.trim(),
+        debit, credit,
+        created_by: user?.id,
+      }]);
+      
+      if (error) throw error;
+      toast.success("Entry saved");
+      setQuickOpen(false);
+      setQuickForm({
+        txn_date: new Date().toISOString().slice(0, 10),
+        details: "",
+        debit: "",
+        credit: "",
+      });
+      load();
+    } catch (err: any) { toast.error(err.message); }
+    setBusy(false);
   };
 
   return (
@@ -185,7 +225,7 @@ export default function AccountDetail() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Link to={`/transactions/new?account=${account.id}`}><Button size="sm" className="gradient-primary text-primary-foreground shadow-lg shadow-primary/20"><Plus className="w-3.5 h-3.5 mr-1" /> Transaction</Button></Link>
+              <Button onClick={() => setQuickOpen(true)} size="sm" className="gradient-primary text-primary-foreground shadow-lg shadow-primary/20"><Plus className="w-3.5 h-3.5 mr-1" /> New Entry</Button>
               <Button size="sm" variant="outline" className="glass" onClick={() => exportStatementPDF(account, rows)}><FileDown className="w-3.5 h-3.5 mr-1" /> PDF</Button>
             </div>
           </div>
@@ -287,6 +327,40 @@ export default function AccountDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Quick Entry Dialog */}
+      <Dialog open={quickOpen} onOpenChange={setQuickOpen}>
+        <DialogContent className="sm:max-w-[425px] glass">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Plus className="w-5 h-5 text-primary" /> New Entry for {account.name}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submitQuick} className="space-y-4 py-4">
+            <div className="space-y-1.5">
+              <Label>Date *</Label>
+              <Input type="date" value={quickForm.txn_date} onChange={(e) => setQuickForm({ ...quickForm, txn_date: e.target.value })} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Details *</Label>
+              <Textarea value={quickForm.details} onChange={(e) => setQuickForm({ ...quickForm, details: e.target.value })} placeholder="Entry details..." required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Debit (Nikala)</Label>
+                <Input type="number" step="0.01" value={quickForm.debit} onChange={(e) => setQuickForm({ ...quickForm, debit: e.target.value })} placeholder="0.00" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Credit (Jama)</Label>
+                <Input type="number" step="0.01" value={quickForm.credit} onChange={(e) => setQuickForm({ ...quickForm, credit: e.target.value })} placeholder="0.00" />
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground shadow-soft">
+                {busy ? "Saving..." : "Save Transaction"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
