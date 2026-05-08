@@ -70,30 +70,34 @@ export function exportStatementPDF(account: any, rows: any[]) {
   doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.roundedRect(W - 85, 48, 70, 40, 3, 3, "D");
 
-  doc.setTextColor(71, 85, 105);
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.text("STATEMENT SUMMARY", W - 78, 55);
 
   doc.setFont("helvetica", "normal");
-  doc.text("Total Credit:", W - 78, 62);
+  const fmtInt = (n: number) => Math.round(Math.abs(n)).toLocaleString();
+  
+  doc.text("Total Credit:", W - 80, 60);
   doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-  doc.text(formatMoney(totalCredit, account.currency), W - 22, 62, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 22, 60, { align: "right" });
 
   doc.setTextColor(71, 85, 105);
-  doc.text("Total Debit:", W - 78, 68);
+  doc.text("Total Debit:", W - 80, 68);
   doc.setTextColor(dangerColor[0], dangerColor[1], dangerColor[2]);
-  doc.text(formatMoney(totalDebit, account.currency), W - 22, 68, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalDebit)}`, W - 22, 68, { align: "right" });
 
-  doc.setDrawColor(226, 232, 240);
-  doc.line(W - 78, 72, W - 22, 72);
+  doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.line(W - 80, 72, W - 20, 72);
 
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text("NET BALANCE:", W - 78, 78);
-  doc.setFontSize(10);
-  const balanceStr = `${formatMoney(net, account.currency)} ${balanceLabel(net)}`;
-  doc.text(balanceStr, W - 22, 78, { align: "right" });
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("NET BALANCE:", W - 80, 80);
+  
+  const netVal = `${account.currency} ${fmtInt(net)} ${balanceLabel(net)}`;
+  const netColor = net >= 0 ? accentColor : dangerColor;
+  doc.setTextColor(netColor[0], netColor[1], netColor[2]);
+  doc.text(netVal, W - 22, 80, { align: "right" });
 
   // Main Transaction Table
   autoTable(doc, {
@@ -104,7 +108,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
       r.details,
       Number(r.debit) > 0 ? Math.round(Number(r.debit)).toLocaleString() : "—",
       Number(r.credit) > 0 ? Math.round(Number(r.credit)).toLocaleString() : "—",
-      `${formatMoney(r.balance)} ${balanceLabel(r.balance)}`,
+      `${Math.round(Math.abs(r.balance)).toLocaleString()} ${balanceLabel(r.balance)}`,
     ]),
     styles: { 
       fontSize: 8.5, 
