@@ -116,7 +116,15 @@ export default function Settings() {
                 <div className="relative group">
                   <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center border-4 border-background shadow-lg overflow-hidden">
                     {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                      <img 
+                        src={`${profile.avatar_url}?t=${new Date().getTime()}`} 
+                        alt="Avatar" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = ""; // Clear src to trigger fallback
+                          toast.error("Could not load image. Is the bucket public?");
+                        }}
+                      />
                     ) : (
                       <User className="w-12 h-12 text-muted-foreground" />
                     )}
