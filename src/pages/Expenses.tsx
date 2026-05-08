@@ -13,6 +13,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 const CATEGORIES = ["Rent", "Salaries", "Electricity Bill", "Internet Bill", "Tea / Food", "Stationery", "Maintenance", "Others"];
 
