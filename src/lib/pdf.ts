@@ -102,15 +102,15 @@ export function exportStatementPDF(account: any, rows: any[]) {
     body: rows.map((r) => [
       formatDate(r.txn_date),
       r.details,
-      Number(r.debit) > 0 ? formatMoney(Number(r.debit)) : "—",
-      Number(r.credit) > 0 ? formatMoney(Number(r.credit)) : "—",
+      Number(r.debit) > 0 ? Math.round(Number(r.debit)).toLocaleString() : "—",
+      Number(r.credit) > 0 ? Math.round(Number(r.credit)).toLocaleString() : "—",
       `${formatMoney(r.balance)} ${balanceLabel(r.balance)}`,
     ]),
     styles: { 
       fontSize: 8.5, 
       cellPadding: { top: 4, right: 4, bottom: 4, left: 4 },
       font: "helvetica",
-      textColor: [50, 50, 50],
+      textColor: [0, 0, 0],
       lineColor: [230, 230, 230],
       lineWidth: 0.1,
     },
@@ -133,8 +133,6 @@ export function exportStatementPDF(account: any, rows: any[]) {
     },
     didParseCell: (data) => {
       if (data.section === "body") {
-        if (data.column.index === 2 && data.cell.raw !== "—") data.cell.styles.textColor = dangerColor;
-        if (data.column.index === 3 && data.cell.raw !== "—") data.cell.styles.textColor = accentColor;
         if (data.column.index === 4) {
           const r = rows[data.row.index];
           data.cell.styles.textColor = r.balance >= 0 ? accentColor : dangerColor;
