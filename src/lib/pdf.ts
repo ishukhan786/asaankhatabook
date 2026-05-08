@@ -115,7 +115,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
       `${Math.round(Math.abs(r.balance)).toLocaleString()} ${balanceLabel(r.balance)}`,
     ]),
     styles: { 
-      fontSize: 8.5, 
+      fontSize: 9, 
       cellPadding: { top: 4, right: 4, bottom: 4, left: 4 },
       font: "helvetica",
       textColor: [0, 0, 0],
@@ -126,7 +126,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
       fillColor: primaryColor, 
       textColor: 255, 
       fontStyle: "bold",
-      fontSize: 9,
+      fontSize: 10,
       halign: "left"
     },
     columnStyles: {
