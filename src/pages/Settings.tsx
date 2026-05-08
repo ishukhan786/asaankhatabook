@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 
 export default function Settings() {
+  const { theme, setTheme } = useTheme();
   const { profile, user, refresh } = useAuth();
   const [busy, setBusy] = useState(false);
   
@@ -156,11 +158,16 @@ export default function Settings() {
           <Card className="glass p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <div className="font-medium">Dark Mode</div>
-                <div className="text-sm text-muted-foreground">Adjust the interface for night time use.</div>
+                <div className="font-medium">Theme Mode</div>
+                <div className="text-sm text-muted-foreground">Switch between light and dark themes.</div>
               </div>
-              <Button variant="outline" size="icon" className="rounded-full h-10 w-10">
-                <Moon className="w-5 h-5" />
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="rounded-full h-10 w-10"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
             </div>
           </Card>
