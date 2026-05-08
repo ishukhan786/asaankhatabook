@@ -7,10 +7,10 @@ export function exportStatementPDF(account: any, rows: any[]) {
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
 
-  // Branding Colors
-  const primaryColor = [15, 76, 78]; // Dark Slate Teal
-  const accentColor = [22, 101, 52]; // Dark Green
-  const dangerColor = [153, 27, 27]; // Dark Red
+  // Branding Colors (Navy Blue & Professional Yellow)
+  const primaryColor = [26, 54, 93];   // Navy Blue
+  const accentColor = [214, 158, 46];  // Golden Yellow
+  const dangerColor = [180, 30, 30];   // Professional Red
 
   // Header / Top Bar
   doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -22,9 +22,13 @@ export function exportStatementPDF(account: any, rows: any[]) {
   doc.setFontSize(24);
   doc.text("AsaanKhata", 15, 18);
   
+  // Golden Accent Line
+  doc.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
+  doc.rect(15, 21, 30, 1.5, "F");
+  
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Professional Digital Ledger Solution", 15, 25);
+  doc.text("Professional Digital Ledger Solution", 15, 28);
 
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
@@ -41,8 +45,8 @@ export function exportStatementPDF(account: any, rows: any[]) {
   doc.setFont("helvetica", "bold");
   doc.text("ACCOUNT HOLDER", 15, 52);
   
-  doc.setDrawColor(200, 200, 200);
-  doc.line(15, 54, 80, 54);
+  doc.setDrawColor(accentColor[0], accentColor[1], accentColor[2]);
+  doc.line(15, 54, 60, 54);
 
   doc.setFontSize(14);
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -61,9 +65,9 @@ export function exportStatementPDF(account: any, rows: any[]) {
   const totalCredit = rows.reduce((s, r) => s + Number(r.credit), 0);
   const net = totalCredit - totalDebit;
 
-  doc.setFillColor(248, 250, 252);
+  doc.setFillColor(245, 248, 255);
   doc.roundedRect(W - 85, 48, 70, 40, 3, 3, "F");
-  doc.setDrawColor(226, 232, 240);
+  doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.roundedRect(W - 85, 48, 70, 40, 3, 3, "D");
 
   doc.setTextColor(71, 85, 105);
@@ -159,7 +163,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
 export function exportLedgerPDF(rows: any[]) {
   const doc = new jsPDF();
   const W = doc.internal.pageSize.getWidth();
-  doc.setFillColor(15, 76, 78);
+  doc.setFillColor(26, 54, 93);
   doc.rect(0, 0, W, 28, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
