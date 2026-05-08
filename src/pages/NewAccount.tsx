@@ -34,14 +34,16 @@ export default function NewAccount() {
   });
 
   useEffect(() => {
+    if (profile?.branch_id) {
+      setForm(f => ({ ...f, branch_id: profile.branch_id! }));
+    }
+  }, [profile?.branch_id]);
+
+  useEffect(() => {
     supabase.from("branches").select("id, name").order("name").then(({ data }) => {
       setBranches(data ?? []);
-      // Auto-select user's branch if they have one
-      if (profile?.branch_id) {
-        setForm((f) => ({ ...f, branch_id: profile.branch_id! }));
-      }
     });
-  }, [profile]);
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
