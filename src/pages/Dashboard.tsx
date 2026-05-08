@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, FileBarChart, TrendingUp, Building2, Lock, Moon, Sun } from "lucide-react";
+import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, FileBarChart, TrendingUp, Building2, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
@@ -25,7 +24,6 @@ interface Stats {
 }
 
 export default function Dashboard() {
-  const { theme, setTheme } = useTheme();
   const { profile, role } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<any[]>([]);
@@ -163,15 +161,6 @@ export default function Dashboard() {
             <p className="text-muted-foreground mt-1">Here's what's happening across your ledger today.</p>
           </div>
            <div className="flex gap-2 flex-wrap items-center">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="rounded-full glass h-10 w-10 border-primary/20 hover:border-primary/50 transition-all shadow-sm"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              title="Toggle Theme"
-            >
-              {theme === "dark" ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-indigo-600" />}
-            </Button>
             {role === "admin" && (
               <Link to="/branches"><Button variant="secondary" className="glass"><Building2 className="w-4 h-4 mr-1" /> Branches</Button></Link>
             )}
