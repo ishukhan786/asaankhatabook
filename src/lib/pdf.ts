@@ -20,15 +20,15 @@ export function exportStatementPDF(account: any, rows: any[]) {
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(24);
-  doc.text("AsaanKhata", 15, 18);
+  doc.text("AsaanKhata", 10, 18);
   
   // Golden Accent Line
   doc.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
-  doc.rect(15, 21, 30, 1.5, "F");
+  doc.rect(10, 21, 30, 1.5, "F");
   
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Professional Digital Ledger Solution", 15, 28);
+  doc.text("Professional Digital Ledger Solution", 10, 28);
 
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
@@ -43,30 +43,30 @@ export function exportStatementPDF(account: any, rows: any[]) {
   doc.setTextColor(40, 40, 40);
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  doc.text("ACCOUNT HOLDER", 15, 52);
+  doc.text("ACCOUNT HOLDER", 10, 52);
   
   doc.setDrawColor(accentColor[0], accentColor[1], accentColor[2]);
-  doc.line(15, 54, 60, 54);
+  doc.line(10, 54, 55, 54);
 
   doc.setFontSize(14);
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text(account.name.toUpperCase(), 15, 62);
+  doc.text(account.name.toUpperCase(), 10, 62);
 
   doc.setTextColor(80, 80, 80);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text(`Account No: ${account.account_no}`, 15, 68);
-  doc.text(`Currency: ${account.currency}`, 15, 73);
-  if (account.mobile) doc.text(`Mobile: ${account.mobile}`, 15, 78);
-  if (account.branches?.name) doc.text(`Branch: ${account.branches.name}`, 15, 83);
+  doc.text(`Account No: ${account.account_no}`, 10, 68);
+  doc.text(`Currency: ${account.currency}`, 10, 73);
+  if (account.mobile) doc.text(`Mobile: ${account.mobile}`, 10, 78);
+  if (account.branches?.name) doc.text(`Branch: ${account.branches.name}`, 10, 83);
 
   // Right Column: Summary Box
   const totalDebit = rows.reduce((s, r) => s + Number(r.debit), 0);
   const totalCredit = rows.reduce((s, r) => s + Number(r.credit), 0);
   const net = totalCredit - totalDebit;
 
-  const summaryBoxWidth = 80;
-  const summaryBoxX = W - summaryBoxWidth - 15;
+  const summaryBoxWidth = 85;
+  const summaryBoxX = W - summaryBoxWidth - 10;
   doc.setFillColor(245, 248, 255);
   doc.roundedRect(summaryBoxX, 48, summaryBoxWidth, 40, 3, 3, "F");
   doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -83,15 +83,15 @@ export function exportStatementPDF(account: any, rows: any[]) {
   doc.setTextColor(71, 85, 105);
   doc.text("Total Credit:", summaryBoxX + 5, 62);
   doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-  doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 20, 62, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 15, 62, { align: "right" });
 
   doc.setTextColor(71, 85, 105);
   doc.text("Total Debit:", summaryBoxX + 5, 70);
   doc.setTextColor(dangerColor[0], dangerColor[1], dangerColor[2]);
-  doc.text(`${account.currency} ${fmtInt(totalDebit)}`, W - 20, 70, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalDebit)}`, W - 15, 70, { align: "right" });
 
   doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.line(summaryBoxX + 5, 74, W - 20, 74);
+  doc.line(summaryBoxX + 5, 74, W - 15, 74);
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
@@ -101,7 +101,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
   const netVal = `${account.currency} ${fmtInt(net)} ${balanceLabel(net)}`;
   const netColor = net >= 0 ? accentColor : dangerColor;
   doc.setTextColor(netColor[0], netColor[1], netColor[2]);
-  doc.text(netVal, W - 20, 82, { align: "right" });
+  doc.text(netVal, W - 15, 82, { align: "right" });
 
   // Main Transaction Table
   autoTable(doc, {
@@ -148,7 +148,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
         }
       }
     },
-    margin: { left: 15, right: 15 },
+    margin: { left: 10, right: 10 },
   });
 
   // Footer
