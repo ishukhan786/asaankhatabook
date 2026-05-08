@@ -130,7 +130,7 @@ export function exportStatementPDF(account: any, rows: any[]) {
       halign: "left"
     },
     columnStyles: {
-      0: { cellWidth: 25 },
+      0: { cellWidth: 28 },
       1: { cellWidth: "auto" },
       2: { cellWidth: 30, halign: "right" },
       3: { cellWidth: 30, halign: "right" },
