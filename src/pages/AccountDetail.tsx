@@ -51,6 +51,7 @@ export default function AccountDetail() {
   const [quickForm, setQuickForm] = useState({
     txn_date: new Date().toISOString().slice(0, 10),
     details: "",
+    notes: "",
     debit: "",
     credit: "",
   });
@@ -161,16 +162,18 @@ export default function AccountDetail() {
         account_id: id,
         txn_date: quickForm.txn_date,
         details: quickForm.details.trim(),
+        notes: quickForm.notes.trim() || null,
         debit, credit,
         created_by: user?.id,
       }]);
       
       if (error) throw error;
-      toast.success("Entry saved");
+      toast.success("Transaction recorded");
       setQuickOpen(false);
       setQuickForm({
         txn_date: new Date().toISOString().slice(0, 10),
         details: "",
+        notes: "",
         debit: "",
         credit: "",
       });
@@ -225,7 +228,7 @@ export default function AccountDetail() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => setQuickOpen(true)} size="sm" className="gradient-primary text-primary-foreground shadow-lg shadow-primary/20"><Plus className="w-3.5 h-3.5 mr-1" /> New Entry</Button>
+              <Button onClick={() => setQuickOpen(true)} size="sm" className="gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-105 transition-transform"><Plus className="w-3.5 h-3.5 mr-1" /> Add Transaction</Button>
               <Button size="sm" variant="outline" className="glass" onClick={() => exportStatementPDF(account, rows)}><FileDown className="w-3.5 h-3.5 mr-1" /> PDF</Button>
             </div>
           </div>
@@ -332,29 +335,39 @@ export default function AccountDetail() {
       <Dialog open={quickOpen} onOpenChange={setQuickOpen}>
         <DialogContent className="sm:max-w-[425px] glass">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Plus className="w-5 h-5 text-primary" /> New Entry for {account.name}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2 font-display text-xl text-primary"><Receipt className="w-6 h-6" /> Add Transaction</DialogTitle>
           </DialogHeader>
           <form onSubmit={submitQuick} className="space-y-4 py-4">
-            <div className="space-y-1.5">
-              <Label>Date *</Label>
-              <Input type="date" value={quickForm.txn_date} onChange={(e) => setQuickForm({ ...quickForm, txn_date: e.target.value })} required />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Date *</Label>
+                <Input type="date" value={quickForm.txn_date} onChange={(e) => setQuickForm({ ...quickForm, txn_date: e.target.value })} required className="bg-muted/30" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Account</Label>
+                <Input value={account.name} disabled className="bg-muted/50 cursor-not-allowed text-xs" />
+              </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Details *</Label>
-              <Textarea value={quickForm.details} onChange={(e) => setQuickForm({ ...quickForm, details: e.target.value })} placeholder="Entry details..." required />
+              <Label>Details / Narration *</Label>
+              <Textarea value={quickForm.details} onChange={(e) => setQuickForm({ ...quickForm, details: e.target.value })} placeholder="What is this transaction for?" required rows={2} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Debit (Nikala)</Label>
-                <Input type="number" step="0.01" value={quickForm.debit} onChange={(e) => setQuickForm({ ...quickForm, debit: e.target.value })} placeholder="0.00" />
+                <Label className="text-destructive font-bold">Debit (Nikala)</Label>
+                <Input type="number" step="0.01" value={quickForm.debit} onChange={(e) => setQuickForm({ ...quickForm, debit: e.target.value })} placeholder="0.00" className="border-destructive/30" />
               </div>
               <div className="space-y-1.5">
-                <Label>Credit (Jama)</Label>
-                <Input type="number" step="0.01" value={quickForm.credit} onChange={(e) => setQuickForm({ ...quickForm, credit: e.target.value })} placeholder="0.00" />
+                <Label className="text-success font-bold">Credit (Jama)</Label>
+                <Input type="number" step="0.01" value={quickForm.credit} onChange={(e) => setQuickForm({ ...quickForm, credit: e.target.value })} placeholder="0.00" className="border-success/30" />
               </div>
             </div>
+            <div className="space-y-1.5">
+              <Label>Notes (Optional)</Label>
+              <Input value={quickForm.notes} onChange={(e) => setQuickForm({ ...quickForm, notes: e.target.value })} placeholder="Extra info, ref no, etc." />
+            </div>
             <DialogFooter className="pt-4">
-              <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground shadow-soft">
+              <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground shadow-lg h-11 text-base">
                 {busy ? "Saving..." : "Save Transaction"}
               </Button>
             </DialogFooter>
