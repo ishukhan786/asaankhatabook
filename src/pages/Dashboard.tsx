@@ -359,12 +359,12 @@ export default function Dashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-xs text-muted-foreground uppercase tracking-wider">
-                    <th className="text-left font-medium py-2 px-2">Date</th>
-                    <th className="text-left font-medium py-2 px-2">Code</th>
-                    <th className="text-left font-medium py-2 px-2">Account</th>
+                    <th className="text-start font-medium py-2 px-2">{t("Date") || "Date"}</th>
+                    <th className="text-start font-medium py-2 px-2">{t("Code") || "Code"}</th>
+                    <th className="text-start font-medium py-2 px-2">{t("Account") || "Account"}</th>
                     <th className="text-left font-medium py-2 px-2 hidden md:table-cell">Details</th>
-                    <th className="text-right font-medium py-2 px-2">Debit</th>
-                    <th className="text-right font-medium py-2 px-2">Credit</th>
+                    <th className="text-end font-medium py-2 px-2">{t("Debit") || "Debit"}</th>
+                    <th className="text-end font-medium py-2 px-2">{t("Credit") || "Credit"}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -377,8 +377,8 @@ export default function Dashboard() {
                         <div className="text-xs text-muted-foreground font-mono">{t.accounts?.account_no}</div>
                       </td>
                       <td className="py-2.5 px-2 hidden md:table-cell text-muted-foreground truncate max-w-xs">{t.details}</td>
-                      <td className="py-2.5 px-2 text-right num text-destructive">{Number(t.debit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowDownLeft className="w-3 h-3" />{formatMoney(Number(t.debit), t.accounts?.currency)}</span> : "—"}</td>
-                      <td className="py-2.5 px-2 text-right num text-success">{Number(t.credit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowUpRight className="w-3 h-3" />{formatMoney(Number(t.credit), t.accounts?.currency)}</span> : "—"}</td>
+                      <td className="py-2.5 px-2 text-end num text-destructive">{Number(t.debit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowDownLeft className="w-3 h-3" />{formatMoney(Number(t.debit), t.accounts?.currency)}</span> : "—"}</td>
+                      <td className="py-2.5 px-2 text-end num text-success">{Number(t.credit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowUpRight className="w-3 h-3" />{formatMoney(Number(t.credit), t.accounts?.currency)}</span> : "—"}</td>
                     </tr>
                   ))}
                 </tbody>

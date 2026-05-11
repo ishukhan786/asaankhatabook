@@ -29,6 +29,11 @@ const resources = {
       "Lenedari": "Lenedari (You owe them)",
       "Denedari": "Denedari (Others owe you)",
       "Search": "Search",
+      "Date": "Date",
+      "Code": "Code",
+      "Account": "Account",
+      "Debit": "Debit",
+      "Credit": "Credit",
     }
   },
   ur: {
@@ -57,6 +62,11 @@ const resources = {
       "Lenedari": "لینداری (آپ نے دینے ہیں)",
       "Denedari": "دینداری (لوگوں نے دینے ہیں)",
       "Search": "تلاش کریں",
+      "Date": "تاریخ",
+      "Code": "کوڈ",
+      "Account": "اکاؤنٹ",
+      "Debit": "ڈیبٹ",
+      "Credit": "کریڈٹ",
     }
   }
 };
@@ -74,12 +84,14 @@ i18n
 
 // Handle RTL
 i18n.on('languageChanged', (lng) => {
-  document.dir = lng === 'ur' ? 'rtl' : 'ltr';
+  const dir = lng === 'ur' ? 'rtl' : 'ltr';
+  document.documentElement.dir = dir;
   document.documentElement.lang = lng;
 });
 
 // Set initial direction
-document.dir = i18n.language === 'ur' ? 'rtl' : 'ltr';
+const initDir = i18n.language === 'ur' ? 'rtl' : 'ltr';
+document.documentElement.dir = initDir;
 document.documentElement.lang = i18n.language;
 
 export default i18n;

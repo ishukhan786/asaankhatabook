@@ -33,7 +33,7 @@ export function AppSidebar() {
   ];
 
   return (
-    <Sidebar collapsible="icon" className="border-r-0">
+    <Sidebar collapsible="icon" className="border-r-0" side={i18n.language === "ur" ? "right" : "left"}>
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl gradient-accent flex items-center justify-center shadow-amber shrink-0">
