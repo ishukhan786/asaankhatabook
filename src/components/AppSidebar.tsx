@@ -6,9 +6,11 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const { t } = useTranslation();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { role, signOut, profile, loading } = useAuth();
@@ -16,18 +18,18 @@ export function AppSidebar() {
   const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname.startsWith(url));
 
   const items = [
-    { title: "Dashboard", url: "/", icon: LayoutDashboard },
-    { title: "Accounts", url: "/accounts", icon: Users },
-    { title: "Transactions", url: "/transactions", icon: Receipt },
-    { title: "Payables & Receivables", url: "/payables-receivables", icon: Wallet },
-    { title: "Expenses", url: "/expenses", icon: Wallet },
-    { title: "Reports", url: "/reports", icon: FileBarChart },
-    { title: "Settings", url: "/settings", icon: SettingsIcon },
+    { title: t("Dashboard"), url: "/", icon: LayoutDashboard },
+    { title: t("Accounts"), url: "/accounts", icon: Users },
+    { title: t("Transactions"), url: "/transactions", icon: Receipt },
+    { title: t("PayablesReceivables"), url: "/payables-receivables", icon: Wallet },
+    { title: t("Expenses"), url: "/expenses", icon: Wallet },
+    { title: t("Reports"), url: "/reports", icon: FileBarChart },
+    { title: t("Settings"), url: "/settings", icon: SettingsIcon },
     // Admin Items
-    { title: "Admin Panel", url: "/admin", icon: Shield, admin: true, exact: true },
-    { title: "Users", url: "/admin/users", icon: UserCog, admin: true },
-    { title: "Audit Logs", url: "/admin/audit", icon: History, admin: true },
-    { title: "Branches", url: "/branches", icon: Building2, admin: true },
+    { title: t("AdminPanel"), url: "/admin", icon: Shield, admin: true, exact: true },
+    { title: t("Users"), url: "/admin/users", icon: UserCog, admin: true },
+    { title: t("AuditLogs"), url: "/admin/audit", icon: History, admin: true },
+    { title: t("Branches"), url: "/branches", icon: Building2, admin: true },
   ];
 
   return (
@@ -109,7 +111,7 @@ export function AppSidebar() {
               </div>
             </div>
             <Button onClick={signOut} variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
-              <LogOut className="w-4 h-4 mr-2" /> Sign out
+              <LogOut className="w-4 h-4 mr-2" /> {t("SignOut")}
             </Button>
           </div>
         ) : (

@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney, balanceLabel, formatDate, formatNumber } from "@/lib/format";
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
+import { useTranslation } from "react-i18next";
 
 interface Stats {
   accounts: number;
@@ -27,6 +28,7 @@ interface Stats {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { profile, role } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<any[]>([]);
@@ -152,11 +154,11 @@ export default function Dashboard() {
   }
 
   const cards = [
-    { label: "Total Accounts", value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} branches` },
-    { label: "Net Balance (PKR)", value: formatMoney(stats.netPKR, "PKR"), icon: Wallet, gradient: "from-accent to-accent-glow", sub: balanceLabel(stats.netPKR), positive: stats.netPKR >= 0 },
-    { label: "Net Balance (AED)", value: formatMoney(stats.netAED, "AED"), icon: TrendingUp, gradient: "from-emerald-600 to-teal-500", sub: balanceLabel(stats.netAED), positive: stats.netAED >= 0 },
+    { label: t("Dashboard"), value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} ${t("Branches").toLowerCase()}` },
+    { label: t("NetBalance") + " (PKR)", value: formatMoney(stats.netPKR, "PKR"), icon: Wallet, gradient: "from-accent to-accent-glow", sub: balanceLabel(stats.netPKR), positive: stats.netPKR >= 0 },
+    { label: t("NetBalance") + " (AED)", value: formatMoney(stats.netAED, "AED"), icon: TrendingUp, gradient: "from-emerald-600 to-teal-500", sub: balanceLabel(stats.netAED), positive: stats.netAED >= 0 },
     {
-      label: "Total Expenses",
+      label: t("Expenses"),
       value: formatMoney(stats.totalExpensePKR, "PKR"),
       sub: stats.totalExpenseAED > 0 ? `+ ${formatMoney(stats.totalExpenseAED, "AED")}` : "0 AED",
       icon: Receipt,
@@ -164,18 +166,18 @@ export default function Dashboard() {
       positive: false
     },
     {
-      label: "Total Receivables",
+      label: t("TotalReceivable"),
       value: formatMoney(stats.totalReceivable, "PKR"),
-      sub: "Denedari (Others owe you)",
+      sub: t("Denedari"),
       icon: ArrowDownLeft,
       gradient: "from-amber-500 to-orange-400",
       positive: false,
       url: "/payables-receivables"
     },
     {
-      label: "Total Payables",
+      label: t("TotalPayable"),
       value: formatMoney(stats.totalPayable, "PKR"),
-      sub: "Lenedari (You owe them)",
+      sub: t("Lenedari"),
       icon: ArrowUpRight,
       gradient: "from-blue-500 to-indigo-400",
       positive: true,
@@ -189,18 +191,18 @@ export default function Dashboard() {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <div className="text-sm text-muted-foreground">{role === "admin" ? "Administrator" : "Branch User"} dashboard</div>
+            <div className="text-sm text-muted-foreground">{role === "admin" ? t("AdminPanel") : t("Dashboard")}</div>
             <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-              Hello, <span className="text-gradient">{profile?.full_name?.split(" ")[0] ?? "there"}</span>
+              {t("Welcome", { name: profile?.full_name?.split(" ")[0] ?? "there" })}
             </h1>
             <p className="text-muted-foreground mt-1">Here's what's happening across your ledger today.</p>
           </div>
            <div className="flex gap-2 flex-wrap items-center">
             {role === "admin" && (
-              <Link to="/branches"><Button variant="secondary" className="glass"><Building2 className="w-4 h-4 mr-1" /> Branches</Button></Link>
+              <Link to="/branches"><Button variant="secondary" className="glass"><Building2 className="w-4 h-4 mr-1" /> {t("Branches")}</Button></Link>
             )}
-            <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> New Account</Button></Link>
-            <Link to="/transactions/new"><Button variant="outline" className="border-2"><Receipt className="w-4 h-4 mr-1" /> New Transaction</Button></Link>
+            <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> {t("NewAccount")}</Button></Link>
+            <Link to="/transactions/new"><Button variant="outline" className="border-2"><Receipt className="w-4 h-4 mr-1" /> {t("NewTransaction")}</Button></Link>
           </div>
         </div>
 
@@ -346,7 +348,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Receipt className="w-4 h-4 text-primary" />
-              <h2 className="font-display font-semibold">Recent Transactions</h2>
+              <h2 className="font-display font-semibold">{t("RecentTransactions")}</h2>
             </div>
             <Link to="/transactions" className="text-xs text-primary hover:underline">View all →</Link>
           </div>
