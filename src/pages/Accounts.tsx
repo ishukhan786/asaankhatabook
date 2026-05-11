@@ -47,12 +47,30 @@ export default function Accounts() {
   const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
 
   const reload = async () => {
-    const [{ data: accs }, { data: brs }] = await Promise.all([
-      supabase.from("accounts").select("id, account_no, name, mobile, currency, branch_id, branches(name)").order("created_at", { ascending: false }),
-      supabase.from("branches").select("id, name"),
-    ]);
-    setRows(accs ?? []);
-    setBranches(brs ?? []);
+    try {
+      const [{ data: accs, error: accountsError }, { data: brs, error: branchesError }] = await Promise.all([
+        supabase
+          .from("accounts")
+          .select("id, account_no, name, mobile, currency, branch_id, created_at")
+          .order("created_at", { ascending: false }),
+        supabase.from("branches").select("id, name"),
+      ]);
+
+      if (accountsError) throw accountsError;
+      if (branchesError) throw branchesError;
+
+      const branchById = new Map((brs ?? []).map((branch) => [branch.id, branch]));
+      setRows((accs ?? []).map((account) => ({
+        ...account,
+        branches: branchById.get(account.branch_id) ?? null,
+      })));
+      setBranches(brs ?? []);
+    } catch (err: any) {
+      console.error("Accounts load error:", err);
+      toast.error(err.message ?? "Could not load accounts");
+      setRows([]);
+      setBranches([]);
+    }
   };
 
   useEffect(() => {

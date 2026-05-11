@@ -10,6 +10,7 @@ import { formatMoney, balanceLabel, formatDate, formatNumber } from "@/lib/forma
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 import { useTranslation } from "react-i18next";
+import { Tables } from "@/integrations/supabase/types";
 
 interface Stats {
   accounts: number;
@@ -28,10 +29,10 @@ interface Stats {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { profile, role } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
-  const [recent, setRecent] = useState<any[]>([]);
+  const [recent, setRecent] = useState<Tables<"transactions">[]>([]);
 
   const load = async () => {
     try {
@@ -49,8 +50,8 @@ export default function Dashboard() {
       let totalExpensePKR = 0, totalExpenseAED = 0;
       let totalReceivable = 0, totalPayable = 0;
       const branchMap: Record<string, { name: string; pkr: number; aed: number; accounts: number }> = {};
-      (branches ?? []).forEach((b: any) => (branchMap[b.id] = { name: b.name, pkr: 0, aed: 0, accounts: 0 }));
-      (accounts ?? []).forEach((a: any) => { if (branchMap[a.branch_id]) branchMap[a.branch_id].accounts++; });
+      (branches ?? []).forEach((b) => (branchMap[b.id] = { name: b.name, pkr: 0, aed: 0, accounts: 0 }));
+      (accounts ?? []).forEach((a) => { if (branchMap[a.branch_id]) branchMap[a.branch_id].accounts++; });
       (txns ?? []).forEach(t => {
         const net = Number(t.credit) - Number(t.debit);
         const currency = t.accounts?.currency;
@@ -104,7 +105,7 @@ export default function Dashboard() {
           }
         });
         return { 
-          date: new Date(iso).toLocaleDateString("en-PK", { day: '2-digit', month: 'short' }), 
+          date: new Date(iso).toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-PK", { day: '2-digit', month: 'short' }), 
           pkr, 
           aed 
         };

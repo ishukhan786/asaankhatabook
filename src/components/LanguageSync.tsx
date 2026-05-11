@@ -5,7 +5,8 @@ export default function LanguageSync() {
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    const dir = i18n.language === "ur" ? "rtl" : "ltr";
+    const isUrdu = i18n.language?.startsWith("ur");
+    const dir = isUrdu ? "rtl" : "ltr";
     document.documentElement.dir = dir;
     document.documentElement.lang = i18n.language;
   }, [i18n.language]);

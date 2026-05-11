@@ -29,8 +29,11 @@ interface AdminUser {
 
 const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`;
 
-async function call(method: string, body?: any) {
+async function call(method: string, body?: any, timeoutMs = 10000) {
   const { data: { session } } = await supabase.auth.getSession();
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
   const res = await fetch(fnUrl, {
     method,
     headers: {
@@ -39,7 +42,10 @@ async function call(method: string, body?: any) {
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     },
     body: body ? JSON.stringify(body) : undefined,
+    signal: controller.signal,
   });
+  window.clearTimeout(timeoutId);
+
   const json = await res.json();
   if (!res.ok) throw new Error(json.error ?? "Request failed");
   return json;
@@ -52,6 +58,7 @@ export default function AdminUsers() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [busy, setBusy] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   // Create form
   const [email, setEmail] = useState("");
@@ -66,7 +73,36 @@ export default function AdminUsers() {
   const [eBranch, setEBranch] = useState<string>("");
   const [ePassword, setEPassword] = useState("");
 
+  const loadFallbackUsers = async () => {
+    const [{ data: profiles, error: profilesError }, { data: roles, error: rolesError }] = await Promise.all([
+      supabase.from("profiles").select("id, full_name, branch_id, created_at").order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("user_id, role"),
+    ]);
+
+    if (profilesError) throw profilesError;
+    if (rolesError) throw rolesError;
+
+    const roleMap = new Map<string, string[]>();
+    (roles ?? []).forEach((r: any) => {
+      const arr = roleMap.get(r.user_id) ?? [];
+      arr.push(r.role);
+      roleMap.set(r.user_id, arr);
+    });
+
+    return (profiles ?? []).map((profile: any) => ({
+      id: profile.id,
+      email: profile.id === me?.id ? (me.email ?? "Current user") : "Email unavailable",
+      full_name: profile.full_name,
+      branch_id: profile.branch_id,
+      roles: roleMap.get(profile.id) ?? [],
+      created_at: profile.created_at,
+      last_sign_in_at: null,
+    }));
+  };
+
   const reload = async () => {
+    setLoadError("");
+
     // Fetch branches independently to ensure they load even if users fetch is slow/fails
     supabase.from("branches").select("id, name, code").order("name")
       .then(({ data, error }) => {
@@ -79,15 +115,27 @@ export default function AdminUsers() {
       });
 
     try {
-      const res = await call("GET");
-      setUsers(res.users);
+      const res = await call("GET", undefined, 8000);
+      setUsers(Array.isArray(res.users) ? res.users : []);
     } catch (e: any) {
       console.error("Reload error:", e);
-      const msg = e.message === "Failed to fetch" 
+      const msg = e.name === "AbortError"
+        ? "User service timed out. Showing locally stored profiles instead."
+        : e.message === "Failed to fetch" 
         ? "Edge Function not reachable. Please ensure 'admin-users' function is deployed: npx supabase functions deploy admin-users"
         : e.message;
-      toast.error("Failed to load users: " + msg);
-      setUsers([]); // Set to empty array to stop loading skeleton
+
+      try {
+        const fallbackUsers = await loadFallbackUsers();
+        setUsers(fallbackUsers);
+        setLoadError(msg);
+        toast.warning(msg);
+      } catch (fallbackError: any) {
+        console.error("Fallback users load error:", fallbackError);
+        setLoadError(fallbackError.message ?? msg);
+        toast.error("Failed to load users: " + (fallbackError.message ?? msg));
+        setUsers([]);
+      }
     }
   };
 
@@ -205,6 +253,11 @@ export default function AdminUsers() {
       </div>
 
       <Card className="glass overflow-hidden">
+        {loadError && (
+          <div className="border-b border-border/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+            {loadError}
+          </div>
+        )}
         {!users ? <Skeleton className="h-40 m-4" /> : users.length === 0 ? (
           <div className="p-12 text-center text-muted-foreground text-sm">No users.</div>
         ) : (

@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { role, signOut, profile, loading } = useAuth();

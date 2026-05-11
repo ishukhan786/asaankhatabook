@@ -11,10 +11,11 @@ import { exportLedgerPDF, exportStatementPDF } from "@/lib/pdf";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tables } from "@/integrations/supabase/types";
 
 export default function Reports() {
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [txns, setTxns] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Tables<"accounts">[]>([]);
+  const [txns, setTxns] = useState<Tables<"transactions">[]>([]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [q, setQ] = useState("");
@@ -22,7 +23,7 @@ export default function Reports() {
   
   // Statement specific state
   const [selectedAccId, setSelectedAccId] = useState("");
-  const [statementTxns, setStatementTxns] = useState<any[]>([]);
+  const [statementTxns, setStatementTxns] = useState<Tables<"transactions">[]>([]);
   const [loadingStatement, setLoadingStatement] = useState(false);
 
   useEffect(() => {
@@ -65,12 +66,19 @@ export default function Reports() {
   }, [statementTxns, from, to]);
 
   const statementRows = useMemo(() => {
-    let running = 0;
+    let openingBalance = 0;
+    if (from) {
+      openingBalance = statementTxns
+        .filter(t => t.txn_date < from)
+        .reduce((acc, t) => acc + (Number(t.credit) - Number(t.debit)), 0);
+    }
+
+    let running = openingBalance;
     return filteredStatement.map(t => {
       running += Number(t.credit) - Number(t.debit);
       return { ...t, balance: running };
     });
-  }, [filteredStatement]);
+  }, [filteredStatement, statementTxns, from]);
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">

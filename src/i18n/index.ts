@@ -1,6 +1,5 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 
 const resources = {
   en: {
@@ -35,50 +34,20 @@ const resources = {
       "Debit": "Debit",
       "Credit": "Credit",
     }
-  },
-  ur: {
-    translation: {
-      "Dashboard": "ڈیش بورڈ",
-      "Accounts": "اکاؤنٹس",
-      "Transactions": "لین دین",
-      "Expenses": "اخراجات",
-      "Reports": "رپورٹس",
-      "Settings": "سیٹنگز",
-      "PayablesReceivables": "واجبات اور وصولیاں",
-      "Payables": "واجب الادا (لینے والے)",
-      "Receivables": "واجب الوصول (دینے والے)",
-      "TotalPayable": "کل واجب الادا (لینداری)",
-      "TotalReceivable": "کل واجب الوصول (دینداری)",
-      "NewAccount": "نیا اکاؤنٹ",
-      "NewTransaction": "نیا لین دین",
-      "Branches": "برانچیں",
-      "AdminPanel": "ایڈمن پینل",
-      "Users": "صارفین",
-      "AuditLogs": "آڈٹ لاگز",
-      "SignOut": "لاگ آؤٹ",
-      "Welcome": "سلام، {{name}}",
-      "NetBalance": "کل بیلنس",
-      "RecentTransactions": "حالیہ لین دین",
-      "Lenedari": "لینداری (آپ نے دینے ہیں)",
-      "Denedari": "دینداری (لوگوں نے دینے ہیں)",
-      "Search": "تلاش کریں",
-      "Date": "تاریخ",
-      "Code": "کوڈ",
-      "Account": "اکاؤنٹ",
-      "Debit": "ڈیبٹ",
-      "Credit": "کریڈٹ",
-    }
   }
 };
 
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: "en",
     fallbackLng: "en",
     interpolation: {
       escapeValue: false
+    },
+    react: {
+      useSuspense: false
     }
   });
 

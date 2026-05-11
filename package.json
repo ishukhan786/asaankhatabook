@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:8080 && cross-env NODE_ENV=development electron .\"",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+
     "electron:build": "npm run build && electron-builder",
     "mobile:sync": "npx cap sync",
     "mobile:open": "npx cap open android"
@@ -23,6 +24,7 @@
     "@capacitor/android": "^8.3.3",
     "@capacitor/cli": "^8.3.3",
     "@capacitor/core": "^8.3.3",
+    "@emotion/is-prop-valid": "^1.4.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
