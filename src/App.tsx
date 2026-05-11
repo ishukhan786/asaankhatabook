@@ -21,6 +21,7 @@ import BranchDetail from "./pages/BranchDetail";
 import AdminPanel from "./pages/AdminPanel";
 import AdminUsers from "./pages/AdminUsers";
 import AuditLogs from "./pages/AuditLogs";
+import PayablesReceivables from "./pages/PayablesReceivables";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
                 <Route path="/admin" element={<AdminPanel />} />
                 <Route path="/admin/users" element={<AdminUsers />} />
                 <Route path="/admin/audit" element={<AuditLogs />} />
+                <Route path="/payables-receivables" element={<PayablesReceivables />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -19,6 +19,7 @@ export function AppSidebar() {
     { title: "Dashboard", url: "/", icon: LayoutDashboard },
     { title: "Accounts", url: "/accounts", icon: Users },
     { title: "Transactions", url: "/transactions", icon: Receipt },
+    { title: "Payables & Receivables", url: "/payables-receivables", icon: Wallet },
     { title: "Expenses", url: "/expenses", icon: Wallet },
     { title: "Reports", url: "/reports", icon: FileBarChart },
     { title: "Settings", url: "/settings", icon: SettingsIcon },

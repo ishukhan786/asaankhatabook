@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, FileBarChart, TrendingUp, Building2, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney, balanceLabel, formatDate, formatNumber } from "@/lib/format";
 import { motion } from "framer-motion";
@@ -21,9 +21,12 @@ interface Stats {
   totalExpenseAED: number;
   byBranch: { name: string; pkr: number; aed: number; accounts: number }[];
   trend: { date: string; pkr: number; aed: number }[];
+  totalReceivable: number;
+  totalPayable: number;
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { profile, role } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<any[]>([]);
@@ -42,6 +45,7 @@ export default function Dashboard() {
       let netPKR = 0, netAED = 0;
       let todayPKR = { debit: 0, credit: 0 }, todayAED = { debit: 0, credit: 0 };
       let totalExpensePKR = 0, totalExpenseAED = 0;
+      let totalReceivable = 0, totalPayable = 0;
       const branchMap: Record<string, { name: string; pkr: number; aed: number; accounts: number }> = {};
       (branches ?? []).forEach((b: any) => (branchMap[b.id] = { name: b.name, pkr: 0, aed: 0, accounts: 0 }));
       (accounts ?? []).forEach((a: any) => { if (branchMap[a.branch_id]) branchMap[a.branch_id].accounts++; });
@@ -66,6 +70,17 @@ export default function Dashboard() {
           if (currency === "PKR") branchMap[bid].pkr += net;
           else branchMap[bid].aed += net;
         }
+      });
+      
+      // Calculate Payables and Receivables
+      const accBalances: Record<string, number> = {};
+      (txns ?? []).forEach(t => {
+        const net = Number(t.credit) - Number(t.debit);
+        accBalances[t.account_id] = (accBalances[t.account_id] || 0) + net;
+      });
+      Object.values(accBalances).forEach(bal => {
+        if (bal < 0) totalReceivable += Math.abs(bal);
+        else if (bal > 0) totalPayable += bal;
       });
 
       (expenses ?? []).forEach(e => {
@@ -99,7 +114,9 @@ export default function Dashboard() {
         netPKR, netAED, todayPKR, todayAED,
         totalExpensePKR, totalExpenseAED,
         byBranch: Object.values(branchMap),
-        trend: trendData
+        trend: trendData,
+        totalReceivable,
+        totalPayable
       });
       setRecent(recentTx ?? []);
     } catch (err) {
@@ -146,6 +163,24 @@ export default function Dashboard() {
       gradient: "from-rose-500 to-orange-500",
       positive: false
     },
+    {
+      label: "Total Receivables",
+      value: formatMoney(stats.totalReceivable, "PKR"),
+      sub: "Denedari (Others owe you)",
+      icon: ArrowDownLeft,
+      gradient: "from-amber-500 to-orange-400",
+      positive: false,
+      url: "/payables-receivables"
+    },
+    {
+      label: "Total Payables",
+      value: formatMoney(stats.totalPayable, "PKR"),
+      sub: "Lenedari (You owe them)",
+      icon: ArrowUpRight,
+      gradient: "from-blue-500 to-indigo-400",
+      positive: true,
+      url: "/payables-receivables"
+    },
   ];
 
   return (
@@ -182,10 +217,13 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {cards.map((c, i) => (
-          <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-            <Card className="glass p-5 relative overflow-hidden group hover:shadow-lift transition-all">
+          <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className={c.url ? "cursor-pointer" : ""}>
+            <Card 
+              className="glass p-5 relative overflow-hidden group hover:shadow-lift transition-all h-full"
+              onClick={() => c.url && navigate(c.url)}
+            >
               <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br ${c.gradient} opacity-20 blur-2xl group-hover:opacity-30 transition-opacity`} />
               <div className="relative">
                 <div className="flex items-start justify-between mb-3">

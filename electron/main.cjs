@@ -1,6 +1,8 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const isDev = process.env.NODE_ENV === 'development' || process.defaultApp || /node_modules[\\/]electron[\\/]/.test(process.execPath);
+const { autoUpdater } = require('electron-updater');
+
+const isDev = process.env.NODE_ENV === 'development' || process.env.VITE_DEV_SERVER_URL || process.defaultApp || /node_modules[\\/]electron[\\/]/.test(process.execPath);
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -20,6 +22,11 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
+  // Check for updates after window is created
+  if (!isDev) {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
 }
 
 app.whenReady().then(() => {
@@ -36,4 +43,13 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+// Auto-Updater Events
+autoUpdater.on('update-available', () => {
+  console.log('Update available.');
+});
+
+autoUpdater.on('update-downloaded', () => {
+  autoUpdater.quitAndInstall();
 });
