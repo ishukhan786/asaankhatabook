@@ -82,16 +82,4 @@ i18n
     }
   });
 
-// Handle RTL
-i18n.on('languageChanged', (lng) => {
-  const dir = lng === 'ur' ? 'rtl' : 'ltr';
-  document.documentElement.dir = dir;
-  document.documentElement.lang = lng;
-});
-
-// Set initial direction
-const initDir = i18n.language === 'ur' ? 'rtl' : 'ltr';
-document.documentElement.dir = initDir;
-document.documentElement.lang = i18n.language;
-
 export default i18n;

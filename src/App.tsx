@@ -5,6 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "next-themes";
+import { DirectionProvider } from "@radix-ui/react-direction";
+import { useTranslation } from "react-i18next";
+import LanguageSync from "./components/LanguageSync";
 import AppLayout from "@/components/AppLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -26,10 +29,16 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light">
-      <TooltipProvider>
+const App = () => {
+  const { i18n } = useTranslation();
+  const dir = i18n.language === "ur" ? "rtl" : "ltr";
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="light">
+        <DirectionProvider dir={dir}>
+          <LanguageSync />
+          <TooltipProvider>
         <Toaster />
         <Sonner />
         <HashRouter future={{ v7_relativeSplatPath: true }}>
@@ -57,9 +66,11 @@ const App = () => (
             </Routes>
           </AuthProvider>
         </HashRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+          </TooltipProvider>
+        </DirectionProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
