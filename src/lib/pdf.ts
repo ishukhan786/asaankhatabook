@@ -62,7 +62,7 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   const accountBoxX = 10;
   const accountBoxY = 58;
   const accountBoxW = 112;
-  const accountBoxH = 50;
+  const accountBoxH = 54;
   const summaryBoxWidth = 76;
   const summaryBoxX = W - summaryBoxWidth - 10;
   const summaryBoxY = 58;
@@ -81,7 +81,7 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  doc.text("ACCOUNT HOLDER DETAILS", 16, 66);
+  doc.text("ACCOUNT HOLDER DETAILS", accountBoxX + accountBoxW / 2, 66, { align: "center" });
 
   const detailLabel = (label: string, value: string, x: number, y: number, maxWidth = 44) => {
     doc.setFont("helvetica", "bold");
@@ -97,14 +97,16 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...rgb(primaryColor));
-  doc.text(String(account.name || "-").toUpperCase(), 16, 80, { maxWidth: 96 });
+  doc.text(String(account.name || "-").toUpperCase(), 18, 78, { maxWidth: 94 });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
-  detailLabel("Account No", account.account_no, 16, 90, 42);
-  detailLabel("Mobile No", account.mobile, 62, 90, 44);
-  detailLabel("Currency", account.currency, 16, 100, 28);
-  detailLabel("Address", account.address, 46, 100, 68);
+  const col1 = 18;
+  const col2 = 68;
+  detailLabel("Account No", account.account_no, col1, 88, 45);
+  detailLabel("Mobile No", account.mobile, col2, 88, 45);
+  detailLabel("Currency", account.currency, col1, 99, 45);
+  detailLabel("Address", account.address, col2, 99, 45);
 
   const totalDebit = rows.reduce((s, r) => s + Number(r.debit), 0);
   const totalCredit = rows.reduce((s, r) => s + Number(r.credit), 0);
@@ -127,7 +129,7 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...rgb(primaryColor));
-  doc.text("STATEMENT SUMMARY", summaryBoxX + 5, 66);
+  doc.text("STATEMENT SUMMARY", summaryBoxX + summaryBoxWidth / 2, 66, { align: "center" });
 
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");

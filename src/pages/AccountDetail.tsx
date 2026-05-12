@@ -213,10 +213,40 @@ export default function AccountDetail() {
           <div>
             <div className="font-mono text-xs text-muted-foreground">{account.account_no}</div>
             <h1 className="font-display text-3xl md:text-4xl font-bold mt-1">{account.name}</h1>
-            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mt-3">
-              {account.mobile && <span className="inline-flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{account.mobile}</span>}
-              {account.address && <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{account.address}</span>}
-              {account.branches?.name && <span className="inline-flex items-center gap-1"><Building2 className="w-3.5 h-3.5" />{account.branches.name}</span>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 mt-6">
+              {account.mobile && (
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Mobile Number</div>
+                    <div className="font-medium text-foreground">{account.mobile}</div>
+                  </div>
+                </div>
+              )}
+              {account.branches?.name && (
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Branch / Office</div>
+                    <div className="font-medium text-foreground">{account.branches.name}</div>
+                  </div>
+                </div>
+              )}
+              {account.address && (
+                <div className="flex items-start gap-3 sm:col-span-2">
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Physical Address</div>
+                    <div className="font-medium text-foreground leading-relaxed">{account.address}</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex flex-col items-end gap-2 text-right">
