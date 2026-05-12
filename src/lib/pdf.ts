@@ -59,20 +59,31 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   doc.text(`Generated: ${generatedAt}`, W - 12, 24, { align: "right" });
   doc.text(`Account: ${account.account_no}`, W - 12, 30, { align: "right" });
 
-  doc.setFillColor(249, 250, 251);
-  doc.roundedRect(10, 58, W - 20, 42, 3, 3, "F");
-  doc.setDrawColor(229, 231, 235);
-  doc.roundedRect(10, 58, W - 20, 42, 3, 3, "D");
+  const accountBoxX = 10;
+  const accountBoxY = 58;
+  const accountBoxW = 112;
+  const accountBoxH = 50;
+  const summaryBoxWidth = 76;
+  const summaryBoxX = W - summaryBoxWidth - 10;
+  const summaryBoxY = 58;
+  const summaryBoxH = 50;
 
-  doc.setTextColor(...rgb(inkColor));
+  doc.setFillColor(249, 250, 251);
+  doc.roundedRect(accountBoxX, accountBoxY, accountBoxW, accountBoxH, 3, 3, "F");
+  doc.setDrawColor(229, 231, 235);
+  doc.roundedRect(accountBoxX, accountBoxY, accountBoxW, accountBoxH, 3, 3, "D");
+
+  doc.setFillColor(...rgb(primaryColor));
+  doc.roundedRect(accountBoxX, accountBoxY, accountBoxW, 12, 3, 3, "F");
+  doc.setFillColor(...rgb(primaryColor));
+  doc.rect(accountBoxX, accountBoxY + 8, accountBoxW, 4, "F");
+
+  doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  doc.text("ACCOUNT HOLDER", 16, 67);
+  doc.text("ACCOUNT HOLDER DETAILS", 16, 66);
 
-  doc.setDrawColor(...rgb(accentColor));
-  doc.line(16, 69, 55, 69);
-
-  const detailLabel = (label: string, value: string, x: number, y: number, maxWidth = 58) => {
+  const detailLabel = (label: string, value: string, x: number, y: number, maxWidth = 44) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
     doc.setTextColor(...rgb(mutedColor));
@@ -86,59 +97,66 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...rgb(primaryColor));
-  doc.text(String(account.name || "-").toUpperCase(), 16, 77, { maxWidth: 74 });
+  doc.text(String(account.name || "-").toUpperCase(), 16, 80, { maxWidth: 96 });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
-  detailLabel("Account No", account.account_no, 16, 88, 38);
-  detailLabel("Mobile No", account.mobile, 58, 88, 40);
-  detailLabel("Currency", account.currency, 102, 88, 28);
-  detailLabel("Address", account.address, 134, 88, 58);
+  detailLabel("Account No", account.account_no, 16, 90, 42);
+  detailLabel("Mobile No", account.mobile, 62, 90, 44);
+  detailLabel("Currency", account.currency, 16, 100, 28);
+  detailLabel("Address", account.address, 46, 100, 68);
 
   const totalDebit = rows.reduce((s, r) => s + Number(r.debit), 0);
   const totalCredit = rows.reduce((s, r) => s + Number(r.credit), 0);
   const net = totalCredit - totalDebit;
   const fmtInt = (n: number) => Math.round(Math.abs(n)).toLocaleString();
 
-  const summaryBoxWidth = 76;
-  const summaryBoxX = W - summaryBoxWidth - 10;
   doc.setFillColor(255, 255, 255);
-  doc.roundedRect(summaryBoxX, 64, summaryBoxWidth - 4, 29, 3, 3, "F");
+  doc.roundedRect(summaryBoxX, summaryBoxY, summaryBoxWidth, summaryBoxH, 3, 3, "F");
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(summaryBoxX, 64, summaryBoxWidth - 4, 29, 3, 3, "D");
+  doc.roundedRect(summaryBoxX, summaryBoxY, summaryBoxWidth, summaryBoxH, 3, 3, "D");
+
+  doc.setFillColor(245, 248, 255);
+  doc.roundedRect(summaryBoxX, summaryBoxY, summaryBoxWidth, 12, 3, 3, "F");
+  doc.setFillColor(245, 248, 255);
+  doc.rect(summaryBoxX, summaryBoxY + 8, summaryBoxWidth, 4, "F");
+  doc.setDrawColor(...rgb(accentColor));
+  doc.setLineWidth(0.8);
+  doc.line(summaryBoxX, summaryBoxY + 12, summaryBoxX + summaryBoxWidth, summaryBoxY + 12);
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...rgb(primaryColor));
-  doc.text("SUMMARY", summaryBoxX + 5, 71);
+  doc.text("STATEMENT SUMMARY", summaryBoxX + 5, 66);
 
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...rgb(mutedColor));
-  doc.text("Credit", summaryBoxX + 5, 78);
+  doc.text("Total Credit", summaryBoxX + 6, 78);
   doc.setTextColor(...rgb(successColor));
-  doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 17, 78, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 16, 78, { align: "right" });
 
   doc.setTextColor(...rgb(mutedColor));
-  doc.text("Debit", summaryBoxX + 5, 84);
+  doc.text("Total Debit", summaryBoxX + 6, 86);
   doc.setTextColor(...rgb(dangerColor));
-  doc.text(`${account.currency} ${fmtInt(totalDebit)}`, W - 17, 84, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalDebit)}`, W - 16, 86, { align: "right" });
 
   doc.setDrawColor(226, 232, 240);
-  doc.line(summaryBoxX + 5, 86, W - 17, 86);
+  doc.setLineWidth(0.1);
+  doc.line(summaryBoxX + 6, 92, W - 16, 92);
 
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...rgb(primaryColor));
-  doc.text("Net", summaryBoxX + 5, 91);
+  doc.text("Net Balance", summaryBoxX + 6, 100);
 
   const netVal = `${account.currency} ${fmtInt(net)} ${balanceLabel(net)}`;
   const netColor = net >= 0 ? successColor : dangerColor;
   doc.setTextColor(...rgb(netColor));
-  doc.text(netVal, W - 17, 91, { align: "right" });
+  doc.text(netVal, W - 16, 100, { align: "right" });
 
   autoTable(doc, {
-    startY: 110,
+    startY: 118,
     head: [["DATE", "DETAILS", "DEBIT", "CREDIT", "BALANCE"]],
     body: rows.map((r) => [
       formatDate(r.txn_date),
