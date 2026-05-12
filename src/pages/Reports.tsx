@@ -30,7 +30,7 @@ export default function Reports() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from("accounts").select("id, account_no, name, currency, branches(name)"),
+      supabase.from("accounts").select("id, account_no, name, mobile, address, currency, branches(name)"),
       supabase.from("transactions").select("account_id, debit, credit, txn_date"),
     ]).then(([a, t]) => { setAccounts(a.data ?? []); setTxns(t.data ?? []); });
   }, []);

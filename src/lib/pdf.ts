@@ -60,9 +60,9 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   doc.text(`Account: ${account.account_no}`, W - 12, 30, { align: "right" });
 
   doc.setFillColor(249, 250, 251);
-  doc.roundedRect(10, 58, W - 20, 36, 3, 3, "F");
+  doc.roundedRect(10, 58, W - 20, 42, 3, 3, "F");
   doc.setDrawColor(229, 231, 235);
-  doc.roundedRect(10, 58, W - 20, 36, 3, 3, "D");
+  doc.roundedRect(10, 58, W - 20, 42, 3, 3, "D");
 
   doc.setTextColor(...rgb(inkColor));
   doc.setFontSize(8);
@@ -72,16 +72,28 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   doc.setDrawColor(...rgb(accentColor));
   doc.line(16, 69, 55, 69);
 
-  doc.setFontSize(14);
-  doc.setTextColor(...rgb(primaryColor));
-  doc.text(String(account.name || "").toUpperCase(), 16, 77, { maxWidth: 78 });
+  const detailLabel = (label: string, value: string, x: number, y: number, maxWidth = 58) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...rgb(mutedColor));
+    doc.text(label.toUpperCase(), x, y);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.8);
+    doc.setTextColor(...rgb(inkColor));
+    doc.text(value || "-", x, y + 4.5, { maxWidth });
+  };
 
-  doc.setTextColor(...rgb(mutedColor));
-  doc.setFontSize(8.5);
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...rgb(primaryColor));
+  doc.text(String(account.name || "-").toUpperCase(), 16, 77, { maxWidth: 74 });
+
   doc.setFont("helvetica", "normal");
-  doc.text(`Currency: ${account.currency}`, 16, 85);
-  if (account.mobile) doc.text(`Mobile: ${account.mobile}`, 60, 85);
-  if (account.branches?.name) doc.text(`Branch: ${account.branches.name}`, 105, 85);
+  doc.setFontSize(8.5);
+  detailLabel("Account No", account.account_no, 16, 88, 38);
+  detailLabel("Mobile No", account.mobile, 58, 88, 40);
+  detailLabel("Currency", account.currency, 102, 88, 28);
+  detailLabel("Address", account.address, 134, 88, 58);
 
   const totalDebit = rows.reduce((s, r) => s + Number(r.debit), 0);
   const totalCredit = rows.reduce((s, r) => s + Number(r.credit), 0);
@@ -91,42 +103,42 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   const summaryBoxWidth = 76;
   const summaryBoxX = W - summaryBoxWidth - 10;
   doc.setFillColor(255, 255, 255);
-  doc.roundedRect(summaryBoxX, 62, summaryBoxWidth - 4, 27, 3, 3, "F");
+  doc.roundedRect(summaryBoxX, 64, summaryBoxWidth - 4, 29, 3, 3, "F");
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(summaryBoxX, 62, summaryBoxWidth - 4, 27, 3, 3, "D");
+  doc.roundedRect(summaryBoxX, 64, summaryBoxWidth - 4, 29, 3, 3, "D");
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...rgb(primaryColor));
-  doc.text("SUMMARY", summaryBoxX + 5, 69);
+  doc.text("SUMMARY", summaryBoxX + 5, 71);
 
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...rgb(mutedColor));
-  doc.text("Credit", summaryBoxX + 5, 76);
+  doc.text("Credit", summaryBoxX + 5, 78);
   doc.setTextColor(...rgb(successColor));
-  doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 17, 76, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalCredit)}`, W - 17, 78, { align: "right" });
 
   doc.setTextColor(...rgb(mutedColor));
-  doc.text("Debit", summaryBoxX + 5, 82);
+  doc.text("Debit", summaryBoxX + 5, 84);
   doc.setTextColor(...rgb(dangerColor));
-  doc.text(`${account.currency} ${fmtInt(totalDebit)}`, W - 17, 82, { align: "right" });
+  doc.text(`${account.currency} ${fmtInt(totalDebit)}`, W - 17, 84, { align: "right" });
 
   doc.setDrawColor(226, 232, 240);
-  doc.line(summaryBoxX + 5, 84, W - 17, 84);
+  doc.line(summaryBoxX + 5, 86, W - 17, 86);
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...rgb(primaryColor));
-  doc.text("Net", summaryBoxX + 5, 88);
+  doc.text("Net", summaryBoxX + 5, 91);
 
   const netVal = `${account.currency} ${fmtInt(net)} ${balanceLabel(net)}`;
   const netColor = net >= 0 ? successColor : dangerColor;
   doc.setTextColor(...rgb(netColor));
-  doc.text(netVal, W - 17, 88, { align: "right" });
+  doc.text(netVal, W - 17, 91, { align: "right" });
 
   autoTable(doc, {
-    startY: 104,
+    startY: 110,
     head: [["DATE", "DETAILS", "DEBIT", "CREDIT", "BALANCE"]],
     body: rows.map((r) => [
       formatDate(r.txn_date),
