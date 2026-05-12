@@ -40,9 +40,10 @@ export default function Settings() {
     if (!fullName.trim()) return;
     setBusy(true);
     try {
-      const { error } = await supabase.from("profiles").update({
-        full_name: fullName.trim()
-      }).eq("id", user?.id);
+      const { error } = await supabase.from("profiles").upsert({
+        id: user?.id,
+        full_name: fullName.trim(),
+      });
       
       if (error) throw error;
       toast.success("Profile updated successfully");
@@ -55,11 +56,12 @@ export default function Settings() {
     e.preventDefault();
     setBusy(true);
     try {
-      const { error } = await supabase.from("profiles").update({
+      const { error } = await supabase.from("profiles").upsert({
+        id: user?.id,
         business_name: businessName.trim() || null,
         business_phone: businessPhone.trim() || null,
         business_address: businessAddress.trim() || null,
-      }).eq("id", user?.id);
+      });
 
       if (error) throw error;
       toast.success("Business information updated");
@@ -89,8 +91,10 @@ export default function Settings() {
 
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ avatar_url: publicUrl })
-        .eq("id", user?.id);
+        .upsert({ 
+          id: user?.id,
+          avatar_url: publicUrl 
+        });
 
       if (updateError) throw updateError;
       
