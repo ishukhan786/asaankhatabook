@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Lock, Settings as SettingsIcon, Camera, Moon, Sun, CheckCircle2 } from "lucide-react";
+import { User, Lock, Settings as SettingsIcon, Camera, Moon, Sun, Building2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
@@ -18,13 +18,21 @@ export default function Settings() {
   
   // Profile state
   const [fullName, setFullName] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [businessPhone, setBusinessPhone] = useState("");
+  const [businessAddress, setBusinessAddress] = useState("");
   
   // Password state
   const [pass, setPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
 
   useEffect(() => {
-    if (profile) setFullName(profile.full_name || "");
+    if (profile) {
+      setFullName(profile.full_name || "");
+      setBusinessName(profile.business_name || "");
+      setBusinessPhone(profile.business_phone || "");
+      setBusinessAddress(profile.business_address || "");
+    }
   }, [profile]);
 
   const updateProfile = async (e: React.FormEvent) => {
@@ -38,6 +46,23 @@ export default function Settings() {
       
       if (error) throw error;
       toast.success("Profile updated successfully");
+      await refresh();
+    } catch (err: any) { toast.error(err.message); }
+    setBusy(false);
+  };
+
+  const updateBusinessInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("profiles").update({
+        business_name: businessName.trim() || null,
+        business_phone: businessPhone.trim() || null,
+        business_address: businessAddress.trim() || null,
+      }).eq("id", user?.id);
+
+      if (error) throw error;
+      toast.success("Business information updated");
       await refresh();
     } catch (err: any) { toast.error(err.message); }
     setBusy(false);
@@ -157,6 +182,53 @@ export default function Settings() {
               <div className="flex justify-end pt-2">
                 <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
                   Save Changes
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </section>
+
+        <Separator className="opacity-50" />
+
+        {/* Business Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-lg font-bold">
+            <Building2 className="w-5 h-5 text-primary" /> Business Information
+          </div>
+          <Card className="glass p-6">
+            <form onSubmit={updateBusinessInfo} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="businessName">Business Name</Label>
+                  <Input
+                    id="businessName"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    placeholder="Your business name"
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="businessPhone">Business Phone</Label>
+                  <Input
+                    id="businessPhone"
+                    value={businessPhone}
+                    onChange={(e) => setBusinessPhone(e.target.value)}
+                    placeholder="+92 300 0000000"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="businessAddress">Business Address</Label>
+                <Input
+                  id="businessAddress"
+                  value={businessAddress}
+                  onChange={(e) => setBusinessAddress(e.target.value)}
+                  placeholder="Shop, market, city"
+                />
+              </div>
+              <div className="flex justify-end pt-2">
+                <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
+                  Save Business Info
                 </Button>
               </div>
             </form>

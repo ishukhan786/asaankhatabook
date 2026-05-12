@@ -12,10 +12,12 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tables } from "@/integrations/supabase/types";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Reports() {
-  const [accounts, setAccounts] = useState<Tables<"accounts">[]>([]);
-  const [txns, setTxns] = useState<Tables<"transactions">[]>([]);
+  const { profile } = useAuth();
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [txns, setTxns] = useState<any[]>([]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [q, setQ] = useState("");
@@ -146,7 +148,7 @@ export default function Reports() {
                         {formatMoney(r.net, r.currency)} <span className="text-xs">{balanceLabel(r.net)}</span>
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => exportStatementPDF(r, r.txns)} title="Statement"><FileDown className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => exportStatementPDF(r, r.txns, profile)} title="Statement"><FileDown className="w-3.5 h-3.5" /></Button>
                       </td>
                     </tr>
                   ))}
@@ -173,7 +175,7 @@ export default function Reports() {
             </Card>
             <Button 
               disabled={!selectedAccount || statementRows.length === 0} 
-              onClick={() => exportStatementPDF(selectedAccount, statementRows)} 
+              onClick={() => exportStatementPDF(selectedAccount, statementRows, profile)}
               className="gradient-primary text-primary-foreground shadow-soft h-12"
             >
               <FileDown className="w-4 h-4 mr-1" /> Export Statement PDF

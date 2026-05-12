@@ -82,18 +82,30 @@ export type Database = {
       profiles: {
         Row: {
           branch_id: string | null
+          avatar_url: string | null
+          business_address: string | null
+          business_name: string | null
+          business_phone: string | null
           created_at: string
           full_name: string | null
           id: string
         }
         Insert: {
           branch_id?: string | null
+          avatar_url?: string | null
+          business_address?: string | null
+          business_name?: string | null
+          business_phone?: string | null
           created_at?: string
           full_name?: string | null
           id: string
         }
         Update: {
           branch_id?: string | null
+          avatar_url?: string | null
+          business_address?: string | null
+          business_name?: string | null
+          business_phone?: string | null
           created_at?: string
           full_name?: string | null
           id?: string

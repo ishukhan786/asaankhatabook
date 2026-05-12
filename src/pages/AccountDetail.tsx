@@ -229,7 +229,7 @@ export default function AccountDetail() {
             </div>
             <div className="flex gap-2">
               <Button onClick={() => setQuickOpen(true)} size="sm" className="gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-105 transition-transform"><Plus className="w-3.5 h-3.5 mr-1" /> Add Transaction</Button>
-              <Button size="sm" variant="outline" className="glass" onClick={() => exportStatementPDF(account, rows)}><FileDown className="w-3.5 h-3.5 mr-1" /> PDF</Button>
+              <Button size="sm" variant="outline" className="glass" onClick={() => exportStatementPDF(account, rows, profile)}><FileDown className="w-3.5 h-3.5 mr-1" /> PDF</Button>
             </div>
           </div>
         </div>
@@ -377,5 +377,4 @@ export default function AccountDetail() {
     </div>
   );
 }
-
 
