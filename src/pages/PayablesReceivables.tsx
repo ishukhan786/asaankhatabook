@@ -27,17 +27,32 @@ interface AccountBalance {
 
 const PRINT_STYLES = `
 @media print {
-  body > * { display: none !important; }
-  #print-wrapper { display: block !important; }
-  #print-wrapper {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: #ffffff;
-    z-index: 99999;
-    overflow: auto;
+  .screen-ui, header, aside, nav, footer, button { 
+    display: none !important; 
   }
-  @page { margin: 1cm 1.5cm; size: A4; }
+  body, html, #root, main, .min-h-screen, .flex-1 {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+  #print-wrapper { 
+    display: block !important; 
+    position: static !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  @page { 
+    margin: 1cm; 
+    size: A4; 
+  }
 }
 `;
 
@@ -322,7 +337,7 @@ export default function PayablesReceivables() {
       </div>
 
       {/* Screen UI */}
-      <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500">
+      <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500">
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
