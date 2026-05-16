@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "next-themes";
+import { Analytics } from "@vercel/analytics/react";
 import AppLayout from "@/components/AppLayout";
 
 import Auth from "./pages/Auth";
@@ -59,6 +60,7 @@ const App = () => {
               </Routes>
             </AuthProvider>
           </HashRouter>
+          <Analytics />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
