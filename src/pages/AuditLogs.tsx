@@ -45,6 +45,65 @@ export default function AuditLogs() {
     (l.user_email ?? "").toLowerCase().includes(q.toLowerCase())
   );
 
+  const renderChangesText = (l: any) => {
+    try {
+      const oldObj = l.old_data || {};
+      const newObj = l.new_data || {};
+      const table = l.table_name?.toLowerCase() || "";
+      const action = l.action_type?.toUpperCase() || "";
+
+      const getRecordName = (obj: any) => {
+        if (obj.name && obj.account_no) return `"${obj.name}" (${obj.account_no})`;
+        if (obj.name) return `"${obj.name}"`;
+        if (obj.full_name) return `"${obj.full_name}"`;
+        if (obj.txn_code) return `Transaction (${obj.txn_code})`;
+        if (obj.email) return `User (${obj.email})`;
+        if (obj.title) return `Expense "${obj.title}"`;
+        return `Record #${obj.id?.slice(0, 6) || "Unknown"}`;
+      };
+
+      if (action === "INSERT") {
+        const name = getRecordName(newObj);
+        let details = "";
+        if (table === "accounts") details = ` · Currency: ${newObj.currency || "PKR"}`;
+        if (table === "transactions") details = ` · Debit: ${newObj.debit || 0}, Credit: ${newObj.credit || 0}`;
+        if (table === "expenses") details = ` · Amount: ${newObj.amount || 0} ${newObj.currency || ""}`;
+        if (table === "branches") details = ` · Location: ${newObj.location || newObj.address || "—"}`;
+        return `✨ Created new ${table.slice(0, -1)} ${name}${details}`;
+      }
+
+      if (action === "DELETE") {
+        const name = getRecordName(oldObj);
+        return `🗑️ Deleted ${table.slice(0, -1)} ${name}`;
+      }
+
+      if (action === "UPDATE") {
+        const name = getRecordName(newObj || oldObj);
+        const changes: string[] = [];
+
+        const allKeys = Array.from(new Set([...Object.keys(oldObj), ...Object.keys(newObj)]));
+        allKeys.forEach(k => {
+          if (["id", "created_at", "updated_at", "user_id"].includes(k)) return;
+          const oldVal = oldObj[k];
+          const newVal = newObj[k];
+          if (oldVal !== newVal && newVal !== undefined) {
+            changes.push(`${k}: "${oldVal ?? 'none'}" ➔ "${newVal ?? 'none'}"`);
+          }
+        });
+
+        if (changes.length === 0) {
+          return `📝 Updated ${table.slice(0, -1)} ${name} (Metadata/System update)`;
+        }
+
+        return `📝 Updated ${table.slice(0, -1)} ${name} — ${changes.join(", ")}`;
+      }
+
+      return JSON.stringify(newObj || oldObj);
+    } catch (err) {
+      return JSON.stringify(l.new_data || l.old_data);
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -130,13 +189,14 @@ export default function AuditLogs() {
                       </Badge>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="max-w-xs truncate text-xs text-muted-foreground font-mono bg-muted/50 p-1.5 rounded border border-border/50">
-                        {l.action_type === 'DELETE' ? JSON.stringify(l.old_data) : JSON.stringify(l.new_data)}
+                      <div className="text-xs text-muted-foreground font-medium bg-muted/40 p-2.5 rounded-lg border border-border/60 leading-relaxed whitespace-normal max-w-xl shadow-inner">
+                        {renderChangesText(l)}
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
         </Card>
