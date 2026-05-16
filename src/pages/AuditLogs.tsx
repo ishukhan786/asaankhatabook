@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldAlert, Search, Clock, User, Table as TableIcon, History } from "lucide-react";
+import { ShieldAlert, Search, Clock, User, Table as TableIcon, History, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/format";
 import { Input } from "@/components/ui/input";
@@ -11,13 +12,30 @@ import { Badge } from "@/components/ui/badge";
 export default function AuditLogs() {
   const [logs, setLogs] = useState<any[] | null>(null);
   const [q, setQ] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    supabase.from("audit_logs")
+  const fetchLogs = async (showSpinner = false) => {
+    if (showSpinner) setRefreshing(true);
+    const { data } = await supabase.from("audit_logs")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(200)
-      .then(({ data }) => setLogs(data ?? []));
+      .limit(200);
+    setLogs(data ?? []);
+    if (showSpinner) setRefreshing(false);
+  };
+
+  useEffect(() => {
+    fetchLogs();
+
+    const sub = supabase.channel('audit_logs_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_logs' }, () => {
+        fetchLogs();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(sub);
+    };
   }, []);
 
   const filtered = (logs ?? []).filter(l => 
@@ -29,12 +47,24 @@ export default function AuditLogs() {
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
-      <div>
-        <div className="text-xs uppercase tracking-wider text-muted-foreground">Security</div>
-        <h1 className="font-display text-3xl md:text-4xl font-bold flex items-center gap-2">
-          <ShieldAlert className="w-7 h-7 text-primary" /> Audit Logs
-        </h1>
-        <p className="text-muted-foreground mt-1">Track all database activities and user actions.</p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Security</div>
+          <h1 className="font-display text-3xl md:text-4xl font-bold flex items-center gap-2">
+            <ShieldAlert className="w-7 h-7 text-primary" /> Audit Logs
+          </h1>
+          <p className="text-muted-foreground mt-1">Track all database activities and user actions.</p>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => fetchLogs(true)} 
+          disabled={refreshing}
+          className="w-full md:w-auto flex items-center gap-2 shadow-sm hover:shadow transition-all"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          Refresh Logs
+        </Button>
       </div>
 
       <Card className="glass p-4">
