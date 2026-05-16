@@ -13,12 +13,14 @@ import { formatMoney } from "@/lib/format";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AccountBalance {
   id: string;
   name: string;
   account_no: string;
   currency: string;
+  branch_id: string;
   branch_name: string;
   mobile: string | null;
   address: string | null;
@@ -59,20 +61,25 @@ const PRINT_STYLES = `
 export default function PayablesReceivables() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const { profile, role } = useAuth();
   const [loading, setLoading] = useState(true);
   const [receivables, setReceivables] = useState<AccountBalance[]>([]);
   const [payables, setPayables] = useState<AccountBalance[]>([]);
+  const [branches, setBranches] = useState<{ id: string; name: string }[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [q, setQ] = useState("");
   const [activeTab, setActiveTab] = useState("receivables");
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [{ data: accounts }, { data: transactions }] = await Promise.all([
-        supabase.from("accounts").select("id, name, account_no, currency, mobile, address, branches(name)"),
-        supabase.from("transactions").select("account_id, debit, credit")
+      const [{ data: accounts }, { data: transactions }, { data: branchesData }] = await Promise.all([
+        supabase.from("accounts").select("id, name, account_no, currency, mobile, address, branch_id, branches(id, name)"),
+        supabase.from("transactions").select("account_id, debit, credit"),
+        supabase.from("branches").select("id, name").order("name")
       ]);
+      if (branchesData) setBranches(branchesData);
+
       const balances: Record<string, number> = {};
       (transactions ?? []).forEach(t => {
         balances[t.account_id] = (balances[t.account_id] || 0) + (Number(t.credit) - Number(t.debit));
@@ -80,6 +87,7 @@ export default function PayablesReceivables() {
       const processed: AccountBalance[] = (accounts ?? []).map(a => ({
         id: a.id, name: a.name, account_no: a.account_no,
         currency: a.currency, mobile: a.mobile ?? null, address: a.address ?? null,
+        branch_id: a.branch_id,
         branch_name: (a.branches as any)?.name ?? "—",
         balance: balances[a.id] || 0
       }));
@@ -109,12 +117,25 @@ export default function PayablesReceivables() {
   }, []);
 
   const filterList = (list: AccountBalance[]) => {
-    if (!q) return list;
-    const s = q.toLowerCase();
-    return list.filter(a =>
-      a.name.toLowerCase().includes(s) || a.account_no.toLowerCase().includes(s) ||
-      (a.mobile ?? "").includes(s) || (a.address ?? "").toLowerCase().includes(s)
-    );
+    let res = list;
+    if (role === "admin") {
+      if (selectedBranch !== "all") {
+        res = res.filter(a => a.branch_id === selectedBranch);
+      }
+    } else {
+      if (profile?.branch_id) {
+        res = res.filter(a => a.branch_id === profile.branch_id);
+      }
+    }
+
+    if (q) {
+      const s = q.toLowerCase();
+      res = res.filter(a =>
+        a.name.toLowerCase().includes(s) || a.account_no.toLowerCase().includes(s) ||
+        (a.mobile ?? "").includes(s) || (a.address ?? "").toLowerCase().includes(s)
+      );
+    }
+    return res;
   };
 
   const sendWhatsApp = (e: React.MouseEvent, a: AccountBalance) => {
@@ -127,10 +148,24 @@ export default function PayablesReceivables() {
 
   const filteredReceivables = filterList(receivables);
   const filteredPayables = filterList(payables);
-  const totalReceivablePKR = receivables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
-  const totalReceivableAED = receivables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
-  const totalPayablePKR = payables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
-  const totalPayableAED = payables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
+  const totalReceivablePKR = filteredReceivables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
+  const totalReceivableAED = filteredReceivables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
+  const totalPayablePKR = filteredPayables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
+  const totalPayableAED = filteredPayables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
+
+  let branchHeaderLabel = "All Branches";
+  if (role === "admin") {
+    if (selectedBranch !== "all") {
+      const b = branches.find(x => x.id === selectedBranch);
+      if (b) branchHeaderLabel = b.name;
+    }
+  } else {
+    if (profile?.branch_id) {
+      const b = branches.find(x => x.id === profile.branch_id);
+      if (b) branchHeaderLabel = b.name;
+      else branchHeaderLabel = profile?.business_name || "My Branch";
+    }
+  }
 
   const printDate = new Date().toLocaleDateString("en-PK", { day: "2-digit", month: "long", year: "numeric" });
   const printTime = new Date().toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
@@ -146,7 +181,7 @@ export default function PayablesReceivables() {
     const accentBorder = isR ? "#fca5a5" : "#86efac";
     const totalPKR = list.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
     const totalAED = list.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
-    const label = isR ? "Receivables — Denedari" : "Payables — Lenedari";
+    const label = isR ? `Receivables — Denedari (${branchHeaderLabel})` : `Payables — Lenedari (${branchHeaderLabel})`;
 
     return (
       <div style={{ fontFamily: "Arial, sans-serif", background: "#ffffff", color: "#111827", padding: "0", fontSize: "12px" }}>
@@ -350,13 +385,31 @@ export default function PayablesReceivables() {
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">{t("Reports")}</div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">{t("Reports")} · {branchHeaderLabel}</div>
             <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">{t("PayablesReceivables")}</h1>
           </div>
-          <Button onClick={() => window.print()} variant="outline" className="gap-2 border-2 hover:bg-primary/5">
-            <Printer className="w-4 h-4" />
-            Print / Save PDF
-          </Button>
+          <div className="flex items-center gap-3 flex-wrap">
+            {role === "admin" && (
+              <div className="w-56">
+                <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                  <SelectTrigger className="h-11 glass border-2 font-medium">
+                    <Building2 className="w-4 h-4 mr-2 text-primary" />
+                    <SelectValue placeholder="Select Branch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="font-bold">🌍 All Branches</SelectItem>
+                    {branches.map(b => (
+                      <SelectItem key={b.id} value={b.id}>📍 {b.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <Button onClick={() => window.print()} variant="outline" className="h-11 gap-2 border-2 hover:bg-primary/5 shadow-sm">
+              <Printer className="w-4 h-4" />
+              Print / Save PDF
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
