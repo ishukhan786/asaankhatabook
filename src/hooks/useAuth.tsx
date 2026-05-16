@@ -44,13 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ]);
     setProfile(p as any);
     const roles = (r ?? []).map((x: any) => x.role);
-    let finalRole: Role | null = roles.includes("admin") ? "admin" : roles.includes("branch_user") ? "branch_user" : null;
-    
-    // TEMPORARY GOD-MODE BYPASS FOR THE MAIN ADMIN
-    if (uid === "d66169e6-23fa-4e54-bb07-e6a5aa7ba8fd") {
-      finalRole = "admin";
-    }
-    
+    const finalRole: Role | null = roles.includes("admin") ? "admin" : roles.includes("branch_user") ? "branch_user" : null;
     setRole(finalRole);
   };
 

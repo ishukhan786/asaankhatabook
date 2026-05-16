@@ -155,7 +155,7 @@ export default function Dashboard() {
   }
 
   const cards = [
-    { label: t("Dashboard"), value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} ${t("Branches").toLowerCase()}` },
+    { label: t("Accounts"), value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} ${t("Branches").toLowerCase()}` },
     { label: t("NetBalance") + " (PKR)", value: formatMoney(stats.netPKR, "PKR"), icon: Wallet, gradient: "from-accent to-accent-glow", sub: balanceLabel(stats.netPKR), positive: stats.netPKR >= 0 },
     { label: t("NetBalance") + " (AED)", value: formatMoney(stats.netAED, "AED"), icon: TrendingUp, gradient: "from-emerald-600 to-teal-500", sub: balanceLabel(stats.netAED), positive: stats.netAED >= 0 },
     {

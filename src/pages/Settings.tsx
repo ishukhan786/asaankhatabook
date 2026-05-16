@@ -40,10 +40,9 @@ export default function Settings() {
     if (!fullName.trim()) return;
     setBusy(true);
     try {
-      const { error } = await supabase.from("profiles").upsert({
-        id: user?.id,
+      const { error } = await supabase.from("profiles").update({
         full_name: fullName.trim(),
-      });
+      }).eq("id", user?.id);
       
       if (error) throw error;
       toast.success("Profile updated successfully");

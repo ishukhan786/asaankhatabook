@@ -144,7 +144,7 @@ export default function AccountDetail() {
     const type = Number(t.credit) > 0 ? "Jama (Credit)" : "Nikala (Debit)";
     const message = `*Assalam-o-Alaikum!*\n\n*Aasaan Khatabook Entry Update*\n---------------------------\n*Account:* ${account.name}\n*Date:* ${formatDate(t.txn_date)}\n*Amount:* ${formatMoney(amount, account.currency)}\n*Type:* ${type}\n*Details:* ${t.details}\n---------------------------\n*Current Balance:* ${formatMoney(t.balance, account.currency)} (${balanceLabel(t.balance)})\n\nShukriya!`;
     const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
+    window.open(`https://wa.me/${account.mobile.replace(/\D/g, "")}?text=${encoded}`, "_blank");
   };
 
   const submitQuick = async (e: React.FormEvent) => {
