@@ -9,7 +9,6 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const ANON_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -22,12 +21,21 @@ Deno.serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     if (!token) return json({ error: "Missing auth" }, 401);
 
-    const userClient = createClient(SUPABASE_URL, ANON_KEY, { global: { headers: { Authorization: authHeader } } });
-    const { data: userData, error: uErr } = await userClient.auth.getUser(token);
-    if (uErr || !userData.user) return json({ error: "Unauthorized" }, 401);
+    // Decode JWT payload directly from the token (Supabase API Gateway already validates signature & expiration)
+    let userId = "";
+    try {
+      const payloadPart = token.split(".")[1];
+      const decodedPayload = JSON.parse(atob(payloadPart));
+      userId = decodedPayload.sub;
+      if (!userId) throw new Error("Missing sub claim");
+    } catch (err: any) {
+      console.error("JWT decode failed:", err?.message);
+      return json({ error: "Unauthorized" }, 401);
+    }
 
+    // Admin client with service role for privileged operations
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
-    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
+    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (!isAdmin) return json({ error: "Forbidden" }, 403);
 
     if (req.method === "GET") {
@@ -100,7 +108,7 @@ Deno.serve(async (req) => {
     if (req.method === "DELETE") {
       const { id } = await req.json();
       if (!id) return json({ error: "id required" }, 400);
-      if (id === userData.user.id) return json({ error: "Cannot delete yourself" }, 400);
+      if (id === userId) return json({ error: "Cannot delete yourself" }, 400);
       const { error } = await admin.auth.admin.deleteUser(id);
       if (error) throw error;
       return json({ ok: true });

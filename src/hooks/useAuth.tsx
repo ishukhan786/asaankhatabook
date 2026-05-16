@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const loadExtras = async (uid: string) => {
-    const [{ data: p }, { data: r }] = await Promise.all([
+    const [{ data: p, error: pErr }, { data: r, error: rErr }] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, full_name, branch_id, avatar_url, business_name, business_phone, business_address")
@@ -42,9 +42,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", uid),
     ]);
+    console.log("🔐 AUTH DEBUG — uid:", uid);
+    console.log("🔐 AUTH DEBUG — profile:", p, "error:", pErr);
+    console.log("🔐 AUTH DEBUG — user_roles raw:", r, "error:", rErr);
     setProfile(p as any);
     const roles = (r ?? []).map((x: any) => x.role);
+    console.log("🔐 AUTH DEBUG — roles array:", roles);
     const finalRole: Role | null = roles.includes("admin") ? "admin" : roles.includes("branch_user") ? "branch_user" : null;
+    console.log("🔐 AUTH DEBUG — finalRole:", finalRole);
     setRole(finalRole);
   };
 
