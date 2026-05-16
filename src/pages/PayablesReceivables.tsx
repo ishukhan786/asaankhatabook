@@ -127,8 +127,10 @@ export default function PayablesReceivables() {
 
   const filteredReceivables = filterList(receivables);
   const filteredPayables = filterList(payables);
-  const totalReceivable = receivables.reduce((s, a) => s + Math.abs(a.balance), 0);
-  const totalPayable = payables.reduce((s, a) => s + Math.abs(a.balance), 0);
+  const totalReceivablePKR = receivables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
+  const totalReceivableAED = receivables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
+  const totalPayablePKR = payables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
+  const totalPayableAED = payables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
 
   const printDate = new Date().toLocaleDateString("en-PK", { day: "2-digit", month: "long", year: "numeric" });
   const printTime = new Date().toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
@@ -142,7 +144,8 @@ export default function PayablesReceivables() {
     const accentColor = isR ? "#dc2626" : "#16a34a";
     const accentBg   = isR ? "#fff5f5" : "#f0fdf4";
     const accentBorder = isR ? "#fca5a5" : "#86efac";
-    const total = list.reduce((s, a) => s + Math.abs(a.balance), 0);
+    const totalPKR = list.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
+    const totalAED = list.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
     const label = isR ? "Receivables — Denedari" : "Payables — Lenedari";
 
     return (
@@ -184,7 +187,8 @@ export default function PayablesReceivables() {
         <div style={{ display: "flex", gap: "12px", padding: "16px 36px" }}>
           <div style={{ flex: 1, border: `1.5px solid ${accentBorder}`, borderRadius: "8px", padding: "12px 16px", background: accentBg }}>
             <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: "700" }}>Grand Total</div>
-            <div style={{ fontSize: "20px", fontWeight: "900", color: accentColor, marginTop: "3px" }}>{formatMoney(total, "PKR")}</div>
+            <div style={{ fontSize: "18px", fontWeight: "900", color: accentColor, marginTop: "3px" }}>{formatMoney(totalPKR, "PKR")}</div>
+            {totalAED > 0 && <div style={{ fontSize: "14px", fontWeight: "800", color: accentColor, marginTop: "2px" }}>{formatMoney(totalAED, "AED")}</div>}
           </div>
           <div style={{ flex: 1, border: "1.5px solid #e5e7eb", borderRadius: "8px", padding: "12px 16px", background: "#f9fafb" }}>
             <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: "700" }}>Total Accounts</div>
@@ -239,8 +243,9 @@ export default function PayablesReceivables() {
                 <td colSpan={6} style={{ padding: "10px", textAlign: "right", fontWeight: "800", fontSize: "10px", color: "#374151", textTransform: "uppercase", letterSpacing: "1px" }}>
                   Grand Total — {list.length} Account{list.length !== 1 ? "s" : ""}
                 </td>
-                <td style={{ padding: "10px", textAlign: "right", fontWeight: "900", fontSize: "15px", color: accentColor }}>
-                  {formatMoney(total, "PKR")}
+                <td style={{ padding: "10px", textAlign: "right", fontWeight: "900", fontSize: "14px", color: accentColor }}>
+                  <div>{formatMoney(totalPKR, "PKR")}</div>
+                  {totalAED > 0 && <div style={{ marginTop: "2px", fontSize: "12px" }}>{formatMoney(totalAED, "AED")}</div>}
                 </td>
               </tr>
             </tfoot>
@@ -266,7 +271,8 @@ export default function PayablesReceivables() {
   // ─── Screen Table ─────────────────────────────────────────────────────────────
   const ScreenTable = ({ list, type }: { list: AccountBalance[]; type: "receivable" | "payable" }) => {
     const isR = type === "receivable";
-    const total = list.reduce((s, a) => s + Math.abs(a.balance), 0);
+    const totalPKR = list.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
+    const totalAED = list.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
     return (
       <div className="overflow-x-auto rounded-xl border border-border/50">
         <table className="w-full text-sm">
@@ -305,7 +311,10 @@ export default function PayablesReceivables() {
             <tfoot>
               <tr className={`border-t-2 font-bold text-sm ${isR ? "border-destructive/30 bg-destructive/5" : "border-success/30 bg-success/5"}`}>
                 <td colSpan={6} className="px-4 py-3 text-right uppercase tracking-wider text-xs">Total ({list.length} accounts)</td>
-                <td className={`px-4 py-3 text-right font-display font-black text-base num ${isR ? "text-destructive" : "text-success"}`}>{formatMoney(total, "PKR")}</td>
+                <td className={`px-4 py-3 text-right font-display font-black num ${isR ? "text-destructive" : "text-success"}`}>
+                  <div className="text-base">{formatMoney(totalPKR, "PKR")}</div>
+                  {totalAED > 0 && <div className="text-sm mt-0.5 opacity-90">{formatMoney(totalAED, "AED")}</div>}
+                </td>
                 <td />
               </tr>
             </tfoot>
@@ -353,23 +362,41 @@ export default function PayablesReceivables() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="glass p-5 border-l-4 border-l-destructive shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
                 <ArrowDownLeft className="w-5 h-5 text-destructive" />
               </div>
-              <div>
+              <div className="flex-1">
                 <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("TotalReceivable")} · {receivables.length} accounts</div>
-                <div className="text-2xl font-display font-black text-destructive num">{formatMoney(totalReceivable, "PKR")}</div>
+                <div className="flex items-baseline gap-4 mt-1">
+                  <div>
+                    <span className="text-2xl font-display font-black text-destructive num">{formatMoney(totalReceivablePKR, "PKR")}</span>
+                  </div>
+                  {totalReceivableAED > 0 && (
+                    <div>
+                      <span className="text-xl font-display font-bold text-destructive/80 num">{formatMoney(totalReceivableAED, "AED")}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </Card>
           <Card className="glass p-5 border-l-4 border-l-success shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
                 <ArrowUpRight className="w-5 h-5 text-success" />
               </div>
-              <div>
+              <div className="flex-1">
                 <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("TotalPayable")} · {payables.length} accounts</div>
-                <div className="text-2xl font-display font-black text-success num">{formatMoney(totalPayable, "PKR")}</div>
+                <div className="flex items-baseline gap-4 mt-1">
+                  <div>
+                    <span className="text-2xl font-display font-black text-success num">{formatMoney(totalPayablePKR, "PKR")}</span>
+                  </div>
+                  {totalPayableAED > 0 && (
+                    <div>
+                      <span className="text-xl font-display font-bold text-success/80 num">{formatMoney(totalPayableAED, "AED")}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </Card>
