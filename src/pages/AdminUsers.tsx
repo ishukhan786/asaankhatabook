@@ -139,7 +139,26 @@ export default function AdminUsers() {
     }
   };
 
-  useEffect(() => { if (role === "admin") reload(); }, [role]);
+  useEffect(() => {
+    if (role === "admin") {
+      reload();
+      const sub = supabase.channel('admin_users_channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+          reload();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'user_roles' }, () => {
+          reload();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'branches' }, () => {
+          reload();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(sub);
+      };
+    }
+  }, [role]);
 
   if (loading) return <div className="p-8"><Skeleton className="h-32" /></div>;
   if (role !== "admin") return <Navigate to="/" replace />;

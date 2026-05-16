@@ -77,7 +77,21 @@ export default function PayablesReceivables() {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+    const sub = supabase.channel('payables_receivables_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, () => {
+        loadData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+        loadData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(sub);
+    };
+  }, []);
 
   const filterList = (list: AccountBalance[]) => {
     if (!q) return list;

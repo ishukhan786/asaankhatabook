@@ -19,7 +19,18 @@ export default function Branches() {
   const [busy, setBusy] = useState(false);
 
   const reload = () => supabase.from("branches").select("*").order("name").then(({ data }) => setRows(data ?? []));
-  useEffect(() => { reload(); }, []);
+  useEffect(() => {
+    reload();
+    const sub = supabase.channel('branches_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'branches' }, () => {
+        reload();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(sub);
+    };
+  }, []);
 
   if (loading) return <div className="p-8 max-w-4xl mx-auto space-y-4"><Skeleton className="h-12 w-1/3" /><Skeleton className="h-40 w-full" /></div>;
   if (role !== "admin") return <Navigate to="/" replace />;

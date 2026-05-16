@@ -28,11 +28,27 @@ export default function Reports() {
   const [statementTxns, setStatementTxns] = useState<Tables<"transactions">[]>([]);
   const [loadingStatement, setLoadingStatement] = useState(false);
 
-  useEffect(() => {
+  const loadAll = () => {
     Promise.all([
       supabase.from("accounts").select("id, account_no, name, mobile, address, currency, branches(name)"),
       supabase.from("transactions").select("account_id, debit, credit, txn_date"),
     ]).then(([a, t]) => { setAccounts(a.data ?? []); setTxns(t.data ?? []); });
+  };
+
+  useEffect(() => {
+    loadAll();
+    const sub = supabase.channel('reports_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, () => {
+        loadAll();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+        loadAll();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(sub);
+    };
   }, []);
 
   const summary = useMemo(() => {
@@ -49,7 +65,7 @@ export default function Reports() {
 
   const selectedAccount = useMemo(() => accounts.find(a => a.id === selectedAccId), [accounts, selectedAccId]);
 
-  useEffect(() => {
+  const loadStatement = () => {
     if (!selectedAccId) { setStatementTxns([]); return; }
     setLoadingStatement(true);
     supabase.from("transactions")
@@ -61,6 +77,21 @@ export default function Reports() {
         setStatementTxns(data ?? []);
         setLoadingStatement(false);
       });
+  };
+
+  useEffect(() => {
+    loadStatement();
+    if (!selectedAccId) return;
+
+    const sub = supabase.channel(`reports_statement_${selectedAccId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `account_id=eq.${selectedAccId}` }, () => {
+        loadStatement();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(sub);
+    };
   }, [selectedAccId]);
 
   const filteredStatement = useMemo(() => {

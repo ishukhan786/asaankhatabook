@@ -15,17 +15,36 @@ export default function BranchDetail() {
   const [accounts, setAccounts] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadBranch = async () => {
     if (!id) return;
-    (async () => {
-      const [{ data: b }, { data: a }] = await Promise.all([
-        supabase.from("branches").select("*").eq("id", id).maybeSingle(),
-        supabase.from("accounts").select("*, transactions(debit, credit)").eq("branch_id", id),
-      ]);
-      setBranch(b);
-      setAccounts(a ?? []);
-      setLoading(false);
-    })();
+    const [{ data: b }, { data: a }] = await Promise.all([
+      supabase.from("branches").select("*").eq("id", id).maybeSingle(),
+      supabase.from("accounts").select("*, transactions(debit, credit)").eq("branch_id", id),
+    ]);
+    setBranch(b);
+    setAccounts(a ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadBranch();
+    if (!id) return;
+
+    const sub = supabase.channel(`branch_detail_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'branches', filter: `id=eq.${id}` }, () => {
+        loadBranch();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts', filter: `branch_id=eq.${id}` }, () => {
+        loadBranch();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+        loadBranch();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(sub);
+    };
   }, [id]);
 
   if (loading) return <div className="p-8 space-y-4"><Skeleton className="h-12 w-1/4" /><Skeleton className="h-64" /></div>;

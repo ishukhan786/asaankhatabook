@@ -48,7 +48,29 @@ export default function AdminPanel() {
     }
   };
 
-  useEffect(() => { fetchData(); }, [role]);
+  useEffect(() => {
+    if (role === "admin") {
+      fetchData();
+      const sub = supabase.channel('admin_panel_channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'branches' }, () => {
+          fetchData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, () => {
+          fetchData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+          fetchData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'user_roles' }, () => {
+          fetchData();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(sub);
+      };
+    }
+  }, [role]);
 
   const handleExport = async () => {
     setIsExporting(true);

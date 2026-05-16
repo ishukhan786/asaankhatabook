@@ -66,7 +66,23 @@ export default function AccountDetail() {
     setTxns(t ?? []);
   };
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    load();
+    if (!id) return;
+
+    const sub = supabase.channel(`account_detail_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts', filter: `id=eq.${id}` }, () => {
+        load();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `account_id=eq.${id}` }, () => {
+        load();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(sub);
+    };
+  }, [id]);
 
   if (!account) return <div className="p-8"><Skeleton className="h-32" /></div>;
 
