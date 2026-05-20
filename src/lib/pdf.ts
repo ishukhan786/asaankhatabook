@@ -157,16 +157,22 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   doc.setTextColor(...rgb(netColor));
   doc.text(netVal, W - 16, 100, { align: "right" });
 
-  autoTable(doc, {
-    startY: 118,
-    head: [["DATE", "DETAILS", `DEBIT (${account.currency})`, `CREDIT (${account.currency})`, `BALANCE (${account.currency})`]],
-    body: rows.map((r) => [
+  let runningBalance = 0;
+  const tableBody = rows.map((r) => {
+    const currentBalance = r.balance !== undefined ? r.balance : (runningBalance += (Number(r.credit) - Number(r.debit)));
+    return [
       formatDate(r.txn_date),
       r.details,
       Number(r.debit) > 0 ? Math.round(Number(r.debit)).toLocaleString() : "-",
       Number(r.credit) > 0 ? Math.round(Number(r.credit)).toLocaleString() : "-",
-      `${Math.round(Math.abs(r.balance)).toLocaleString()} ${balanceLabel(r.balance)}`,
-    ]),
+      Math.round(Math.abs(currentBalance)).toLocaleString(),
+    ];
+  });
+
+  autoTable(doc, {
+    startY: 118,
+    head: [["DATE", "DETAILS", `DEBIT (${account.currency})`, `CREDIT (${account.currency})`, `BALANCE (${account.currency})`]],
+    body: tableBody,
     styles: {
       fontSize: 10,
       cellPadding: { top: 4, right: 4, bottom: 4, left: 4 },
@@ -195,7 +201,15 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
     didParseCell: (data) => {
       if (data.section === "body" && data.column.index === 4) {
         const r = rows[data.row.index];
-        data.cell.styles.textColor = r.balance >= 0 ? successColor : dangerColor;
+        let currentBalance = r.balance;
+        if (currentBalance === undefined) {
+          let rb = 0;
+          for(let i=0; i<=data.row.index; i++) {
+             rb += (Number(rows[i].credit) - Number(rows[i].debit));
+          }
+          currentBalance = rb;
+        }
+        data.cell.styles.textColor = currentBalance >= 0 ? successColor : dangerColor;
         data.cell.styles.fontStyle = "bold";
       }
     },
