@@ -171,7 +171,7 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
 
   autoTable(doc, {
     startY: 118,
-    head: [["DATE", "DETAILS", `DEBIT (${account.currency})`, `CREDIT (${account.currency})`, `BALANCE (${account.currency})`]],
+    head: [["DATE", "DETAILS", "DEBIT", "CREDIT", "BALANCE"]],
     body: tableBody,
     styles: {
       fontSize: 10,

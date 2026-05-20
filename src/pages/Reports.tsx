@@ -230,9 +230,9 @@ export default function Reports() {
                     <tr className="text-xs text-muted-foreground uppercase tracking-wider">
                       <th className="text-left px-6 py-4">Date</th>
                       <th className="text-left px-6 py-4">Details</th>
-                      <th className="text-right px-6 py-4">Debit ({selectedAccount?.currency})</th>
-                      <th className="text-right px-6 py-4">Credit ({selectedAccount?.currency})</th>
-                      <th className="text-right px-6 py-4">Balance ({selectedAccount?.currency})</th>
+                      <th className="text-right px-6 py-4">Debit</th>
+                      <th className="text-right px-6 py-4">Credit</th>
+                      <th className="text-right px-6 py-4">Balance</th>
                     </tr>
                   </thead>
                   <tbody>
