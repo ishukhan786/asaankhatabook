@@ -245,7 +245,7 @@ export default function Reports() {
                         <td className="px-6 py-4 text-right num text-destructive font-medium">{Number(t.debit) > 0 ? formatMoney(Number(t.debit)) : "—"}</td>
                         <td className="px-6 py-4 text-right num text-success font-medium">{Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "—"}</td>
                         <td className={`px-6 py-4 text-right num font-bold ${t.balance >= 0 ? "text-success" : "text-destructive"}`}>
-                          {formatMoney(t.balance)}
+                          {formatMoney(t.balance)} <span className="text-[10px] opacity-60 ml-0.5">{balanceLabel(t.balance)}</span>
                         </td>
                       </tr>
                     ))}

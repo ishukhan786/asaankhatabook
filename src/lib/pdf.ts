@@ -165,7 +165,7 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
       r.details,
       Number(r.debit) > 0 ? Math.round(Number(r.debit)).toLocaleString() : "-",
       Number(r.credit) > 0 ? Math.round(Number(r.credit)).toLocaleString() : "-",
-      Math.round(Math.abs(currentBalance)).toLocaleString(),
+      `${Math.round(Math.abs(currentBalance)).toLocaleString()} ${balanceLabel(currentBalance)}`,
     ];
   });
 
