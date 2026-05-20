@@ -45,6 +45,7 @@ export default function BranchDetail() {
     return () => {
       supabase.removeChannel(sub);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (loading) return <div className="p-8 space-y-4"><Skeleton className="h-12 w-1/4" /><Skeleton className="h-64" /></div>;

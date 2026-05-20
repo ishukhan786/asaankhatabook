@@ -46,7 +46,7 @@ export default function Dashboard() {
       ]);
 
       let netPKR = 0, netAED = 0;
-      let todayPKR = { debit: 0, credit: 0 }, todayAED = { debit: 0, credit: 0 };
+      const todayPKR = { debit: 0, credit: 0 }, todayAED = { debit: 0, credit: 0 };
       let totalExpensePKR = 0, totalExpenseAED = 0;
       let totalReceivable = 0, totalPayable = 0;
       const branchMap: Record<string, { name: string; pkr: number; aed: number; accounts: number }> = {};
@@ -141,6 +141,7 @@ export default function Dashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!stats) {

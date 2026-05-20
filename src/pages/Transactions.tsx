@@ -74,6 +74,7 @@ export default function Transactions() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => load(true))
       .subscribe();
     return () => { supabase.removeChannel(sub); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openEditTx = (t: any) => {
@@ -118,7 +119,8 @@ export default function Transactions() {
     if (from && r.txn_date < from) return false;
     if (to && r.txn_date > to) return false;
     return true;
-  }), [rows, q, from, to]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [rows, debouncedQ, from, to]);
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">

@@ -92,6 +92,7 @@ export default function Reports() {
     return () => {
       supabase.removeChannel(sub);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAccId]);
 
   const filteredStatement = useMemo(() => {
