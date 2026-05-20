@@ -1,6 +1,6 @@
 export const formatNumber = (n: any) => {
   const num = Number(n) || 0;
-  return Math.abs(num).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return Math.round(Math.abs(num)).toLocaleString("en-US");
 };
 
 export const formatMoney = (n: any, currency: string = "") => {
