@@ -174,7 +174,7 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
     head: [["DATE", "DETAILS", "DEBIT", "CREDIT", "BALANCE"]],
     body: tableBody,
     styles: {
-      fontSize: 10,
+      fontSize: 9,
       cellPadding: { top: 4, right: 4, bottom: 4, left: 4 },
       font: "helvetica",
       textColor: inkColor,
