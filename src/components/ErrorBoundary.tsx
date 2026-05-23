@@ -39,6 +39,11 @@ class ErrorBoundary extends Component<Props, State> {
               <p className="text-muted-foreground text-sm">
                 The application encountered an unexpected error. Please try refreshing the page.
               </p>
+              {this.state.error?.message?.includes("dynamically imported module") && (
+                <p className="text-xs text-amber-500">
+                  A new version may have been deployed. Refresh will load the latest files.
+                </p>
+              )}
             </div>
             <div className="p-4 bg-muted/50 rounded-lg text-xs font-mono text-left overflow-auto max-h-32 text-destructive border border-destructive/20">
               {this.state.error?.message}

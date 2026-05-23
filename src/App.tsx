@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,24 +8,25 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "next-themes";
 import AppLayout from "@/components/AppLayout";
 import { Skeleton } from "@/components/ui/skeleton";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
-const Auth = lazy(() => import("./pages/Auth"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Accounts = lazy(() => import("./pages/Accounts"));
-const NewAccount = lazy(() => import("./pages/NewAccount"));
-const AccountDetail = lazy(() => import("./pages/AccountDetail"));
-const Transactions = lazy(() => import("./pages/Transactions"));
-const NewTransaction = lazy(() => import("./pages/NewTransaction"));
-const Expenses = lazy(() => import("./pages/Expenses"));
-const Reports = lazy(() => import("./pages/Reports"));
-const Settings = lazy(() => import("./pages/Settings"));
-const Branches = lazy(() => import("./pages/Branches"));
-const BranchDetail = lazy(() => import("./pages/BranchDetail"));
-const AdminPanel = lazy(() => import("./pages/AdminPanel"));
-const AdminUsers = lazy(() => import("./pages/AdminUsers"));
-const AuditLogs = lazy(() => import("./pages/AuditLogs"));
-const PayablesReceivables = lazy(() => import("./pages/PayablesReceivables"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Auth = lazyWithRetry(() => import("./pages/Auth"), "auth");
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"), "dashboard");
+const Accounts = lazyWithRetry(() => import("./pages/Accounts"), "accounts");
+const NewAccount = lazyWithRetry(() => import("./pages/NewAccount"), "new-account");
+const AccountDetail = lazyWithRetry(() => import("./pages/AccountDetail"), "account-detail");
+const Transactions = lazyWithRetry(() => import("./pages/Transactions"), "transactions");
+const NewTransaction = lazyWithRetry(() => import("./pages/NewTransaction"), "new-transaction");
+const Expenses = lazyWithRetry(() => import("./pages/Expenses"), "expenses");
+const Reports = lazyWithRetry(() => import("./pages/Reports"), "reports");
+const Settings = lazyWithRetry(() => import("./pages/Settings"), "settings");
+const Branches = lazyWithRetry(() => import("./pages/Branches"), "branches");
+const BranchDetail = lazyWithRetry(() => import("./pages/BranchDetail"), "branch-detail");
+const AdminPanel = lazyWithRetry(() => import("./pages/AdminPanel"), "admin-panel");
+const AdminUsers = lazyWithRetry(() => import("./pages/AdminUsers"), "admin-users");
+const AuditLogs = lazyWithRetry(() => import("./pages/AuditLogs"), "audit-logs");
+const PayablesReceivables = lazyWithRetry(() => import("./pages/PayablesReceivables"), "payables-receivables");
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "not-found");
 
 const queryClient = new QueryClient({
   defaultOptions: {
