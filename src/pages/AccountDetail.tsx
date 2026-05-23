@@ -198,6 +198,15 @@ export default function AccountDetail() {
     setBusy(false);
   };
 
+  const handleExportStatement = async () => {
+    try {
+      await exportStatementPDF(account, rows, profile);
+    } catch (error) {
+      console.error("Statement export failed:", error);
+      toast.error("Could not export statement PDF");
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
@@ -275,7 +284,7 @@ export default function AccountDetail() {
             </div>
             <div className="flex gap-2">
               <Button onClick={() => setQuickOpen(true)} size="sm" className="gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-105 transition-transform"><Plus className="w-3.5 h-3.5 mr-1" /> Add Transaction</Button>
-              <Button size="sm" variant="outline" className="glass" onClick={() => exportStatementPDF(account, rows, profile)}><FileDown className="w-3.5 h-3.5 mr-1" /> PDF</Button>
+              <Button size="sm" variant="outline" className="glass" onClick={handleExportStatement}><FileDown className="w-3.5 h-3.5 mr-1" /> PDF</Button>
             </div>
           </div>
         </div>

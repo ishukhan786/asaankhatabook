@@ -1,5 +1,3 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { formatMoney, balanceLabel, formatDate } from "./format";
 
 export type BusinessInfo = {
@@ -10,7 +8,16 @@ export type BusinessInfo = {
 
 const rgb = (color: [number, number, number]) => color;
 
-export function exportStatementPDF(account: any, rows: any[], businessInfo?: BusinessInfo | null) {
+async function loadPdfLibs() {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
+  return { jsPDF, autoTable };
+}
+
+export async function exportStatementPDF(account: any, rows: any[], businessInfo?: BusinessInfo | null) {
+  const { jsPDF, autoTable } = await loadPdfLibs();
   const doc = new jsPDF();
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
@@ -234,7 +241,8 @@ export function exportStatementPDF(account: any, rows: any[], businessInfo?: Bus
   doc.save(`${account.account_no}-statement.pdf`);
 }
 
-export function exportLedgerPDF(rows: any[]) {
+export async function exportLedgerPDF(rows: any[]) {
+  const { jsPDF, autoTable } = await loadPdfLibs();
   const doc = new jsPDF();
   const W = doc.internal.pageSize.getWidth();
   doc.setFillColor(26, 54, 93);

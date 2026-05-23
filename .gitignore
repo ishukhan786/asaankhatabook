@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+release
+*.blockmap
+*.asar
 
 # Editor directories and files
 .vscode/*

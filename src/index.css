@@ -99,6 +99,15 @@
     @apply bg-background text-foreground;
     font-family: 'Space Grotesk', system-ui, sans-serif;
     font-feature-settings: "ss01", "cv11";
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+  }
+  
+  /* Allow selection in inputs and textareas */
+  input, textarea, [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Sora', system-ui, sans-serif;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 export default function Reports() {
   const { profile } = useAuth();
@@ -27,39 +28,61 @@ export default function Reports() {
   const [selectedAccId, setSelectedAccId] = useState("");
   const [statementTxns, setStatementTxns] = useState<Tables<"transactions">[]>([]);
   const [loadingStatement, setLoadingStatement] = useState(false);
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadAll = () => {
     Promise.all([
       supabase.from("accounts").select("id, account_no, name, mobile, address, currency, branches(name)"),
-      supabase.from("transactions").select("account_id, debit, credit, txn_date"),
-    ]).then(([a, t]) => { setAccounts(a.data ?? []); setTxns(t.data ?? []); });
+      supabase
+        .rpc("report_account_totals", {
+          p_from: from || null,
+          p_to: to || null,
+        }),
+    ]).then(([a, totals]) => {
+      setAccounts(a.data ?? []);
+      setTxns((totals.data as any[]) ?? []);
+    });
   };
 
   useEffect(() => {
     loadAll();
+    const scheduleLoad = () => {
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
+      reloadTimerRef.current = setTimeout(() => loadAll(), 700);
+    };
     const sub = supabase.channel('reports_channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, () => {
-        loadAll();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
-        loadAll();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, scheduleLoad)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, scheduleLoad)
       .subscribe();
 
     return () => {
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
       supabase.removeChannel(sub);
     };
-  }, []);
+  }, [from, to]);
 
   const summary = useMemo(() => {
-    const filteredTxns = txns.filter((t) => (!from || t.txn_date >= from) && (!to || t.txn_date <= to));
+    const txnByAccount = new Map<string, { debit: number; credit: number; txns: any[] }>();
+
+    txns.forEach((t) => {
+      const existing = txnByAccount.get(t.account_id) ?? { debit: 0, credit: 0, txns: [] };
+      existing.debit += Number(t.debit);
+      existing.credit += Number(t.credit);
+      existing.txns.push(t);
+      txnByAccount.set(t.account_id, existing);
+    });
+
     return accounts
       .filter(a => !debouncedQ || a.name.toLowerCase().includes(debouncedQ.toLowerCase()) || a.account_no.toLowerCase().includes(debouncedQ.toLowerCase()))
       .map((a) => {
-        const accTxns = filteredTxns.filter((t) => t.account_id === a.id);
-        let debit = 0, credit = 0;
-        accTxns.forEach((t) => { debit += Number(t.debit); credit += Number(t.credit); });
-        return { ...a, debit, credit, net: credit - debit, txns: accTxns };
+        const accountTxn = txnByAccount.get(a.id) ?? { debit: 0, credit: 0, txns: [] };
+        return {
+          ...a,
+          debit: accountTxn.debit,
+          credit: accountTxn.credit,
+          net: accountTxn.credit - accountTxn.debit,
+          txns: accountTxn.txns,
+        };
       });
   }, [accounts, txns, from, to, debouncedQ]);
 
@@ -114,6 +137,41 @@ export default function Reports() {
     });
   }, [filteredStatement, statementTxns, from]);
 
+  const handleExportLedger = async () => {
+    try {
+      await exportLedgerPDF(summary);
+    } catch (error) {
+      console.error("Ledger export failed:", error);
+      toast.error("Could not export ledger PDF");
+    }
+  };
+
+  const handleExportStatement = async (accountData: any, statementData: any[]) => {
+    try {
+      await exportStatementPDF(accountData, statementData, profile);
+    } catch (error) {
+      console.error("Statement export failed:", error);
+      toast.error("Could not export statement PDF");
+    }
+  };
+
+  const handleExportLedgerRowStatement = async (accountData: any) => {
+    try {
+      const { data } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("account_id", accountData.id)
+        .order("txn_date", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      const accountRows = (data ?? []).filter((t) => (!from || t.txn_date >= from) && (!to || t.txn_date <= to));
+      await exportStatementPDF(accountData, accountRows, profile);
+    } catch (error) {
+      console.error("Ledger row statement export failed:", error);
+      toast.error("Could not export statement PDF");
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
       <div className="flex items-center justify-between gap-3 flex-col md:flex-row">
@@ -144,7 +202,7 @@ export default function Reports() {
               <div><Label className="text-xs text-muted-foreground">From</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
               <div><Label className="text-xs text-muted-foreground">To</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
             </Card>
-            <Button onClick={() => exportLedgerPDF(summary)} className="gradient-primary text-primary-foreground shadow-soft h-12"><FileDown className="w-4 h-4 mr-1" /> Export Ledger PDF</Button>
+            <Button onClick={handleExportLedger} className="gradient-primary text-primary-foreground shadow-soft h-12"><FileDown className="w-4 h-4 mr-1" /> Export Ledger PDF</Button>
           </div>
 
           <Card className="glass overflow-hidden shadow-xl border-none">
@@ -180,7 +238,7 @@ export default function Reports() {
                         {formatMoney(r.net, r.currency)} <span className="text-xs">{balanceLabel(r.net)}</span>
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => exportStatementPDF(r, r.txns, profile)} title="Statement"><FileDown className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleExportLedgerRowStatement(r)} title="Statement"><FileDown className="w-3.5 h-3.5" /></Button>
                       </td>
                     </tr>
                   ))}
@@ -207,7 +265,7 @@ export default function Reports() {
             </Card>
             <Button 
               disabled={!selectedAccount || statementRows.length === 0} 
-              onClick={() => exportStatementPDF(selectedAccount, statementRows, profile)}
+              onClick={() => handleExportStatement(selectedAccount, statementRows)}
               className="gradient-primary text-primary-foreground shadow-soft h-12"
             >
               <FileDown className="w-4 h-4 mr-1" /> Export Statement PDF

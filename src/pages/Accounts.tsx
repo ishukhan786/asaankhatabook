@@ -118,10 +118,10 @@ export default function Accounts() {
     }
   };
 
-  const filtered = (rows ?? []).filter((r) => {
+  const filtered = React.useMemo(() => (rows ?? []).filter((r) => {
     const s = debouncedQ.toLowerCase();
     return !s || r.name.toLowerCase().includes(s) || r.account_no.toLowerCase().includes(s) || (r.mobile ?? "").toLowerCase().includes(s);
-  });
+  }), [rows, debouncedQ]);
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">

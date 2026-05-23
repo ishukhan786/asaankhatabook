@@ -188,12 +188,60 @@ export type Database = {
     }
     Functions: {
       current_user_branch: { Args: never; Returns: string }
+      dashboard_summary: {
+        Args: never
+        Returns: {
+          accounts_count: number
+          branches_count: number
+          net_pkr: number
+          net_aed: number
+          today_debit_pkr: number
+          today_credit_pkr: number
+          today_debit_aed: number
+          today_credit_aed: number
+          total_expense_pkr: number
+          total_expense_aed: number
+          total_receivable: number
+          total_payable: number
+        }[]
+      }
+      dashboard_branch_distribution: {
+        Args: never
+        Returns: {
+          branch_id: string
+          branch_name: string
+          accounts_count: number
+          pkr: number
+          aed: number
+        }[]
+      }
+      dashboard_trend: {
+        Args: {
+          p_days?: number
+        }
+        Returns: {
+          txn_date: string
+          pkr: number
+          aed: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      report_account_totals: {
+        Args: {
+          p_from?: string | null
+          p_to?: string | null
+        }
+        Returns: {
+          account_id: string
+          debit: number
+          credit: number
+        }[]
       }
     }
     Enums: {

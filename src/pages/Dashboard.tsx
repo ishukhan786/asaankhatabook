@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, FileBarChart, TrendingUp, Building2, Lock } from "lucide-react";
@@ -33,90 +33,41 @@ export default function Dashboard() {
   const { profile, role } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<Tables<"transactions">[]>([]);
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = async () => {
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      const [{ data: accounts }, { data: branches }, { data: txns }, { data: recentTx }, { data: expenses }] = await Promise.all([
-        supabase.from("accounts").select("*"),
-        supabase.from("branches").select("*"),
-        supabase.from("transactions").select("*, accounts(currency, branch_id)"),
+      const [{ data: recentTx }, { data: summaryRow }, { data: branchRows }, { data: trendRows }] = await Promise.all([
         supabase.from("transactions").select("*, accounts(name, account_no, currency)").order("created_at", { ascending: false }).limit(5),
-        supabase.from("expenses").select("*"),
+        supabase.rpc("dashboard_summary").single(),
+        supabase.rpc("dashboard_branch_distribution"),
+        supabase.rpc("dashboard_trend", { p_days: 15 }),
       ]);
 
-      let netPKR = 0, netAED = 0;
-      const todayPKR = { debit: 0, credit: 0 }, todayAED = { debit: 0, credit: 0 };
-      let totalExpensePKR = 0, totalExpenseAED = 0;
-      let totalReceivable = 0, totalPayable = 0;
-      const branchMap: Record<string, { name: string; pkr: number; aed: number; accounts: number }> = {};
-      (branches ?? []).forEach((b) => (branchMap[b.id] = { name: b.name, pkr: 0, aed: 0, accounts: 0 }));
-      (accounts ?? []).forEach((a) => { if (branchMap[a.branch_id]) branchMap[a.branch_id].accounts++; });
-      (txns ?? []).forEach(t => {
-        const net = Number(t.credit) - Number(t.debit);
-        const currency = t.accounts?.currency;
-        if (currency === "PKR") netPKR += net;
-        else netAED += net;
+      let netPKR = Number(summaryRow?.net_pkr ?? 0), netAED = Number(summaryRow?.net_aed ?? 0);
+      const todayPKR = { debit: Number(summaryRow?.today_debit_pkr ?? 0), credit: Number(summaryRow?.today_credit_pkr ?? 0) };
+      const todayAED = { debit: Number(summaryRow?.today_debit_aed ?? 0), credit: Number(summaryRow?.today_credit_aed ?? 0) };
+      let totalExpensePKR = Number(summaryRow?.total_expense_pkr ?? 0), totalExpenseAED = Number(summaryRow?.total_expense_aed ?? 0);
+      let totalReceivable = Number(summaryRow?.total_receivable ?? 0), totalPayable = Number(summaryRow?.total_payable ?? 0);
+      const branchData = (branchRows ?? []).map((b: any) => ({
+        name: b.branch_name,
+        pkr: Number(b.pkr ?? 0),
+        aed: Number(b.aed ?? 0),
+        accounts: Number(b.accounts_count ?? 0),
+      }));
 
-        if (t.txn_date === today) {
-          if (currency === "PKR") {
-            todayPKR.debit += Number(t.debit);
-            todayPKR.credit += Number(t.credit);
-          } else {
-            todayAED.debit += Number(t.debit);
-            todayAED.credit += Number(t.credit);
-          }
-        }
-
-        const bid = t.accounts?.branch_id;
-        if (bid && branchMap[bid]) {
-          if (currency === "PKR") branchMap[bid].pkr += net;
-          else branchMap[bid].aed += net;
-        }
-      });
-      
-      // Calculate Payables and Receivables
-      const accBalances: Record<string, number> = {};
-      (txns ?? []).forEach(t => {
-        const net = Number(t.credit) - Number(t.debit);
-        accBalances[t.account_id] = (accBalances[t.account_id] || 0) + net;
-      });
-      Object.values(accBalances).forEach(bal => {
-        if (bal < 0) totalReceivable += Math.abs(bal);
-        else if (bal > 0) totalPayable += bal;
-      });
-
-      (expenses ?? []).forEach(e => {
-        if (e.currency === "PKR") totalExpensePKR += Number(e.amount);
-        else totalExpenseAED += Number(e.amount);
-      });
-
-      // Trend calculation (Last 15 days for better visibility)
-      const trendData = [...Array(15)].map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (14 - i));
-        const iso = d.toISOString().slice(0, 10);
-        let pkr = 0, aed = 0;
-        (txns ?? []).forEach(t => {
-          if (t.txn_date === iso) {
-            const net = Number(t.credit) - Number(t.debit);
-            if (t.accounts?.currency === "PKR") pkr += net;
-            else aed += net;
-          }
-        });
-        return { 
-          date: new Date(iso).toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-PK", { day: '2-digit', month: 'short' }), 
-          pkr, 
-          aed 
-        };
-      });
+      const trendData = (trendRows ?? []).map((tRow: any) => ({
+        date: new Date(tRow.txn_date).toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-PK", { day: "2-digit", month: "short" }),
+        pkr: Number(tRow.pkr ?? 0),
+        aed: Number(tRow.aed ?? 0),
+      }));
 
       setStats({
-        accounts: accounts?.length ?? 0,
-        branches: branches?.length ?? 0,
+        accounts: Number(summaryRow?.accounts_count ?? 0),
+        branches: Number(summaryRow?.branches_count ?? 0),
         netPKR, netAED, todayPKR, todayAED,
         totalExpensePKR, totalExpenseAED,
-        byBranch: Object.values(branchMap),
+        byBranch: branchData,
         trend: trendData,
         totalReceivable,
         totalPayable
@@ -129,16 +80,23 @@ export default function Dashboard() {
 
   useEffect(() => {
     load();
+    const scheduleLoad = () => {
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
+      reloadTimerRef.current = setTimeout(() => {
+        load();
+      }, 700);
+    };
 
     // Setup Realtime Subscriptions
     const channel = supabase
       .channel('dashboard-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => load())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, () => load())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'branches' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, scheduleLoad)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, scheduleLoad)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'branches' }, scheduleLoad)
       .subscribe();
 
     return () => {
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

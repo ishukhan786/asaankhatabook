@@ -8,6 +8,8 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
+    show: false,
+    backgroundColor: "#0a1923",
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -15,6 +17,12 @@ function createWindow() {
     },
     title: "Asaan Khata Book",
     autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#0a1923', // Matches dark mode sidebar/header
+      symbolColor: '#ffffff',
+      height: 32
+    }
   });
 
   if (isDev) {
@@ -22,6 +30,7 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+  win.once("ready-to-show", () => win.show());
 
   // Check for updates after window is created
   if (!isDev) {

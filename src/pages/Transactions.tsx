@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,22 +48,31 @@ export default function Transactions() {
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 50;
 
-  const load = async (reset = false) => {
-    const start = reset ? 0 : page * PAGE_SIZE;
+  const load = async (reset = false, pageOverride?: number) => {
+    const nextPage = reset ? 0 : (pageOverride ?? page);
+    const start = nextPage * PAGE_SIZE;
     const end = start + PAGE_SIZE - 1;
-    
+
     setBusy(true);
-    const { data } = await supabase.from("transactions")
+    let query = supabase.from("transactions")
       .select("id, txn_code, txn_date, details, debit, credit, account_id, created_by, accounts(name, account_no, currency)")
       .order("txn_date", { ascending: false })
       .order("created_at", { ascending: false })
       .range(start, end);
-      
+
+    if (from) query = query.gte("txn_date", from);
+    if (to) query = query.lte("txn_date", to);
+    if (debouncedQ) {
+      const term = debouncedQ.trim();
+      query = query.or(`txn_code.ilike.%${term}%,details.ilike.%${term}%,accounts.name.ilike.%${term}%,accounts.account_no.ilike.%${term}%`);
+    }
+
+    const { data } = await query;
+
     if (data) {
       setRows(reset ? data : [...(rows ?? []), ...data]);
       setHasMore(data.length === PAGE_SIZE);
-      if (!reset) setPage(page + 1);
-      else setPage(1);
+      setPage(nextPage + 1);
     }
     setBusy(false);
   };
@@ -76,6 +85,12 @@ export default function Transactions() {
     return () => { supabase.removeChannel(sub); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setHasMore(true);
+    load(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQ, from, to]);
 
   const openEditTx = (t: any) => {
     setEditingTx(t);
@@ -113,14 +128,6 @@ export default function Transactions() {
       load(true);
     } catch (e: any) { toast.error(e.message); }
   };
-
-  const filtered = useMemo(() => (rows ?? []).filter((r) => {
-    if (debouncedQ && !r.txn_code.toLowerCase().includes(debouncedQ.toLowerCase()) && !r.details.toLowerCase().includes(debouncedQ.toLowerCase()) && !r.accounts?.name?.toLowerCase().includes(debouncedQ.toLowerCase())) return false;
-    if (from && r.txn_date < from) return false;
-    if (to && r.txn_date > to) return false;
-    return true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [rows, debouncedQ, from, to]);
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
@@ -162,9 +169,9 @@ export default function Transactions() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
+                {(rows ?? []).length === 0 ? (
                   <tr><td colSpan={role === "admin" ? 7 : 6} className="text-center py-12 text-muted-foreground text-sm">No transactions match.</td></tr>
-                ) : filtered.map((t: any) => (
+                ) : (rows ?? []).map((t: any) => (
                   <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30">
                     <td className="px-4 py-2.5 num whitespace-nowrap">{formatDate(t.txn_date)}</td>
                     <td className="px-4 py-2.5 font-mono text-xs">{t.txn_code}</td>
