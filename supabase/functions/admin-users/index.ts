@@ -35,13 +35,23 @@ Deno.serve(async (req) => {
 
     // Admin client with service role for privileged operations
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
-    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) return json({ error: "Forbidden" }, 403);
+    const [{ data: isAdmin }, { data: isManager }] = await Promise.all([
+      admin.rpc("has_role", { _user_id: userId, _role: "admin" }),
+      admin.rpc("has_role", { _user_id: userId, _role: "branch_manager" })
+    ]);
+    if (!isAdmin && !isManager) return json({ error: "Forbidden" }, 403);
+
+    let managerBranchId: string | null = null;
+    if (isManager && !isAdmin) {
+      const { data: p } = await admin.from("profiles").select("branch_id").eq("id", userId).single();
+      managerBranchId = p?.branch_id ?? null;
+      if (!managerBranchId) return json({ error: "Manager has no branch assigned" }, 403);
+    }
 
     if (req.method === "GET") {
-      const { data: list, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+      const { data: list, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
       if (error) throw error;
-      const ids = list.users.map((u) => u.id);
+      let ids = list.users.map((u) => u.id);
       const [{ data: profiles }, { data: roles }] = await Promise.all([
         admin.from("profiles").select("id, full_name, branch_id").in("id", ids),
         admin.from("user_roles").select("user_id, role").in("user_id", ids),
@@ -62,14 +72,26 @@ Deno.serve(async (req) => {
         branch_id: (pMap.get(u.id) as any)?.branch_id ?? null,
         roles: rMap.get(u.id) ?? [],
       }));
-      return json({ users });
+
+      // Filter users if manager
+      const finalUsers = (isManager && !isAdmin) 
+        ? users.filter(u => u.branch_id === managerBranchId)
+        : users;
+
+      return json({ users: finalUsers });
     }
 
     if (req.method === "POST") {
       const body = await req.json();
-      const { email, password, full_name, role, branch_id } = body ?? {};
+      let { email, password, full_name, role, branch_id } = body ?? {};
       if (!email || !password || !role) return json({ error: "email, password, role required" }, 400);
-      if (role === "branch_user" && !branch_id) return json({ error: "branch_id required for branch_user" }, 400);
+      if (role !== "admin" && !branch_id) return json({ error: "branch_id required" }, 400);
+
+      // Branch Manager Security Checks
+      if (isManager && !isAdmin) {
+        if (role === "admin") return json({ error: "Managers cannot create admins" }, 403);
+        branch_id = managerBranchId; // Force manager's branch
+      }
 
       const { data: created, error } = await admin.auth.admin.createUser({
         email, password, email_confirm: true, user_metadata: { full_name },
@@ -86,8 +108,18 @@ Deno.serve(async (req) => {
 
     if (req.method === "PATCH") {
       const body = await req.json();
-      const { id, full_name, branch_id, role, password } = body ?? {};
+      let { id, full_name, branch_id, role, password } = body ?? {};
       if (!id) return json({ error: "id required" }, 400);
+
+      // Security Checks for Manager
+      if (isManager && !isAdmin) {
+        // Must only patch users in their own branch
+        const { data: targetProfile } = await admin.from("profiles").select("branch_id").eq("id", id).single();
+        if (targetProfile?.branch_id !== managerBranchId) return json({ error: "Cannot edit user outside your branch" }, 403);
+        if (role === "admin") return json({ error: "Managers cannot assign admin role" }, 403);
+        branch_id = managerBranchId; // Force manager's branch
+      }
+
       if (password) {
         const { error } = await admin.auth.admin.updateUserById(id, { password });
         if (error) throw error;
@@ -109,6 +141,15 @@ Deno.serve(async (req) => {
       const { id } = await req.json();
       if (!id) return json({ error: "id required" }, 400);
       if (id === userId) return json({ error: "Cannot delete yourself" }, 400);
+
+      if (isManager && !isAdmin) {
+        const { data: targetProfile } = await admin.from("profiles").select("branch_id").eq("id", id).single();
+        if (targetProfile?.branch_id !== managerBranchId) return json({ error: "Cannot delete user outside your branch" }, 403);
+        
+        // Prevent deleting another branch_manager just to be safe
+        const { data: targetRole } = await admin.from("user_roles").select("role").eq("user_id", id).maybeSingle();
+        if (targetRole?.role === "admin") return json({ error: "Cannot delete admins" }, 403);
+      }
       const { error } = await admin.auth.admin.deleteUser(id);
       if (error) throw error;
       return json({ ok: true });

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,9 +12,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
 export default function AuditLogs() {
+  const { role, loading } = useAuth();
   const [logs, setLogs] = useState<any[] | null>(null);
   const [q, setQ] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+
+  if (loading) return <div className="p-8"><Skeleton className="h-32" /></div>;
+  if (role !== "admin") return <Navigate to="/" replace />;
 
   const fetchLogs = async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
 
-type Role = "admin" | "branch_user";
+export type Role = "admin" | "branch_manager" | "accountant" | "cashier" | "viewer" | "branch_user";
 
 interface Profile {
   id: string;
@@ -22,6 +22,11 @@ interface AuthCtx {
   loading: boolean;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
+  // RBAC Helpers
+  canManageUsers: boolean;
+  canWriteTransactions: boolean;
+  canDeleteTransactions: boolean;
+  canAccessReports: boolean;
 }
 
 const Ctx = createContext<AuthCtx | undefined>(undefined);
@@ -43,8 +48,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.from("user_roles").select("role").eq("user_id", uid),
     ]);
     setProfile(p as any);
+    
     const roles = (r ?? []).map((x: any) => x.role);
-    const finalRole: Role | null = roles.includes("admin") ? "admin" : roles.includes("branch_user") ? "branch_user" : null;
+    let finalRole: Role | null = null;
+    
+    // Priority assignment
+    if (roles.includes("admin")) finalRole = "admin";
+    else if (roles.includes("branch_manager")) finalRole = "branch_manager";
+    else if (roles.includes("accountant")) finalRole = "accountant";
+    else if (roles.includes("cashier")) finalRole = "cashier";
+    else if (roles.includes("viewer")) finalRole = "viewer";
+    else if (roles.includes("branch_user")) finalRole = "branch_user"; // legacy
+    
     setRole(finalRole);
   };
 
@@ -78,8 +93,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole(null);
   };
 
+  // RBAC Helpers
+  const canManageUsers = role === "admin" || role === "branch_manager";
+  const canWriteTransactions = role === "admin" || role === "branch_manager" || role === "accountant" || role === "branch_user" || role === "cashier";
+  const canDeleteTransactions = role === "admin" || role === "branch_manager";
+  const canAccessReports = role === "admin" || role === "branch_manager" || role === "accountant" || role === "branch_user";
+
   return (
-    <Ctx.Provider value={{ user, session, profile, role, loading, signOut, refresh }}>
+    <Ctx.Provider value={{ 
+      user, session, profile, role, loading, signOut, refresh,
+      canManageUsers, canWriteTransactions, canDeleteTransactions, canAccessReports
+    }}>
       {children}
     </Ctx.Provider>
   );
@@ -90,4 +114,3 @@ export const useAuth = () => {
   if (!v) throw new Error("useAuth outside AuthProvider");
   return v;
 };
-

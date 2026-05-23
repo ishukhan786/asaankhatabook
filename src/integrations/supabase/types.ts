@@ -252,7 +252,7 @@ export type Database = {
     }
     Enums: {
       account_type: "customer" | "supplier" | "employee" | "bank" | "cash"
-      app_role: "admin" | "branch_user"
+      app_role: "admin" | "branch_manager" | "accountant" | "cashier" | "viewer" | "branch_user"
       currency_code: "PKR" | "AED"
       transaction_type: "general" | "payment" | "receipt" | "transfer" | "expense" | "journal"
     }

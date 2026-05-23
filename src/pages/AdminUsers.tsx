@@ -64,12 +64,12 @@ export default function AdminUsers() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [newRole, setNewRole] = useState<"admin" | "branch_user">("branch_user");
+  const [newRole, setNewRole] = useState<string>("branch_user");
   const [branchId, setBranchId] = useState<string>("");
 
   // Edit form
   const [eName, setEName] = useState("");
-  const [eRole, setERole] = useState<"admin" | "branch_user">("branch_user");
+  const [eRole, setERole] = useState<string>("branch_user");
   const [eBranch, setEBranch] = useState<string>("");
   const [ePassword, setEPassword] = useState("");
 
@@ -161,17 +161,17 @@ export default function AdminUsers() {
   }, [role]);
 
   if (loading) return <div className="p-8"><Skeleton className="h-32" /></div>;
-  if (role !== "admin") return <Navigate to="/" replace />;
+  if (role !== "admin" && role !== "branch_manager") return <Navigate to="/" replace />;
 
   const submitCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) { toast.error("Password min 6 chars"); return; }
-    if (newRole === "branch_user" && !branchId) { toast.error("Select a branch"); return; }
+    if (newRole !== "admin" && !branchId) { toast.error("Select a branch"); return; }
     setBusy(true);
     try {
       await call("POST", {
         email: email.trim(), password, full_name: fullName.trim() || null,
-        role: newRole, branch_id: newRole === "branch_user" ? branchId : null,
+        role: newRole, branch_id: newRole !== "admin" ? branchId : null,
       });
       toast.success("User created");
       setCreateOpen(false);
@@ -192,13 +192,13 @@ export default function AdminUsers() {
   const submitEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editing) return;
-    if (eRole === "branch_user" && !eBranch) { toast.error("Select a branch"); return; }
+    if (eRole !== "admin" && !eBranch) { toast.error("Select a branch"); return; }
     setBusy(true);
     try {
       await call("PATCH", {
         id: editing.id,
         full_name: eName.trim() || null,
-        branch_id: eRole === "branch_user" ? eBranch : null,
+        branch_id: eRole !== "admin" ? eBranch : null,
         role: eRole,
         password: ePassword || undefined,
       });
@@ -243,12 +243,16 @@ export default function AdminUsers() {
                 <Select value={newRole} onValueChange={(v: any) => setNewRole(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="branch_user">Branch User</SelectItem>
+                    <SelectItem value="admin">Super Admin</SelectItem>
+                    <SelectItem value="branch_manager">Branch Manager</SelectItem>
+                    <SelectItem value="accountant">Accountant</SelectItem>
+                    <SelectItem value="cashier">Cashier</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="branch_user">Legacy Branch User</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              {newRole === "branch_user" && (
+              {newRole !== "admin" && (
                 <div className="space-y-1.5">
                   <Label>Branch</Label>
                   <Select value={branchId} onValueChange={setBranchId}>
@@ -333,12 +337,16 @@ export default function AdminUsers() {
                 <Select value={eRole} onValueChange={(v: any) => setERole(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="branch_user">Branch User</SelectItem>
+                    <SelectItem value="admin">Super Admin</SelectItem>
+                    <SelectItem value="branch_manager">Branch Manager</SelectItem>
+                    <SelectItem value="accountant">Accountant</SelectItem>
+                    <SelectItem value="cashier">Cashier</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="branch_user">Legacy Branch User</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              {eRole === "branch_user" && (
+              {eRole !== "admin" && (
                 <div className="space-y-1.5">
                   <Label>Branch</Label>
                   <Select value={eBranch} onValueChange={setEBranch}>

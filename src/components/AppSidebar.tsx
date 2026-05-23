@@ -26,10 +26,10 @@ export function AppSidebar() {
     { title: t("Reports"), url: "/reports", icon: FileBarChart },
     { title: t("Settings"), url: "/settings", icon: SettingsIcon },
     // Admin Items
-    { title: t("AdminPanel"), url: "/admin", icon: Shield, admin: true, exact: true },
-    { title: t("Users"), url: "/admin/users", icon: UserCog, admin: true },
-    { title: t("AuditLogs"), url: "/admin/audit", icon: History, admin: true },
-    { title: t("Branches"), url: "/branches", icon: Building2, admin: true },
+    { title: t("AdminPanel"), url: "/admin", icon: Shield, adminOnly: true, exact: true },
+    { title: t("Users"), url: "/admin/users", icon: UserCog, managerOrAdmin: true },
+    { title: t("AuditLogs"), url: "/admin/audit", icon: History, adminOnly: true },
+    { title: t("Branches"), url: "/branches", icon: Building2, adminOnly: true },
   ];
 
   return (
@@ -54,7 +54,9 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
-                const show = !item.admin || role === "admin";
+                const show = 
+                  (item.adminOnly ? role === "admin" : true) && 
+                  (item.managerOrAdmin ? (role === "admin" || role === "branch_manager") : true);
                 if (!show) return null;
 
                 return (
@@ -65,11 +67,11 @@ export function AppSidebar() {
                       className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-primary data-[active=true]:font-semibold"
                     >
                       <NavLink to={item.url} className="flex items-center gap-3">
-                        <item.icon className={`h-4 w-4 ${item.admin ? "text-primary" : ""}`} />
+                        <item.icon className={`h-4 w-4 ${(item.adminOnly || item.managerOrAdmin) ? "text-primary" : ""}`} />
                         {!collapsed && (
                           <div className="flex items-center justify-between w-full">
                             <span>{item.title}</span>
-                            {item.admin && <Shield className="w-2.5 h-2.5 opacity-50" />}
+                            {(item.adminOnly || item.managerOrAdmin) && <Shield className="w-2.5 h-2.5 opacity-50" />}
                           </div>
                         )}
                       </NavLink>
@@ -104,7 +106,7 @@ export function AppSidebar() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${role === "admin" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
-                      {role === "admin" ? "Admin" : role === "branch_user" ? "Branch" : "Guest"}
+                      {role?.replace('_', ' ') ?? "Guest"}
                     </div>
                   </div>
                 </div>
