@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   const load = async () => {
     try {
-      const [{ data: recentTx }, { data: summaryRow }, { data: branchRows }, { data: trendRows }] = await Promise.all([
+      const [{ data: recentTx }, { data: summaryRow }, branchResult, { data: trendRows }] = await Promise.all([
         supabase.from("transactions").select("*, accounts(name, account_no, currency)").order("created_at", { ascending: false }).limit(5),
         supabase.rpc("dashboard_summary").single(),
         supabase.rpc("dashboard_branch_distribution"),
@@ -49,12 +49,30 @@ export default function Dashboard() {
       const todayAED = { debit: Number(summaryRow?.today_debit_aed ?? 0), credit: Number(summaryRow?.today_credit_aed ?? 0) };
       let totalExpensePKR = Number(summaryRow?.total_expense_pkr ?? 0), totalExpenseAED = Number(summaryRow?.total_expense_aed ?? 0);
       let totalReceivable = Number(summaryRow?.total_receivable ?? 0), totalPayable = Number(summaryRow?.total_payable ?? 0);
-      const branchData = (branchRows ?? []).map((b: any) => ({
+      let branchData = (branchResult.data ?? []).map((b: any) => ({
         name: b.branch_name,
         pkr: Number(b.pkr ?? 0),
         aed: Number(b.aed ?? 0),
         accounts: Number(b.accounts_count ?? 0),
       }));
+
+      // Fallback for environments where branch RPC is missing or blocked by policy/RLS.
+      if ((!branchData || branchData.length === 0) && branchResult.error) {
+        const [{ data: branches }, { data: accounts }] = await Promise.all([
+          supabase.from("branches").select("id, name"),
+          supabase.from("accounts").select("id, branch_id"),
+        ]);
+        const accountCountByBranch = new Map<string, number>();
+        (accounts ?? []).forEach((a: any) => {
+          accountCountByBranch.set(a.branch_id, (accountCountByBranch.get(a.branch_id) ?? 0) + 1);
+        });
+        branchData = (branches ?? []).map((b: any) => ({
+          name: b.name,
+          pkr: 0,
+          aed: 0,
+          accounts: accountCountByBranch.get(b.id) ?? 0,
+        }));
+      }
 
       const trendData = (trendRows ?? []).map((tRow: any) => ({
         date: new Date(tRow.txn_date).toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-PK", { day: "2-digit", month: "short" }),
