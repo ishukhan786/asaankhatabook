@@ -33,6 +33,11 @@ const resources = {
       "Account": "Account",
       "Debit": "Debit",
       "Credit": "Credit",
+      "Today": "Today:",
+      "HintActiveAccounts": "Active customer accounts",
+      "HintExpenses": "Total operating expenses",
+      "HintReceivable": "Amount to receive",
+      "HintPayable": "Amount to pay",
     }
   }
 };

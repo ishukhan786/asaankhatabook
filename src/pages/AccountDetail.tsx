@@ -35,6 +35,7 @@ export default function AccountDetail() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [busy, setBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Edit Transaction state
   const [editingTx, setEditingTx] = useState<any>(null);
@@ -199,11 +200,14 @@ export default function AccountDetail() {
   };
 
   const handleExportStatement = async () => {
+    setExporting(true);
     try {
       await exportStatementPDF(account, rows, profile);
     } catch (error) {
       console.error("Statement export failed:", error);
       toast.error("Could not export statement PDF");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -284,7 +288,7 @@ export default function AccountDetail() {
             </div>
             <div className="flex gap-2">
               <Button onClick={() => setQuickOpen(true)} size="sm" className="gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-105 transition-transform"><Plus className="w-3.5 h-3.5 mr-1" /> Add Transaction</Button>
-              <Button size="sm" variant="outline" className="glass" onClick={handleExportStatement}><FileDown className="w-3.5 h-3.5 mr-1" /> PDF</Button>
+              <Button size="sm" variant="outline" className="glass" disabled={exporting} onClick={handleExportStatement}><FileDown className="w-3.5 h-3.5 mr-1" /> {exporting ? "Exporting..." : "PDF"}</Button>
             </div>
           </div>
         </div>

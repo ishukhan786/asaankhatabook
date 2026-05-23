@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, TrendingUp, Building2, Lock } from "lucide-react";
@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useTranslation } from "react-i18next";
 import { Tables } from "@/integrations/supabase/types";
+import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
 
 interface Stats {
   accounts: number;
@@ -33,8 +34,6 @@ export default function Dashboard() {
   const { profile, role } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<Tables<"transactions">[]>([]);
-  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const load = async () => {
     try {
       const [{ data: recentTx }, { data: summaryRow }, branchResult, { data: trendRows }] = await Promise.all([
@@ -57,7 +56,7 @@ export default function Dashboard() {
       }));
 
       // Fallback for environments where branch RPC is missing or blocked by policy/RLS.
-      if ((!branchData || branchData.length === 0) && branchResult.error) {
+      if (!branchData || branchData.length === 0) {
         const [{ data: branches }, { data: accounts }] = await Promise.all([
           supabase.from("branches").select("id, name"),
           supabase.from("accounts").select("id, branch_id"),
@@ -95,16 +94,10 @@ export default function Dashboard() {
       console.error("Dashboard load error:", err);
     }
   };
+  const scheduleLoad = useRealtimeRefresh(load, 700);
 
   useEffect(() => {
     load();
-    const scheduleLoad = () => {
-      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
-      reloadTimerRef.current = setTimeout(() => {
-        load();
-      }, 700);
-    };
-
     // Setup Realtime Subscriptions
     const channel = supabase
       .channel('dashboard-changes')
@@ -114,7 +107,6 @@ export default function Dashboard() {
       .subscribe();
 
     return () => {
-      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,16 +124,16 @@ export default function Dashboard() {
   }
 
   const cards = [
-    { label: t("Accounts"), value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} ${t("Branches").toLowerCase()}`, hint: "Active customer accounts" },
-    { label: t("NetBalance") + " (PKR)", value: formatMoney(stats.netPKR, "PKR"), icon: Wallet, gradient: "from-accent to-accent-glow", sub: balanceLabel(stats.netPKR), hint: `Today: D ${formatMoney(stats.todayPKR.debit, "PKR")} | C ${formatMoney(stats.todayPKR.credit, "PKR")}`, positive: stats.netPKR >= 0 },
-    { label: t("NetBalance") + " (AED)", value: formatMoney(stats.netAED, "AED"), icon: TrendingUp, gradient: "from-emerald-600 to-teal-500", sub: balanceLabel(stats.netAED), hint: `Today: D ${formatMoney(stats.todayAED.debit, "AED")} | C ${formatMoney(stats.todayAED.credit, "AED")}`, positive: stats.netAED >= 0 },
+    { label: t("Accounts"), value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} ${t("Branches").toLowerCase()}`, hint: t("HintActiveAccounts") },
+    { label: t("NetBalance") + " (PKR)", value: formatMoney(stats.netPKR, "PKR"), icon: Wallet, gradient: "from-accent to-accent-glow", sub: balanceLabel(stats.netPKR), hint: `${t("Today")} D ${formatMoney(stats.todayPKR.debit, "PKR")} | C ${formatMoney(stats.todayPKR.credit, "PKR")}`, positive: stats.netPKR >= 0 },
+    { label: t("NetBalance") + " (AED)", value: formatMoney(stats.netAED, "AED"), icon: TrendingUp, gradient: "from-emerald-600 to-teal-500", sub: balanceLabel(stats.netAED), hint: `${t("Today")} D ${formatMoney(stats.todayAED.debit, "AED")} | C ${formatMoney(stats.todayAED.credit, "AED")}`, positive: stats.netAED >= 0 },
     {
       label: t("Expenses"),
       value: formatMoney(stats.totalExpensePKR, "PKR"),
       sub: stats.totalExpenseAED > 0 ? `+ ${formatMoney(stats.totalExpenseAED, "AED")}` : "0 AED",
       icon: Receipt,
       gradient: "from-rose-500 to-orange-500",
-      hint: "Total operating expenses",
+      hint: t("HintExpenses"),
       positive: false
     },
     {
@@ -150,7 +142,7 @@ export default function Dashboard() {
       sub: t("Denedari"),
       icon: ArrowDownLeft,
       gradient: "from-amber-500 to-orange-400",
-      hint: "Amount to receive",
+      hint: t("HintReceivable"),
       positive: false,
       url: "/payables-receivables"
     },
@@ -160,7 +152,7 @@ export default function Dashboard() {
       sub: t("Lenedari"),
       icon: ArrowUpRight,
       gradient: "from-blue-500 to-indigo-400",
-      hint: "Amount to pay",
+      hint: t("HintPayable"),
       positive: true,
       url: "/payables-receivables"
     },
