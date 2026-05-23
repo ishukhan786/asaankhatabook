@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -118,7 +118,7 @@ export default function Accounts() {
     }
   };
 
-  const filtered = React.useMemo(() => (rows ?? []).filter((r) => {
+  const filtered = useMemo(() => (rows ?? []).filter((r) => {
     const s = debouncedQ.toLowerCase();
     return !s || r.name.toLowerCase().includes(s) || r.account_no.toLowerCase().includes(s) || (r.mobile ?? "").toLowerCase().includes(s);
   }), [rows, debouncedQ]);
