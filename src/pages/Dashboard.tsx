@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, FileBarChart, TrendingUp, Building2, Lock } from "lucide-react";
+import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, TrendingUp, Building2, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatMoney, balanceLabel, formatDate, formatNumber } from "@/lib/format";
+import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { motion } from "framer-motion";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useTranslation } from "react-i18next";
 import { Tables } from "@/integrations/supabase/types";
 
@@ -132,15 +132,16 @@ export default function Dashboard() {
   }
 
   const cards = [
-    { label: t("Accounts"), value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} ${t("Branches").toLowerCase()}` },
-    { label: t("NetBalance") + " (PKR)", value: formatMoney(stats.netPKR, "PKR"), icon: Wallet, gradient: "from-accent to-accent-glow", sub: balanceLabel(stats.netPKR), positive: stats.netPKR >= 0 },
-    { label: t("NetBalance") + " (AED)", value: formatMoney(stats.netAED, "AED"), icon: TrendingUp, gradient: "from-emerald-600 to-teal-500", sub: balanceLabel(stats.netAED), positive: stats.netAED >= 0 },
+    { label: t("Accounts"), value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} ${t("Branches").toLowerCase()}`, hint: "Active customer accounts" },
+    { label: t("NetBalance") + " (PKR)", value: formatMoney(stats.netPKR, "PKR"), icon: Wallet, gradient: "from-accent to-accent-glow", sub: balanceLabel(stats.netPKR), hint: `Today: D ${formatMoney(stats.todayPKR.debit, "PKR")} | C ${formatMoney(stats.todayPKR.credit, "PKR")}`, positive: stats.netPKR >= 0 },
+    { label: t("NetBalance") + " (AED)", value: formatMoney(stats.netAED, "AED"), icon: TrendingUp, gradient: "from-emerald-600 to-teal-500", sub: balanceLabel(stats.netAED), hint: `Today: D ${formatMoney(stats.todayAED.debit, "AED")} | C ${formatMoney(stats.todayAED.credit, "AED")}`, positive: stats.netAED >= 0 },
     {
       label: t("Expenses"),
       value: formatMoney(stats.totalExpensePKR, "PKR"),
       sub: stats.totalExpenseAED > 0 ? `+ ${formatMoney(stats.totalExpenseAED, "AED")}` : "0 AED",
       icon: Receipt,
       gradient: "from-rose-500 to-orange-500",
+      hint: "Total operating expenses",
       positive: false
     },
     {
@@ -149,6 +150,7 @@ export default function Dashboard() {
       sub: t("Denedari"),
       icon: ArrowDownLeft,
       gradient: "from-amber-500 to-orange-400",
+      hint: "Amount to receive",
       positive: false,
       url: "/payables-receivables"
     },
@@ -158,6 +160,7 @@ export default function Dashboard() {
       sub: t("Lenedari"),
       icon: ArrowUpRight,
       gradient: "from-blue-500 to-indigo-400",
+      hint: "Amount to pay",
       positive: true,
       url: "/payables-receivables"
     },
@@ -214,6 +217,7 @@ export default function Dashboard() {
                 <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{c.label}</div>
                 <div className="text-2xl font-display font-bold mt-1 num">{c.value}</div>
                 <div className={`text-xs mt-1 num ${c.positive === false ? "text-destructive" : c.positive === true ? "text-success" : "text-muted-foreground"}`}>{c.sub}</div>
+                <div className="text-[11px] text-muted-foreground mt-2 leading-tight">{c.hint}</div>
               </div>
             </Card>
           </motion.div>
@@ -285,10 +289,13 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {role === "admin" && (
           <Card className="glass p-6 lg:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-primary" />
               <h2 className="font-display font-semibold">Branch Summary</h2>
             </div>
+            <div className="text-[11px] text-muted-foreground">{stats.byBranch.length} branches</div>
+          </div>
             {stats.byBranch.length === 0 ? (
               <div className="text-sm text-muted-foreground py-8 text-center">
                 No branches yet. <Link to="/branches" className="text-primary underline">Create one</Link>
@@ -296,10 +303,10 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-3">
                 {stats.byBranch.map((b) => (
-                  <div key={b.name} className="p-3 rounded-xl bg-muted/40">
+                  <div key={b.name} className="p-3.5 rounded-xl bg-muted/40 border border-border/40">
                     <div className="flex items-center justify-between">
-                      <div className="font-medium">{b.name}</div>
-                      <div className="text-xs text-muted-foreground">{b.accounts} accts</div>
+                      <div className="font-medium truncate pr-2">{b.name}</div>
+                      <div className="text-xs text-muted-foreground whitespace-nowrap">{b.accounts} accts</div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 mt-2 text-xs num">
                       <div>
