@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       accounts: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
           account_no: string
           address: string | null
           branch_id: string
@@ -27,6 +28,7 @@ export type Database = {
           name: string
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           account_no: string
           address?: string | null
           branch_id: string
@@ -38,6 +40,7 @@ export type Database = {
           name: string
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           account_no?: string
           address?: string | null
           branch_id?: string
@@ -129,6 +132,7 @@ export type Database = {
           debit: number
           details: string
           id: string
+          transaction_type: Database["public"]["Enums"]["transaction_type"]
           txn_code: string
           txn_date: string
         }
@@ -140,6 +144,7 @@ export type Database = {
           debit?: number
           details: string
           id?: string
+          transaction_type?: Database["public"]["Enums"]["transaction_type"]
           txn_code: string
           txn_date?: string
         }
@@ -151,6 +156,7 @@ export type Database = {
           debit?: number
           details?: string
           id?: string
+          transaction_type?: Database["public"]["Enums"]["transaction_type"]
           txn_code?: string
           txn_date?: string
         }
@@ -245,8 +251,10 @@ export type Database = {
       }
     }
     Enums: {
+      account_type: "customer" | "supplier" | "employee" | "bank" | "cash"
       app_role: "admin" | "branch_user"
       currency_code: "PKR" | "AED"
+      transaction_type: "general" | "payment" | "receipt" | "transfer" | "expense" | "journal"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -374,8 +382,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type: ["customer", "supplier", "employee", "bank", "cash"],
       app_role: ["admin", "branch_user"],
       currency_code: ["PKR", "AED"],
+      transaction_type: ["general", "payment", "receipt", "transfer", "expense", "journal"],
     },
   },
 } as const

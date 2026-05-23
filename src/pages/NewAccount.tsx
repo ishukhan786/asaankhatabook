@@ -17,8 +17,17 @@ const schema = z.object({
   mobile: z.string().trim().max(20).optional().or(z.literal("")),
   address: z.string().trim().max(300).optional().or(z.literal("")),
   currency: z.enum(["PKR", "AED"]),
+  account_type: z.enum(["customer", "supplier", "employee", "bank", "cash"]),
   branch_id: z.string().uuid("Select a branch").optional().or(z.literal("")),
 });
+
+const accountTypeOptions = [
+  { value: "customer", label: "Customer", preview: "CUS-000001" },
+  { value: "supplier", label: "Supplier", preview: "SUP-000001" },
+  { value: "employee", label: "Employee", preview: "EMP-000001" },
+  { value: "bank", label: "Bank", preview: "BNK-000001" },
+  { value: "cash", label: "Cash", preview: "CAS-000001" },
+] as const;
 
 export default function NewAccount() {
   const nav = useNavigate();
@@ -29,9 +38,11 @@ export default function NewAccount() {
     name: "", 
     mobile: "", 
     address: "", 
+    account_type: "customer" as "customer" | "supplier" | "employee" | "bank" | "cash",
     currency: "PKR" as "PKR" | "AED", 
     branch_id: profile?.branch_id || "" 
   });
+  const selectedAccountType = accountTypeOptions.find((option) => option.value === form.account_type);
 
   useEffect(() => {
     if (profile?.branch_id) {
@@ -62,6 +73,7 @@ export default function NewAccount() {
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase.from("accounts").insert([{
       account_no: "",
+      account_type: form.account_type,
       name: form.name.trim(),
       mobile: form.mobile?.trim() || null,
       address: form.address?.trim() || null,
@@ -82,11 +94,27 @@ export default function NewAccount() {
       <div>
         <div className="text-xs uppercase tracking-wider text-muted-foreground">Create</div>
         <h1 className="font-display text-3xl md:text-4xl font-bold">New Account</h1>
-        <p className="text-muted-foreground text-sm mt-1">A unique account number will be generated automatically.</p>
+        <p className="text-muted-foreground text-sm mt-1">A unique readonly account code will be generated automatically when you save.</p>
       </div>
 
       <Card className="glass p-6">
         <form onSubmit={submit} className="space-y-5">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>Account Type *</Label>
+              <Select value={form.account_type} onValueChange={(v: any) => setForm({ ...form, account_type: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {accountTypeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Account Code</Label>
+              <Input value={selectedAccountType?.preview ?? "Auto generated"} readOnly disabled className="bg-muted/50 font-mono" />
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Name *</Label>
@@ -143,4 +171,3 @@ export default function NewAccount() {
     </div>
   );
 }
-

@@ -14,11 +14,21 @@ import { z } from "zod";
 
 const schema = z.object({
   account_id: z.string().uuid("Select an account"),
+  transaction_type: z.enum(["general", "payment", "receipt", "transfer", "expense", "journal"]),
   txn_date: z.string().min(1),
   details: z.string().trim().min(2).max(300),
   debit: z.number().min(0),
   credit: z.number().min(0),
 }).refine((d) => d.debit > 0 || d.credit > 0, { message: "Enter debit or credit amount" });
+
+const transactionTypeOptions = [
+  { value: "general", label: "General", prefix: "TXN" },
+  { value: "payment", label: "Payment", prefix: "PAY" },
+  { value: "receipt", label: "Receipt", prefix: "RCP" },
+  { value: "transfer", label: "Transfer", prefix: "TRF" },
+  { value: "expense", label: "Expense", prefix: "EXP" },
+  { value: "journal", label: "Journal", prefix: "JRN" },
+] as const;
 
 export default function NewTransaction() {
   const nav = useNavigate();
@@ -27,11 +37,14 @@ export default function NewTransaction() {
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
     account_id: params.get("account") ?? "",
+    transaction_type: "general" as "general" | "payment" | "receipt" | "transfer" | "expense" | "journal",
     txn_date: new Date().toISOString().slice(0, 10),
     details: "",
     debit: "",
     credit: "",
   });
+  const selectedTransactionType = transactionTypeOptions.find((option) => option.value === form.transaction_type);
+  const txnCodePreview = `${selectedTransactionType?.prefix ?? "TXN"}-${form.txn_date.replaceAll("-", "") || "YYYYMMDD"}-000001`;
 
   useEffect(() => {
     supabase.from("accounts").select("id, account_no, name, currency, mobile").order("name").then(({ data }) => setAccounts(data ?? []));
@@ -57,6 +70,7 @@ export default function NewTransaction() {
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase.from("transactions").insert([{
       txn_code: "",
+      transaction_type: form.transaction_type,
       account_id: form.account_id,
       txn_date: form.txn_date,
       details: form.details.trim(),
@@ -81,10 +95,27 @@ export default function NewTransaction() {
       <div>
         <div className="text-xs uppercase tracking-wider text-muted-foreground">Record</div>
         <h1 className="font-display text-3xl md:text-4xl font-bold">New Transaction</h1>
+        <p className="text-muted-foreground text-sm mt-1">Transaction code is generated automatically and stays locked after save.</p>
       </div>
 
       <Card className="glass p-6">
         <form onSubmit={submit} className="space-y-5">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>Transaction Type *</Label>
+              <Select value={form.transaction_type} onValueChange={(v: any) => setForm({ ...form, transaction_type: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {transactionTypeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Transaction Code</Label>
+              <Input value={txnCodePreview} readOnly disabled className="bg-muted/50 font-mono" />
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <Label>Account *</Label>
             <Select value={form.account_id} onValueChange={(v) => setForm({ ...form, account_id: v })}>
