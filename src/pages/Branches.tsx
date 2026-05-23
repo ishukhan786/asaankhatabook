@@ -15,8 +15,8 @@ export default function Branches() {
   const { role, loading } = useAuth();
   const [rows, setRows] = useState<any[] | null>(null);
   const [name, setName] = useState("");
-  const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const branchCodePreview = "BRN-01";
 
   const reload = () => supabase.from("branches").select("*").order("name").then(({ data }) => setRows(data ?? []));
   useEffect(() => {
@@ -38,23 +38,22 @@ export default function Branches() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim().length < 2) { toast.error("Branch name must be at least 2 characters"); return; }
-    if (code.trim().length < 1) { toast.error("Branch code is required"); return; }
     
     setBusy(true);
     const { error } = await supabase.from("branches").insert([{ 
       name: name.trim(), 
-      code: code.trim().toUpperCase() 
+      code: ""
     }]);
     setBusy(false);
     
     if (error) {
-      if (error.code === "23505") toast.error("A branch with this code already exists");
+      if (error.code === "23505") toast.error("A unique branch code could not be generated. Please try again.");
       else toast.error(error.message);
       return;
     }
     
     toast.success("New branch established successfully");
-    setName(""); setCode(""); reload();
+    setName(""); reload();
   };
 
   const remove = async (id: string) => {
@@ -78,7 +77,7 @@ export default function Branches() {
           </div>
           Network <span className="text-gradient">Branches</span>
         </h1>
-        <p className="text-muted-foreground mt-2">Manage your business locations and their unique identification codes.</p>
+        <p className="text-muted-foreground mt-2">Manage your business locations with auto-generated unique branch codes.</p>
       </motion.div>
 
       <div className="grid lg:grid-cols-3 gap-8 items-start">
@@ -105,13 +104,13 @@ export default function Branches() {
               <div className="relative">
                 <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input 
-                  value={code} 
-                  onChange={(e) => setCode(e.target.value)} 
-                  placeholder="e.g. LHR-01" 
+                  value={branchCodePreview}
+                  readOnly
+                  disabled
                   className="pl-10 font-mono"
-                  maxLength={10}
                 />
               </div>
+              <p className="text-[11px] text-muted-foreground">Code is generated automatically on save and cannot be edited later.</p>
             </div>
             <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground shadow-soft py-6 text-base font-semibold">
               {busy ? "Establishing..." : "Establish Branch"}
@@ -178,4 +177,3 @@ export default function Branches() {
     </div>
   );
 }
-
