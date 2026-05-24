@@ -44,7 +44,9 @@ export async function exportStatementPDF(account: any, rows: any[], businessInfo
   const currency = account.currency || "";
   const generatedAt = new Date().toLocaleString();
   const money = (n: any) => formatMoney(n, currency);
+  const plainAmount = (n: any) => formatMoney(n);
   const signedBalance = (n: number) => `${money(n)} ${balanceLabel(n)}`;
+  const plainSignedBalance = (n: number) => `${plainAmount(n)} ${balanceLabel(n)}`;
 
   doc.setFillColor(...rgb(soft));
   doc.rect(0, 0, W, H, "F");
@@ -79,80 +81,83 @@ export async function exportStatementPDF(account: any, rows: any[], businessInfo
   doc.text(`Generated ${generatedAt}`, W - 16, 29, { align: "right" });
   doc.text(`Statement Ref: ${account.account_no || "ACCOUNT"}`, W - 16, 35, { align: "right" });
 
+  const sectionY = 51;
+  const sectionH = 42;
+  const sectionGap = 5;
+  const infoW = 116;
+  const summaryX = 10 + infoW + sectionGap;
+  const summaryW = W - 20 - infoW - sectionGap;
+
   doc.setFillColor(...rgb(card));
-  doc.roundedRect(10, 51, W - 20, 36, 2.5, 2.5, "F");
+  doc.roundedRect(10, sectionY, infoW, sectionH, 2.5, 2.5, "F");
   doc.setDrawColor(...rgb(line));
-  doc.roundedRect(10, 51, W - 20, 36, 2.5, 2.5, "D");
+  doc.roundedRect(10, sectionY, infoW, sectionH, 2.5, 2.5, "D");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor(...rgb(navy));
-  doc.text(String(account.name || "-"), 16, 62, { maxWidth: 96 });
+  doc.text(String(account.name || "-"), 16, sectionY + 10, { maxWidth: infoW - 12 });
 
-  const meta = [
-    ["Account No", account.account_no || "-"],
-    ["Currency", currency || "-"],
-    ["Mobile", account.mobile || "-"],
-    ["Branch", account.branches?.name || "-"],
-    ["Address", account.address || "-"],
-  ];
-  let metaX = 16;
-  let metaY = 72;
-  meta.forEach(([label, value], index) => {
-    if (index === 4) {
-      metaX = 112;
-      metaY = 72;
-    }
+  const drawMeta = (label: string, value: string, x: number, y: number, maxWidth: number) => {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
+    doc.setFontSize(6.7);
     doc.setTextColor(...rgb(muted));
-    doc.text(label.toUpperCase(), metaX, metaY);
+    doc.text(label.toUpperCase(), x, y);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.3);
+    doc.setFontSize(8);
     doc.setTextColor(...rgb(ink));
-    doc.text(String(value), metaX, metaY + 4.5, { maxWidth: index === 4 ? 76 : 38 });
-    if (index < 4) metaX += 47;
-  });
-
-  const summaryY = 94;
-  const gap = 4;
-  const summaryW = (W - 20 - gap * 3) / 4;
-  const drawSummary = (i: number, label: string, value: string, color: [number, number, number]) => {
-    const x = 10 + i * (summaryW + gap);
-    doc.setFillColor(...rgb(card));
-    doc.roundedRect(x, summaryY, summaryW, 25, 2, 2, "F");
-    doc.setDrawColor(...rgb(line));
-    doc.roundedRect(x, summaryY, summaryW, 25, 2, 2, "D");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.setTextColor(...rgb(muted));
-    doc.text(label.toUpperCase(), x + 5, summaryY + 8);
-    doc.setFontSize(10.5);
-    doc.setTextColor(...rgb(color));
-    doc.text(value, x + 5, summaryY + 17, { maxWidth: summaryW - 10 });
+    doc.text(String(value || "-"), x, y + 4.3, { maxWidth });
   };
 
-  drawSummary(0, "Transactions", String(rows.length), navy);
-  drawSummary(1, "Total Debit", money(totalDebit), debitColor);
-  drawSummary(2, "Total Credit", money(totalCredit), creditColor);
-  drawSummary(3, "Closing Balance", signedBalance(net), net >= 0 ? creditColor : debitColor);
+  const metaY1 = sectionY + 21;
+  const metaY2 = sectionY + 32;
+  drawMeta("Account No", account.account_no || "-", 16, metaY1, 32);
+  drawMeta("Currency", currency || "-", 52, metaY1, 24);
+  drawMeta("Mobile", account.mobile || "-", 82, metaY1, 36);
+  drawMeta("Branch", account.branches?.name || "-", 16, metaY2, 46);
+  drawMeta("Address", account.address || "-", 66, metaY2, 52);
+
+  doc.setFillColor(...rgb(card));
+  doc.roundedRect(summaryX, sectionY, summaryW, sectionH, 2.5, 2.5, "F");
+  doc.setDrawColor(...rgb(line));
+  doc.roundedRect(summaryX, sectionY, summaryW, sectionH, 2.5, 2.5, "D");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...rgb(navy));
+  doc.text("Amount Summary", summaryX + 6, sectionY + 8);
+  doc.setDrawColor(...rgb(line));
+  doc.setLineWidth(0.1);
+  doc.line(summaryX + 6, sectionY + 12, summaryX + summaryW - 6, sectionY + 12);
+
+  const drawSummaryRow = (label: string, value: string, y: number, color: [number, number, number]) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(...rgb(muted));
+    doc.text(label.toUpperCase(), summaryX + 6, y);
+    doc.setFontSize(8.7);
+    doc.setTextColor(...rgb(color));
+    doc.text(value, summaryX + summaryW - 6, y, { align: "right", maxWidth: 38 });
+  };
+
+  drawSummaryRow("Transactions", String(rows.length), sectionY + 19, navy);
+  drawSummaryRow("Total Debit", money(totalDebit), sectionY + 26, debitColor);
+  drawSummaryRow("Total Credit", money(totalCredit), sectionY + 33, creditColor);
+  drawSummaryRow("Closing Balance", signedBalance(net), sectionY + 40, net >= 0 ? creditColor : debitColor);
 
   let runningBalance = 0;
   const tableBody = rows.map((r) => {
     const currentBalance = r.balance !== undefined ? r.balance : (runningBalance += (Number(r.credit) - Number(r.debit)));
-    const txId = r.txn_code || String(r.id || "").slice(0, 8) || "-";
     return [
       formatDate(r.txn_date),
-      txId,
       r.details,
-      Number(r.debit) > 0 ? money(Number(r.debit)) : "-",
-      Number(r.credit) > 0 ? money(Number(r.credit)) : "-",
-      signedBalance(currentBalance),
+      Number(r.debit) > 0 ? plainAmount(Number(r.debit)) : "-",
+      Number(r.credit) > 0 ? plainAmount(Number(r.credit)) : "-",
+      plainSignedBalance(currentBalance),
     ];
   });
 
   autoTable(doc, {
-    startY: 128,
-    head: [["Date", "Transaction ID", "Narration", "Debit", "Credit", "Balance"]],
+    startY: 101,
+    head: [["Date", "Narration", "Debit", "Credit", "Balance"]],
     body: tableBody,
     styles: {
       fontSize: 8.2,
@@ -172,19 +177,19 @@ export async function exportStatementPDF(account: any, rows: any[], businessInfo
     },
     columnStyles: {
       0: { cellWidth: 22 },
-      1: { cellWidth: 30, fontStyle: "bold", textColor: muted },
-      2: { cellWidth: "auto" },
-      3: { cellWidth: 28, halign: "right" },
-      4: { cellWidth: 28, halign: "right" },
-      5: { cellWidth: 32, halign: "right", fontStyle: "bold" },
+      1: { cellWidth: "auto" },
+      2: { cellWidth: 28, halign: "right", textColor: ink },
+      3: { cellWidth: 28, halign: "right", textColor: ink },
+      4: { cellWidth: 32, halign: "right", fontStyle: "bold" },
     },
     alternateRowStyles: {
       fillColor: [252, 253, 255],
     },
     didParseCell: (data) => {
-      if (data.section === "body" && data.column.index === 3) data.cell.styles.textColor = debitColor;
-      if (data.section === "body" && data.column.index === 4) data.cell.styles.textColor = creditColor;
-      if (data.section === "body" && data.column.index === 5) {
+      if (data.section === "body" && (data.column.index === 2 || data.column.index === 3)) {
+        data.cell.styles.textColor = ink;
+      }
+      if (data.section === "body" && data.column.index === 4) {
         const r = rows[data.row.index];
         let currentBalance = r.balance;
         if (currentBalance === undefined) {
