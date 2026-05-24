@@ -44,11 +44,14 @@ export default function Branches() {
     if (name.trim().length < 2) { toast.error("Branch name must be at least 2 characters"); return; }
     
     setBusy(true);
-    const { error } = await supabase.from("branches").insert([{ name: name.trim() }]);
+    const { error } = await supabase.from("branches").insert([{
+      name: name.trim(),
+      code: branchCodePreview,
+    }]);
     setBusy(false);
     
     if (error) {
-      if (error.code === "23505") toast.error("A unique branch code could not be generated. Please try again.");
+      if (error.code === "23505") toast.error("That branch code already exists. Refresh and try again.");
       else toast.error(error.message);
       return;
     }
