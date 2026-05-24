@@ -16,7 +16,11 @@ export default function Branches() {
   const [rows, setRows] = useState<any[] | null>(null);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
-  const branchCodePreview = "BRN-01";
+  const nextBranchNumber = (rows ?? []).reduce((max, branch) => {
+    const match = String(branch.code ?? "").match(/^BRN-(\d+)$/);
+    return match ? Math.max(max, Number(match[1])) : max;
+  }, 0) + 1;
+  const branchCodePreview = `BRN-${String(nextBranchNumber).padStart(2, "0")}`;
 
   const reload = () => supabase.from("branches").select("*").order("name").then(({ data }) => setRows(data ?? []));
   useEffect(() => {
@@ -40,10 +44,7 @@ export default function Branches() {
     if (name.trim().length < 2) { toast.error("Branch name must be at least 2 characters"); return; }
     
     setBusy(true);
-    const { error } = await supabase.from("branches").insert([{ 
-      name: name.trim(), 
-      code: ""
-    }]);
+    const { error } = await supabase.from("branches").insert([{ name: name.trim() }]);
     setBusy(false);
     
     if (error) {
