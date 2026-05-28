@@ -128,7 +128,6 @@ export async function exportStatementPDF(account: AccountForPDF, rows: TxnRow[],
   let currentY = sectionY + 18;
   const step = 4.5;
   drawMetaLine("Account No", account.account_no || "-", currentY); currentY += step;
-  drawMetaLine("Branch", account.branches?.name || "-", currentY); currentY += step;
   drawMetaLine("Currency", currency || "-", currentY); currentY += step;
   drawMetaLine("Mobile", account.mobile || "-", currentY); currentY += step;
   drawMetaLine("Address", account.address || "-", currentY);
