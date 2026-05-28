@@ -115,24 +115,23 @@ export async function exportStatementPDF(account: AccountForPDF, rows: TxnRow[],
   doc.setTextColor(...rgb(navy));
   doc.text(String(account.name || "-"), 16, sectionY + 10, { maxWidth: infoW - 12 });
 
-  const drawMeta = (label: string, value: string, x: number, y: number, maxWidth: number) => {
+  const drawMetaLine = (label: string, value: string, y: number) => {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.7);
-    doc.setTextColor(...rgb(muted));
-    doc.text(label.toUpperCase(), x, y);
-    doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
+    doc.setTextColor(...rgb(muted));
+    doc.text(`${label}:`, 16, y);
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(...rgb(ink));
-    doc.text(String(value || "-"), x, y + 4.3, { maxWidth });
+    doc.text(String(value || "-"), 38, y, { maxWidth: infoW - 30 });
   };
 
-  const metaY1 = sectionY + 21;
-  const metaY2 = sectionY + 32;
-  drawMeta("Account No", account.account_no || "-", 16, metaY1, 32);
-  drawMeta("Currency", currency || "-", 52, metaY1, 24);
-  drawMeta("Mobile", account.mobile || "-", 82, metaY1, 36);
-  drawMeta("Branch", account.branches?.name || "-", 16, metaY2, 46);
-  drawMeta("Address", account.address || "-", 66, metaY2, 52);
+  let currentY = sectionY + 18;
+  const step = 4.5;
+  drawMetaLine("Account No", account.account_no || "-", currentY); currentY += step;
+  drawMetaLine("Branch", account.branches?.name || "-", currentY); currentY += step;
+  drawMetaLine("Currency", currency || "-", currentY); currentY += step;
+  drawMetaLine("Mobile", account.mobile || "-", currentY); currentY += step;
+  drawMetaLine("Address", account.address || "-", currentY);
 
   doc.setFillColor(...rgb(card));
   doc.roundedRect(summaryX, sectionY, summaryW, sectionH, 2.5, 2.5, "F");
