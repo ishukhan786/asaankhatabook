@@ -175,7 +175,7 @@ export async function exportStatementPDF(account: AccountForPDF, rows: TxnRow[],
 
   autoTable(doc, {
     startY: 101,
-    head: [["Date", "Narration", "Debit", "Credit", "Balance"]],
+    head: [["Date", "Description", "Debit", "Credit", "Balance"]],
     body: tableBody,
     styles: {
       fontSize: 8.2,
