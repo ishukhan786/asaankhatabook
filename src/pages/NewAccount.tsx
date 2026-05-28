@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +66,7 @@ export default function NewAccount() {
     });
   }, []);
 
-  const nextAccountNo = async (accountType: keyof typeof accountTypePrefix, offset = 1) => {
+  const nextAccountNo = useCallback(async (accountType: keyof typeof accountTypePrefix, offset = 1) => {
     const prefix = accountTypePrefix[accountType];
     const { data } = await supabase
       .from("accounts")
@@ -77,7 +77,7 @@ export default function NewAccount() {
 
     const lastNumber = Number(String(data?.[0]?.account_no ?? "").match(new RegExp(`^${prefix}-(\\d+)$`))?.[1] ?? "0");
     return `${prefix}-${String(lastNumber + offset).padStart(6, "0")}`;
-  };
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
