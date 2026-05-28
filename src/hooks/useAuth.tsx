@@ -47,9 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", uid),
     ]);
-    setProfile(p as any);
-    
-    const roles = (r ?? []).map((x: any) => x.role);
+    setProfile(p as Profile | null);
+
+    const roles = ((r ?? []) as Array<{ role?: string }>).map((x) => x.role ?? "");
     let finalRole: Role | null = null;
     
     // Priority assignment

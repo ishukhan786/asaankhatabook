@@ -11,14 +11,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
+export type AuditLog = {
+  id: string;
+  table_name?: string | null;
+  action_type?: string | null;
+  user_email?: string | null;
+  created_at?: string | null;
+  old_data?: Record<string, unknown> | null;
+  new_data?: Record<string, unknown> | null;
+};
+
 export default function AuditLogs() {
   const { role, loading } = useAuth();
-  const [logs, setLogs] = useState<any[] | null>(null);
+  const [logs, setLogs] = useState<AuditLog[] | null>(null);
   const [q, setQ] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-
-  if (loading) return <div className="p-8"><Skeleton className="h-32" /></div>;
-  if (role !== "admin") return <Navigate to="/" replace />;
 
   const fetchLogs = async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
@@ -31,6 +38,7 @@ export default function AuditLogs() {
   };
 
   useEffect(() => {
+    if (loading || role !== "admin") return;
     fetchLogs();
 
     const sub = supabase.channel('audit_logs_channel')
@@ -42,30 +50,37 @@ export default function AuditLogs() {
     return () => {
       supabase.removeChannel(sub);
     };
-  }, []);
+  }, [loading, role]);
 
-  const filtered = (logs ?? []).filter(l => 
-    !q || 
-    l.table_name.toLowerCase().includes(q.toLowerCase()) || 
-    l.action_type.toLowerCase().includes(q.toLowerCase()) ||
-    (l.user_email ?? "").toLowerCase().includes(q.toLowerCase())
-  );
+  const filtered = (logs ?? []).filter(l => {
+    const table = String(l.table_name ?? "").toLowerCase();
+    const action = String(l.action_type ?? "").toLowerCase();
+    const email = String(l.user_email ?? "").toLowerCase();
+    return !q || table.includes(q.toLowerCase()) || action.includes(q.toLowerCase()) || email.includes(q.toLowerCase());
+  });
 
-  const renderChangesText = (l: any) => {
+  const renderChangesText = (l: AuditLog) => {
     try {
       const oldObj = l.old_data || {};
       const newObj = l.new_data || {};
-      const table = l.table_name?.toLowerCase() || "";
-      const action = l.action_type?.toUpperCase() || "";
+      const table = String(l.table_name ?? "").toLowerCase();
+      const action = String(l.action_type ?? "").toUpperCase();
 
-      const getRecordName = (obj: any) => {
-        if (obj.name && obj.account_no) return `"${obj.name}" (${obj.account_no})`;
-        if (obj.name) return `"${obj.name}"`;
-        if (obj.full_name) return `"${obj.full_name}"`;
-        if (obj.txn_code) return `Transaction (${obj.txn_code})`;
-        if (obj.email) return `User (${obj.email})`;
-        if (obj.title) return `Expense "${obj.title}"`;
-        return `Record #${obj.id?.slice(0, 6) || "Unknown"}`;
+      const getRecordName = (obj: Record<string, unknown>) => {
+        const name = typeof obj["name"] === "string" ? obj["name"] as string : undefined;
+        const account_no = typeof obj["account_no"] === "string" ? obj["account_no"] as string : undefined;
+        const full_name = typeof obj["full_name"] === "string" ? obj["full_name"] as string : undefined;
+        const txn_code = typeof obj["txn_code"] === "string" ? obj["txn_code"] as string : undefined;
+        const email = typeof obj["email"] === "string" ? obj["email"] as string : undefined;
+        const title = typeof obj["title"] === "string" ? obj["title"] as string : undefined;
+
+        if (name && account_no) return `"${name}" (${account_no})`;
+        if (name) return `"${name}"`;
+        if (full_name) return `"${full_name}"`;
+        if (txn_code) return `Transaction (${txn_code})`;
+        if (email) return `User (${email})`;
+        if (title) return `Expense "${title}"`;
+        return `Record #${String(obj["id"] ?? "").slice(0, 6) || "Unknown"}`;
       };
 
       if (action === "INSERT") {
@@ -79,15 +94,16 @@ export default function AuditLogs() {
       }
 
       if (action === "DELETE") {
-        const name = getRecordName(oldObj);
+        const name = getRecordName(oldObj as Record<string, unknown>);
         return `🗑️ Deleted ${table.slice(0, -1)} ${name}`;
       }
 
       if (action === "UPDATE") {
-        const name = getRecordName(newObj || oldObj);
+        const record = (newObj && Object.keys(newObj).length) ? newObj : oldObj;
+        const name = getRecordName(record as Record<string, unknown>);
         const changes: string[] = [];
 
-        const allKeys = Array.from(new Set([...Object.keys(oldObj), ...Object.keys(newObj)]));
+        const allKeys = Array.from(new Set([...Object.keys(oldObj || {}), ...Object.keys(newObj || {})]));
         allKeys.forEach(k => {
           if (["id", "created_at", "updated_at", "user_id"].includes(k)) return;
           const oldVal = oldObj[k];
@@ -109,6 +125,9 @@ export default function AuditLogs() {
       return JSON.stringify(l.new_data || l.old_data);
     }
   };
+
+  if (loading) return <div className="p-8"><Skeleton className="h-32" /></div>;
+  if (role !== "admin") return <Navigate to="/" replace />;
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">

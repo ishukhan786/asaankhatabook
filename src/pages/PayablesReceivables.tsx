@@ -299,7 +299,7 @@ export default function PayablesReceivables() {
         id: a.id, name: a.name, account_no: a.account_no,
         currency: a.currency, mobile: a.mobile ?? null, address: a.address ?? null,
         branch_id: a.branch_id,
-        branch_name: (a.branches as any)?.name ?? "—",
+        branch_name: (a.branches as { name?: string | null } | null)?.name ?? "—",
         balance: balances[a.id] || 0
       }));
       setReceivables(processed.filter(p => p.balance < 0).sort((a, b) => a.balance - b.balance));

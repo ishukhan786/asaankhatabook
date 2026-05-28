@@ -28,16 +28,27 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+export type AccountSummary = {
+  id: string;
+  account_no?: string;
+  name?: string;
+  mobile?: string | null;
+  currency?: string | null;
+  branch_id?: string | null;
+  branches?: { id?: string; name?: string } | null;
+  created_at?: string;
+};
+
 export default function Accounts() {
   const navigate = useNavigate();
   const { role } = useAuth();
-  const [rows, setRows] = useState<any[] | null>(null);
-  const [branches, setBranches] = useState<any[]>([]);
+  const [rows, setRows] = useState<AccountSummary[] | null>(null);
+  const [branches, setBranches] = useState<Array<{ id: string; name: string }>>([]);
   const [q, setQ] = useState("");
   const debouncedQ = useDebounce(q, 300);
   
   // Edit state
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<AccountSummary | null>(null);
   const [eName, setEName] = useState("");
   const [eMobile, setEMobile] = useState("");
   const [eBranch, setEBranch] = useState("");
@@ -65,9 +76,10 @@ export default function Accounts() {
         branches: branchById.get(account.branch_id) ?? null,
       })));
       setBranches(brs ?? []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Accounts load error:", err);
-      toast.error(err.message ?? "Could not load accounts");
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(msg ?? "Could not load accounts");
       setRows([]);
       setBranches([]);
     }
@@ -81,11 +93,11 @@ export default function Accounts() {
     return () => { supabase.removeChannel(sub); };
   }, []);
 
-  const openEdit = (a: any) => {
+  const openEdit = (a: AccountSummary) => {
     setEditing(a);
-    setEName(a.name);
+    setEName(a.name ?? "");
     setEMobile(a.mobile ?? "");
-    setEBranch(a.branch_id);
+    setEBranch(a.branch_id ?? "");
   };
 
   const submitEdit = async (e: React.FormEvent) => {
@@ -101,7 +113,7 @@ export default function Accounts() {
       toast.success("Account updated");
       setEditing(null);
       reload();
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
     setBusy(false);
   };
 
@@ -113,7 +125,7 @@ export default function Accounts() {
       toast.success("Account deleted");
       setDeleting(null);
       reload();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error("Could not delete. Make sure there are no transactions linked to this account.");
     }
   };

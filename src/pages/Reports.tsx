@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +18,19 @@ import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
 
 export default function Reports() {
   const { profile } = useAuth();
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [txns, setTxns] = useState<any[]>([]);
+  type AccountShort = {
+    id: string;
+    account_no?: string | null;
+    name?: string | null;
+    mobile?: string | null;
+    address?: string | null;
+    currency?: string | null;
+    branches?: { name?: string | null } | null;
+  };
+  type AccountTotals = { account_id: string; debit?: number | string | null; credit?: number | string | null };
+
+  const [accounts, setAccounts] = useState<AccountShort[]>([]);
+  const [txns, setTxns] = useState<AccountTotals[]>([]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [q, setQ] = useState("");
@@ -27,11 +38,12 @@ export default function Reports() {
   
   // Statement specific state
   const [selectedAccId, setSelectedAccId] = useState("");
-  const [statementTxns, setStatementTxns] = useState<Tables<"transactions">[]>([]);
+  type StatementTxn = { id?: string; txn_date?: string | null; details?: string | null; debit?: number | string | null; credit?: number | string | null; balance?: number | null };
+  const [statementTxns, setStatementTxns] = useState<StatementTxn[]>([]);
   const [loadingStatement, setLoadingStatement] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  const loadAll = () => {
+  const loadAll = useCallback(() => {
     Promise.all([
       supabase.from("accounts").select("id, account_no, name, mobile, address, currency, branches(name)"),
       supabase
@@ -41,9 +53,9 @@ export default function Reports() {
         }),
     ]).then(([a, totals]) => {
       setAccounts(a.data ?? []);
-      setTxns((totals.data as any[]) ?? []);
+      setTxns((totals.data as AccountTotals[]) ?? []);
     });
-  };
+  }, [from, to]);
 
   const scheduleLoad = useRealtimeRefresh(loadAll, 700);
   useEffect(() => {
@@ -56,10 +68,10 @@ export default function Reports() {
     return () => {
       supabase.removeChannel(sub);
     };
-  }, [from, to]);
+  }, [loadAll, scheduleLoad]);
 
   const summary = useMemo(() => {
-    const txnByAccount = new Map<string, { debit: number; credit: number; txns: any[] }>();
+    const txnByAccount = new Map<string, { debit: number; credit: number; txns: AccountTotals[] }>();
 
     txns.forEach((t) => {
       const existing = txnByAccount.get(t.account_id) ?? { debit: 0, credit: 0, txns: [] };
@@ -70,7 +82,7 @@ export default function Reports() {
     });
 
     return accounts
-      .filter(a => !debouncedQ || a.name.toLowerCase().includes(debouncedQ.toLowerCase()) || a.account_no.toLowerCase().includes(debouncedQ.toLowerCase()))
+      .filter(a => !debouncedQ || String(a.name).toLowerCase().includes(debouncedQ.toLowerCase()) || String(a.account_no).toLowerCase().includes(debouncedQ.toLowerCase()))
       .map((a) => {
         const accountTxn = txnByAccount.get(a.id) ?? { debit: 0, credit: 0, txns: [] };
         return {
@@ -81,7 +93,7 @@ export default function Reports() {
           txns: accountTxn.txns,
         };
       });
-  }, [accounts, txns, from, to, debouncedQ]);
+  }, [accounts, txns, debouncedQ]);
 
   const selectedAccount = useMemo(() => accounts.find(a => a.id === selectedAccId), [accounts, selectedAccId]);
 
@@ -146,7 +158,7 @@ export default function Reports() {
     }
   };
 
-  const handleExportStatement = async (accountData: any, statementData: any[]) => {
+  const handleExportStatement = async (accountData: AccountShort | undefined, statementData: StatementTxn[]) => {
     setExporting(true);
     try {
       await exportStatementPDF(accountData, statementData, profile);
@@ -158,7 +170,7 @@ export default function Reports() {
     }
   };
 
-  const handleExportLedgerRowStatement = async (accountData: any) => {
+  const handleExportLedgerRowStatement = async (accountData: AccountShort | undefined) => {
     setExporting(true);
     try {
       const { data } = await supabase

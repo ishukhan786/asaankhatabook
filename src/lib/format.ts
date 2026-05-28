@@ -1,9 +1,9 @@
-export const formatNumber = (n: any) => {
-  const num = Number(n) || 0;
+export const formatNumber = (n: number | string | null | undefined) => {
+  const num = Number(n ?? 0) || 0;
   return Math.round(Math.abs(num)).toLocaleString("en-US");
 };
 
-export const formatMoney = (n: any, currency: string = "") => {
+export const formatMoney = (n: number | string | null | undefined, currency: string = "") => {
   const v = formatNumber(n);
   return currency ? `${currency} ${v}` : v;
 };

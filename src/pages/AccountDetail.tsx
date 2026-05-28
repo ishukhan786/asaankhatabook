@@ -26,30 +26,57 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+export type AccountType = {
+  id?: string;
+  account_no?: string;
+  name?: string;
+  mobile?: string | null;
+  currency?: string | null;
+  branches?: { name?: string } | null;
+  address?: string | null;
+};
+
+export type TxnType = {
+  id?: string;
+  txn_date?: string | null;
+  details?: string | null;
+  notes?: string | null;
+  debit?: number | string | null;
+  credit?: number | string | null;
+  balance?: number | null;
+  created_by?: string | null;
+};
+
 export default function AccountDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { role, profile } = useAuth();
-  const [account, setAccount] = useState<any | null>(null);
-  const [txns, setTxns] = useState<any[] | null>(null);
+  const [account, setAccount] = useState<AccountType | null>(null);
+  const [txns, setTxns] = useState<TxnType[] | null>(null);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   // Edit Transaction state
-  const [editingTx, setEditingTx] = useState<any>(null);
+  const [editingTx, setEditingTx] = useState<TxnType | null>(null);
   const [etDate, setEtDate] = useState("");
   const [etDetails, setEtDetails] = useState("");
   const [etDebit, setEtDebit] = useState("");
   const [etCredit, setEtCredit] = useState("");
   
   // Deletion state
-  const [deletingTx, setDeletingTx] = useState<any>(null);
+  const [deletingTx, setDeletingTx] = useState<TxnType | null>(null);
   
   // Quick Entry state
   const [quickOpen, setQuickOpen] = useState(false);
-  const [quickForm, setQuickForm] = useState({
+  const [quickForm, setQuickForm] = useState<{
+    txn_date: string;
+    details: string;
+    notes: string;
+    debit: string;
+    credit: string;
+  }>({
     txn_date: new Date().toISOString().slice(0, 10),
     details: "",
     notes: "",
@@ -57,7 +84,7 @@ export default function AccountDetail() {
     credit: "",
   });
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!id) return;
     const [{ data: a }, { data: t }] = await Promise.all([
       supabase.from("accounts").select("*, branches(name)").eq("id", id).maybeSingle(),
@@ -65,7 +92,7 @@ export default function AccountDetail() {
     ]);
     setAccount(a);
     setTxns(t ?? []);
-  };
+  }, [id]);
 
   useEffect(() => {
     load();
@@ -83,7 +110,7 @@ export default function AccountDetail() {
     return () => {
       supabase.removeChannel(sub);
     };
-  }, [id]);
+  }, [load, id]);
 
   if (!account) return <div className="p-8"><Skeleton className="h-32" /></div>;
 
@@ -95,8 +122,8 @@ export default function AccountDetail() {
   });
 
   const rows = filteredRows.map((t) => {
-    running += Number(t.credit) - Number(t.debit);
-    return { ...t, balance: running };
+    running += Number(t.credit ?? 0) - Number(t.debit ?? 0);
+    return { ...t, balance: running } as TxnType & { balance: number };
   });
 
   const totalDebit = rows.reduce((s, r) => s + Number(r.debit), 0);
@@ -109,18 +136,19 @@ export default function AccountDetail() {
       if (error) throw error;
       toast.success("Account deleted");
       navigate("/accounts");
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(msg);
     }
     setBusy(false);
   };
 
-  const openEditTx = (t: any) => {
+  const openEditTx = (t: TxnType) => {
     setEditingTx(t);
-    setEtDate(t.txn_date);
+    setEtDate(String(t.txn_date ?? ""));
     setEtDetails(t.details ?? "");
-    setEtDebit(t.debit.toString());
-    setEtCredit(t.credit.toString());
+    setEtDebit(String(t.debit ?? ""));
+    setEtCredit(String(t.credit ?? ""));
   };
 
   const submitEditTx = async (e: React.FormEvent) => {
@@ -137,7 +165,7 @@ export default function AccountDetail() {
       toast.success("Transaction updated");
       setEditingTx(null);
       load();
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
     setBusy(false);
   };
 
@@ -149,17 +177,17 @@ export default function AccountDetail() {
       toast.success("Transaction deleted");
       setDeletingTx(null);
       load();
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
   };
 
-  const sendWhatsApp = (t: any) => {
+  const sendWhatsApp = (t: TxnType & { balance?: number | null }) => {
     if (!account.mobile) {
       toast.error("Is account ka mobile number save nahi hai.");
       return;
     }
-    const amount = Number(t.credit) > 0 ? t.credit : t.debit;
+    const amount = Number(t.credit ?? 0) > 0 ? t.credit : t.debit;
     const type = Number(t.credit) > 0 ? "Jama (Credit)" : "Nikala (Debit)";
-    const message = `*Assalam-o-Alaikum!*\n\n*Aasaan Khatabook Entry Update*\n---------------------------\n*Account:* ${account.name}\n*Date:* ${formatDate(t.txn_date)}\n*Amount:* ${formatMoney(amount, account.currency)}\n*Type:* ${type}\n*Details:* ${t.details}\n---------------------------\n*Current Balance:* ${formatMoney(t.balance, account.currency)} (${balanceLabel(t.balance)})\n\nShukriya!`;
+    const message = `*Assalam-o-Alaikum!*\n\n*Aasaan Khatabook Entry Update*\n---------------------------\n*Account:* ${account?.name}\n*Date:* ${formatDate(String(t.txn_date ?? ""))}\n*Amount:* ${formatMoney(amount, account?.currency)}\n*Type:* ${type}\n*Details:* ${t.details ?? ""}\n---------------------------\n*Current Balance:* ${formatMoney(t.balance ?? 0, account?.currency)} (${balanceLabel(t.balance ?? 0)})\n\nShukriya!`;
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/${account.mobile.replace(/\D/g, "")}?text=${encoded}`, "_blank");
   };
@@ -195,7 +223,7 @@ export default function AccountDetail() {
         credit: "",
       });
       load();
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
     setBusy(false);
   };
 

@@ -11,9 +11,15 @@ import { Building2, Plus, Trash2, MapPin, Hash, Briefcase } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
+type BranchRow = {
+  id: string;
+  name: string;
+  code?: string;
+};
+
 export default function Branches() {
   const { role, loading } = useAuth();
-  const [rows, setRows] = useState<any[] | null>(null);
+  const [rows, setRows] = useState<BranchRow[] | null>(null);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const nextBranchNumber = (rows ?? []).reduce((max, branch) => {

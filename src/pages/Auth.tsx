@@ -87,8 +87,8 @@ export default function Auth() {
           setMode("signin");
         }
       }
-    } catch (err: any) {
-      const message = err.message ?? "Authentication failed";
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err ?? "Authentication failed");
       setAuthError(message);
       toast.error(message);
     } finally {

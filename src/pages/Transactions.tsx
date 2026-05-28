@@ -27,7 +27,19 @@ import {
 } from "@/components/ui/dialog";
 
 export default function Transactions() {
-  const [rows, setRows] = useState<any[] | null>(null);
+  type TxnRow = {
+    id: string;
+    txn_code?: string | null;
+    txn_date?: string | null;
+    details?: string | null;
+    debit?: number | string | null;
+    credit?: number | string | null;
+    account_id?: string | null;
+    created_by?: string | null;
+    accounts?: { name?: string | null; account_no?: string | null; currency?: string | null } | null;
+  };
+
+  const [rows, setRows] = useState<TxnRow[] | null>(null);
   const [q, setQ] = useState("");
   const debouncedQ = useDebounce(q, 300);
   const [from, setFrom] = useState("");
@@ -36,12 +48,12 @@ export default function Transactions() {
   const [busy, setBusy] = useState(false);
 
   // Edit/Delete state
-  const [editingTx, setEditingTx] = useState<any>(null);
+  const [editingTx, setEditingTx] = useState<TxnRow | null>(null);
   const [etDate, setEtDate] = useState("");
   const [etDetails, setEtDetails] = useState("");
   const [etDebit, setEtDebit] = useState("");
   const [etCredit, setEtCredit] = useState("");
-  const [deletingTx, setDeletingTx] = useState<any>(null);
+  const [deletingTx, setDeletingTx] = useState<TxnRow | null>(null);
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -92,12 +104,12 @@ export default function Transactions() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQ, from, to]);
 
-  const openEditTx = (t: any) => {
+  const openEditTx = (t: TxnRow) => {
     setEditingTx(t);
-    setEtDate(t.txn_date);
+    setEtDate(t.txn_date ?? "");
     setEtDetails(t.details ?? "");
-    setEtDebit(t.debit.toString());
-    setEtCredit(t.credit.toString());
+    setEtDebit(String(t.debit ?? ""));
+    setEtCredit(String(t.credit ?? ""));
   };
 
   const submitEditTx = async (e: React.FormEvent) => {
@@ -114,7 +126,10 @@ export default function Transactions() {
       toast.success("Transaction updated");
       setEditingTx(null);
       load(true);
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(msg);
+    }
     setBusy(false);
   };
 
@@ -126,7 +141,7 @@ export default function Transactions() {
       toast.success("Transaction deleted");
       setDeletingTx(null);
       load(true);
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: unknown) { const msg = e instanceof Error ? e.message : String(e); toast.error(msg); }
   };
 
   return (
@@ -171,7 +186,7 @@ export default function Transactions() {
               <tbody>
                 {(rows ?? []).length === 0 ? (
                   <tr><td colSpan={role === "admin" ? 7 : 6} className="text-center py-12 text-muted-foreground text-sm">No transactions match.</td></tr>
-                ) : (rows ?? []).map((t: any) => (
+                ) : (rows ?? []).map((t: TxnRow) => (
                   <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30">
                     <td className="px-4 py-2.5 num whitespace-nowrap">{formatDate(t.txn_date)}</td>
                     <td className="px-4 py-2.5 font-mono text-xs">{t.txn_code}</td>

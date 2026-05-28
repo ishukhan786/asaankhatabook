@@ -16,7 +16,25 @@ async function loadPdfLibs() {
   return { jsPDF, autoTable };
 }
 
-export async function exportStatementPDF(account: any, rows: any[], businessInfo?: BusinessInfo | null) {
+export type AccountForPDF = {
+  account_no?: string | null;
+  currency?: string | null;
+  name?: string | null;
+  mobile?: string | null;
+  branches?: { name?: string | null } | null;
+  address?: string | null;
+};
+
+export type TxnRow = {
+  id?: string;
+  txn_date?: string | null;
+  details?: string | null;
+  debit?: number | string | null;
+  credit?: number | string | null;
+  balance?: number | null;
+};
+
+export async function exportStatementPDF(account: AccountForPDF, rows: TxnRow[], businessInfo?: BusinessInfo | null) {
   const { jsPDF, autoTable } = await loadPdfLibs();
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
@@ -43,8 +61,8 @@ export async function exportStatementPDF(account: any, rows: any[], businessInfo
   const net = totalCredit - totalDebit;
   const currency = account.currency || "";
   const generatedAt = new Date().toLocaleString();
-  const money = (n: any) => formatMoney(n, currency);
-  const plainAmount = (n: any) => formatMoney(n);
+  const money = (n: number | string | null | undefined) => formatMoney(n, currency);
+  const plainAmount = (n: number | string | null | undefined) => formatMoney(n);
   const signedBalance = (n: number) => `${money(n)} ${balanceLabel(n)}`;
   const plainSignedBalance = (n: number) => `${plainAmount(n)} ${balanceLabel(n)}`;
 
@@ -145,13 +163,15 @@ export async function exportStatementPDF(account: any, rows: any[], businessInfo
 
   let runningBalance = 0;
   const tableBody = rows.map((r) => {
-    const currentBalance = r.balance !== undefined ? r.balance : (runningBalance += (Number(r.credit) - Number(r.debit)));
+    const currentBalance = r.balance !== undefined && r.balance !== null
+      ? r.balance
+      : (runningBalance += (Number(r.credit ?? 0) - Number(r.debit ?? 0)));
     return [
-      formatDate(r.txn_date),
-      r.details,
-      Number(r.debit) > 0 ? plainAmount(Number(r.debit)) : "-",
-      Number(r.credit) > 0 ? plainAmount(Number(r.credit)) : "-",
-      plainSignedBalance(currentBalance),
+      formatDate(String(r.txn_date ?? "")),
+      r.details ?? "",
+      Number(r.debit ?? 0) > 0 ? plainAmount(Number(r.debit)) : "-",
+      Number(r.credit ?? 0) > 0 ? plainAmount(Number(r.credit)) : "-",
+      plainSignedBalance(currentBalance ?? 0),
     ];
   });
 
@@ -226,7 +246,16 @@ export async function exportStatementPDF(account: any, rows: any[], businessInfo
   doc.save(`${account.account_no}-statement.pdf`);
 }
 
-export async function exportLedgerPDF(rows: any[]) {
+export type LedgerRow = {
+  account_no?: string | null;
+  name?: string | null;
+  currency?: string | null;
+  debit?: number | string | null;
+  credit?: number | string | null;
+  net?: number | null;
+};
+
+export async function exportLedgerPDF(rows: LedgerRow[]) {
   const { jsPDF, autoTable } = await loadPdfLibs();
   const doc = new jsPDF();
   const W = doc.internal.pageSize.getWidth();
@@ -252,14 +281,15 @@ export async function exportLedgerPDF(rows: any[]) {
       r.currency,
       formatMoney(r.debit),
       formatMoney(r.credit),
-      `${formatMoney(r.net)} ${balanceLabel(r.net)}`,
+      `${formatMoney(r.net ?? 0)} ${balanceLabel(r.net ?? 0)}`,
     ]),
     styles: { fontSize: 8, cellPadding: 2.5 },
     headStyles: { fillColor: [15, 76, 78], textColor: 255 },
     didParseCell: (data) => {
       if (data.section === "body" && data.column.index === 5) {
         const r = rows[data.row.index];
-        data.cell.styles.textColor = r.net >= 0 ? [20, 130, 80] : [180, 30, 30];
+        const net = r.net ?? 0;
+        data.cell.styles.textColor = net >= 0 ? [20, 130, 80] : [180, 30, 30];
         data.cell.styles.fontStyle = "bold";
       }
     },

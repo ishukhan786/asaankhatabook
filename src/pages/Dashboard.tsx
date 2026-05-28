@@ -28,12 +28,16 @@ interface Stats {
   totalPayable: number;
 }
 
+type TransactionWithAccount = Tables<"transactions"> & {
+  accounts?: { name?: string | null; account_no?: string | null; currency?: string | null } | null;
+};
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { profile, role } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
-  const [recent, setRecent] = useState<Tables<"transactions">[]>([]);
+  const [recent, setRecent] = useState<TransactionWithAccount[]>([]);
   const load = async () => {
     try {
       const [{ data: recentTx }, { data: summaryRow }, branchResult, { data: trendRows }] = await Promise.all([
@@ -43,13 +47,14 @@ export default function Dashboard() {
         supabase.rpc("dashboard_trend", { p_days: 15 }),
       ]);
 
-      let netPKR = Number(summaryRow?.net_pkr ?? 0), netAED = Number(summaryRow?.net_aed ?? 0);
+      const netPKR = Number(summaryRow?.net_pkr ?? 0), netAED = Number(summaryRow?.net_aed ?? 0);
       const todayPKR = { debit: Number(summaryRow?.today_debit_pkr ?? 0), credit: Number(summaryRow?.today_credit_pkr ?? 0) };
       const todayAED = { debit: Number(summaryRow?.today_debit_aed ?? 0), credit: Number(summaryRow?.today_credit_aed ?? 0) };
-      let totalExpensePKR = Number(summaryRow?.total_expense_pkr ?? 0), totalExpenseAED = Number(summaryRow?.total_expense_aed ?? 0);
-      let totalReceivable = Number(summaryRow?.total_receivable ?? 0), totalPayable = Number(summaryRow?.total_payable ?? 0);
-      let branchData = (branchResult.data ?? []).map((b: any) => ({
-        name: b.branch_name,
+      const totalExpensePKR = Number(summaryRow?.total_expense_pkr ?? 0), totalExpenseAED = Number(summaryRow?.total_expense_aed ?? 0);
+      const totalReceivable = Number(summaryRow?.total_receivable ?? 0), totalPayable = Number(summaryRow?.total_payable ?? 0);
+      type BranchRPC = { branch_name?: string; pkr?: number | string; aed?: number | string; accounts_count?: number | string };
+      let branchData = (branchResult.data ?? []).map((b: BranchRPC) => ({
+        name: String(b.branch_name ?? ""),
         pkr: Number(b.pkr ?? 0),
         aed: Number(b.aed ?? 0),
         accounts: Number(b.accounts_count ?? 0),
@@ -62,19 +67,19 @@ export default function Dashboard() {
           supabase.from("accounts").select("id, branch_id"),
         ]);
         const accountCountByBranch = new Map<string, number>();
-        (accounts ?? []).forEach((a: any) => {
-          accountCountByBranch.set(a.branch_id, (accountCountByBranch.get(a.branch_id) ?? 0) + 1);
+        (accounts ?? []).forEach((a: { branch_id?: string }) => {
+          accountCountByBranch.set(String(a.branch_id ?? ""), (accountCountByBranch.get(String(a.branch_id ?? "")) ?? 0) + 1);
         });
-        branchData = (branches ?? []).map((b: any) => ({
-          name: b.name,
+        branchData = (branches ?? []).map((b: { id?: string; name?: string }) => ({
+          name: String(b.name ?? ""),
           pkr: 0,
           aed: 0,
-          accounts: accountCountByBranch.get(b.id) ?? 0,
+          accounts: accountCountByBranch.get(String(b.id ?? "")) ?? 0,
         }));
       }
 
-      const trendData = (trendRows ?? []).map((tRow: any) => ({
-        date: new Date(tRow.txn_date).toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-PK", { day: "2-digit", month: "short" }),
+      const trendData = (trendRows ?? []).map((tRow: { txn_date?: string; pkr?: number | string; aed?: number | string }) => ({
+        date: new Date(String(tRow.txn_date ?? "")).toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-PK", { day: "2-digit", month: "short" }),
         pkr: Number(tRow.pkr ?? 0),
         aed: Number(tRow.aed ?? 0),
       }));
@@ -89,7 +94,7 @@ export default function Dashboard() {
         totalReceivable,
         totalPayable
       });
-      setRecent(recentTx ?? []);
+      setRecent((recentTx ?? []) as Tables<"transactions">[]);
     } catch (err) {
       console.error("Dashboard load error:", err);
     }
@@ -345,7 +350,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recent.map((t: any) => (
+                  {recent.map((t) => (
                     <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30">
                       <td className="py-2.5 px-2 text-xs text-muted-foreground">{formatDate(t.txn_date)}</td>
                       <td className="py-2.5 px-2 font-mono text-xs">{t.txn_code}</td>

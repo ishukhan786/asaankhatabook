@@ -19,7 +19,19 @@ const CATEGORIES = ["Rent", "Salaries", "Electricity Bill", "Internet Bill", "Te
 
 export default function Expenses() {
   const { role, profile } = useAuth();
-  const [rows, setRows] = useState<any[] | null>(null);
+  type ExpenseRow = {
+    id: string;
+    category: string;
+    description?: string | null;
+    amount: number | string;
+    currency?: string | null;
+    expense_date?: string | null;
+    branch_id?: string | null;
+    created_by?: string | null;
+    branches?: { name?: string | null } | null;
+  };
+
+  const [rows, setRows] = useState<ExpenseRow[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
@@ -27,7 +39,7 @@ export default function Expenses() {
   
   // Add/Edit state
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<ExpenseRow | null>(null);
   const [form, setForm] = useState({
     category: "",
     description: "",
@@ -76,7 +88,7 @@ export default function Expenses() {
       setOpen(false);
       setEditing(null);
       setForm({ ...form, description: "", amount: "" });
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
     setBusy(false);
   };
 
@@ -86,7 +98,7 @@ export default function Expenses() {
       const { error } = await supabase.from("expenses").delete().eq("id", id);
       if (error) throw error;
       toast.success("Deleted");
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
   };
 
   const filtered = (rows ?? []).filter(r => {
@@ -96,10 +108,11 @@ export default function Expenses() {
     return true;
   });
 
-  const total = filtered.reduce((acc, r) => {
-    acc[r.currency] = (acc[r.currency] || 0) + Number(r.amount);
+  const total = filtered.reduce((acc: Record<string, number>, r) => {
+    const cur = r.currency ?? "PKR";
+    acc[cur] = (acc[cur] || 0) + Number(r.amount);
     return acc;
-  }, {} as any);
+  }, {} as Record<string, number>);
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
@@ -133,7 +146,7 @@ export default function Expenses() {
         <Card className="glass p-4 bg-primary/5 border-primary/20 flex flex-col justify-center">
           <div className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Total in view</div>
           <div className="text-xl font-display font-black text-primary">
-            {Object.entries(total).map(([cur, val]: any) => (
+            {Object.entries(total).map(([cur, val]: [string, number]) => (
               <div key={cur}>{formatMoney(val, cur)}</div>
             ))}
             {Object.keys(total).length === 0 && "PKR 0.00"}

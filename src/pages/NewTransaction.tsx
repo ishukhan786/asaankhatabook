@@ -33,7 +33,8 @@ const transactionTypeOptions = [
 export default function NewTransaction() {
   const nav = useNavigate();
   const [params] = useSearchParams();
-  const [accounts, setAccounts] = useState<any[]>([]);
+  type AccountShort = { id: string; account_no?: string | null; name?: string | null; currency?: string | null; mobile?: string | null };
+  const [accounts, setAccounts] = useState<AccountShort[]>([]);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
     account_id: params.get("account") ?? "",
@@ -50,7 +51,7 @@ export default function NewTransaction() {
     supabase.from("accounts").select("id, account_no, name, currency, mobile").order("name").then(({ data }) => setAccounts(data ?? []));
   }, []);
 
-  const sendWhatsApp = (t: any, acc: any) => {
+  const sendWhatsApp = (t: { txn_date: string; details?: string }, acc: AccountShort) => {
     if (!acc.mobile) return;
     const amount = Number(form.credit) > 0 ? form.credit : form.debit;
     const type = Number(form.credit) > 0 ? "Jama (Credit)" : "Nikala (Debit)";
@@ -82,7 +83,7 @@ export default function NewTransaction() {
     toast.success(`${data?.txn_code} recorded`);
     
     const acc = accounts.find(a => a.id === form.account_id);
-    if ((e.nativeEvent as any).submitter?.name === "whatsapp" && acc?.mobile) {
+    if ((e.nativeEvent as unknown as { submitter?: HTMLButtonElement })?.submitter?.name === "whatsapp" && acc?.mobile) {
       sendWhatsApp({ txn_date: form.txn_date, details: form.details.trim() }, acc);
     }
     
@@ -103,7 +104,7 @@ export default function NewTransaction() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Transaction Type *</Label>
-              <Select value={form.transaction_type} onValueChange={(v: any) => setForm({ ...form, transaction_type: v })}>
+              <Select value={form.transaction_type} onValueChange={(v: 'general'|'payment'|'receipt'|'transfer'|'expense'|'journal') => setForm({ ...form, transaction_type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {transactionTypeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
@@ -118,7 +119,7 @@ export default function NewTransaction() {
 
           <div className="space-y-1.5">
             <Label>Account *</Label>
-            <Select value={form.account_id} onValueChange={(v) => setForm({ ...form, account_id: v })}>
+            <Select value={form.account_id} onValueChange={(v: string) => setForm({ ...form, account_id: v })}>
               <SelectTrigger><SelectValue placeholder={accounts.length ? "Select account" : "No accounts yet"} /></SelectTrigger>
               <SelectContent>
                 {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.account_no} — {a.name} ({a.currency})</SelectItem>)}

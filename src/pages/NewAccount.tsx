@@ -37,10 +37,12 @@ const accountTypePrefix = {
   cash: "CAS",
 } as const;
 
+type BranchShort = { id: string; name: string };
+
 export default function NewAccount() {
   const nav = useNavigate();
   const { role, profile } = useAuth();
-  const [branches, setBranches] = useState<any[]>([]);
+  const [branches, setBranches] = useState<BranchShort[]>([]);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ 
     name: "", 
@@ -142,7 +144,7 @@ export default function NewAccount() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Account Type *</Label>
-              <Select value={form.account_type} onValueChange={(v: any) => setForm({ ...form, account_type: v })}>
+              <Select value={form.account_type} onValueChange={(v: string) => setForm({ ...form, account_type: v as typeof form.account_type })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {accountTypeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
@@ -174,7 +176,7 @@ export default function NewAccount() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Currency *</Label>
-              <Select value={form.currency} onValueChange={(v: any) => setForm({ ...form, currency: v })}>
+              <Select value={form.currency} onValueChange={(v: string) => setForm({ ...form, currency: v as typeof form.currency })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PKR">PKR — Pakistani Rupee</SelectItem>

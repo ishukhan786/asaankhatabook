@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +29,7 @@ interface AdminUser {
 
 const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`;
 
-async function call(method: string, body?: any, timeoutMs = 10000) {
+async function call(method: string, body?: Record<string, unknown> | null, timeoutMs = 10000) {
   const { data: { session } } = await supabase.auth.getSession();
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
@@ -73,7 +73,7 @@ export default function AdminUsers() {
   const [eBranch, setEBranch] = useState<string>("");
   const [ePassword, setEPassword] = useState("");
 
-  const loadFallbackUsers = async () => {
+  const loadFallbackUsers = useCallback(async () => {
     const [{ data: profiles, error: profilesError }, { data: roles, error: rolesError }] = await Promise.all([
       supabase.from("profiles").select("id, full_name, branch_id, created_at").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role"),
@@ -83,24 +83,25 @@ export default function AdminUsers() {
     if (rolesError) throw rolesError;
 
     const roleMap = new Map<string, string[]>();
-    (roles ?? []).forEach((r: any) => {
-      const arr = roleMap.get(r.user_id) ?? [];
-      arr.push(r.role);
-      roleMap.set(r.user_id, arr);
+    ((roles ?? []) as Array<{ user_id?: string; role?: string }>).forEach((r) => {
+      const uid = r.user_id ?? "";
+      const arr = roleMap.get(uid) ?? [];
+      if (r.role) arr.push(r.role);
+      roleMap.set(uid, arr);
     });
 
-    return (profiles ?? []).map((profile: any) => ({
+    return (profiles ?? []).map((profile: { id: string; full_name?: string | null; branch_id?: string | null; created_at?: string }) => ({
       id: profile.id,
       email: profile.id === me?.id ? (me.email ?? "Current user") : "Email unavailable",
-      full_name: profile.full_name,
-      branch_id: profile.branch_id,
+      full_name: profile.full_name ?? null,
+      branch_id: profile.branch_id ?? null,
       roles: roleMap.get(profile.id) ?? [],
-      created_at: profile.created_at,
+      created_at: profile.created_at ?? "",
       last_sign_in_at: null,
     }));
-  };
+  }, [me?.email, me?.id]);
 
-  const reload = async () => {
+  const reload = useCallback(async () => {
     setLoadError("");
 
     // Fetch branches independently to ensure they load even if users fetch is slow/fails
@@ -116,9 +117,10 @@ export default function AdminUsers() {
 
     try {
       const res = await call("GET", undefined, 8000);
-      setUsers(Array.isArray(res.users) ? res.users : []);
-    } catch (e: any) {
-      console.error("Reload error:", e);
+      setUsers(Array.isArray(res.users) ? (res.users as AdminUser[]) : []);
+    } catch (err: unknown) {
+      console.error("Reload error:", err);
+      const e = err instanceof Error ? err : new Error(String(err));
       const msg = e.name === "AbortError"
         ? "User service timed out. Showing locally stored profiles instead."
         : e.message === "Failed to fetch" 
@@ -130,14 +132,15 @@ export default function AdminUsers() {
         setUsers(fallbackUsers);
         setLoadError(msg);
         toast.warning(msg);
-      } catch (fallbackError: any) {
-        console.error("Fallback users load error:", fallbackError);
-        setLoadError(fallbackError.message ?? msg);
-        toast.error("Failed to load users: " + (fallbackError.message ?? msg));
+      } catch (fallbackError: unknown) {
+        const fe = fallbackError instanceof Error ? fallbackError : new Error(String(fallbackError));
+        console.error("Fallback users load error:", fe);
+        setLoadError(fe.message ?? msg);
+        toast.error("Failed to load users: " + (fe.message ?? msg));
         setUsers([]);
       }
     }
-  };
+  }, [loadFallbackUsers]);
 
   useEffect(() => {
     if (role === "admin") {
@@ -158,7 +161,7 @@ export default function AdminUsers() {
         supabase.removeChannel(sub);
       };
     }
-  }, [role]);
+  }, [reload, role]);
 
   if (loading) return <div className="p-8"><Skeleton className="h-32" /></div>;
   if (role !== "admin" && role !== "branch_manager") return <Navigate to="/" replace />;
@@ -177,14 +180,14 @@ export default function AdminUsers() {
       setCreateOpen(false);
       setEmail(""); setPassword(""); setFullName(""); setNewRole("branch_user"); setBranchId("");
       reload();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: unknown) { const msg = e instanceof Error ? e.message : String(e); toast.error(msg); }
     setBusy(false);
   };
 
   const openEdit = (u: AdminUser) => {
     setEditing(u);
     setEName(u.full_name ?? "");
-    setERole((u.roles[0] as any) ?? "branch_user");
+    setERole(u.roles[0] ?? "branch_user");
     setEBranch(u.branch_id ?? "");
     setEPassword("");
   };
@@ -205,7 +208,7 @@ export default function AdminUsers() {
       toast.success("Updated");
       setEditing(null);
       reload();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: unknown) { const msg = e instanceof Error ? e.message : String(e); toast.error(msg); }
     setBusy(false);
   };
 
@@ -213,7 +216,7 @@ export default function AdminUsers() {
     if (u.id === me?.id) { toast.error("You can't delete yourself"); return; }
     if (!confirm(`Delete ${u.email}? This cannot be undone.`)) return;
     try { await call("DELETE", { id: u.id }); toast.success("Deleted"); reload(); }
-    catch (e: any) { toast.error(e.message); }
+    catch (e: unknown) { const msg = e instanceof Error ? e.message : String(e); toast.error(msg); }
   };
 
   const branchName = (id: string | null) => branches.find((b) => b.id === id)?.name ?? "—";
@@ -240,7 +243,7 @@ export default function AdminUsers() {
               <div className="space-y-1.5"><Label>Password</Label><Input type="text" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
               <div className="space-y-1.5">
                 <Label>Role</Label>
-                <Select value={newRole} onValueChange={(v: any) => setNewRole(v)}>
+                <Select value={newRole} onValueChange={(v: string) => setNewRole(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Super Admin</SelectItem>
@@ -334,7 +337,7 @@ export default function AdminUsers() {
               <div className="space-y-1.5"><Label>Full name</Label><Input value={eName} onChange={(e) => setEName(e.target.value)} /></div>
               <div className="space-y-1.5">
                 <Label>Role</Label>
-                <Select value={eRole} onValueChange={(v: any) => setERole(v)}>
+                <Select value={eRole} onValueChange={(v: string) => setERole(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Super Admin</SelectItem>

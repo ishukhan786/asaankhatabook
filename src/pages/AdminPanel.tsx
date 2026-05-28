@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
@@ -10,13 +10,31 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatMoney, balanceLabel } from "@/lib/format";
 import { toast } from "sonner";
 
+type RecentTransaction = {
+  id?: string;
+  txn_code?: string | null;
+  details?: string | null;
+  debit?: number | string | null;
+  credit?: number | string | null;
+  created_at?: string | null;
+  accounts?: { name?: string | null; currency?: string | null } | null;
+};
+
 export default function AdminPanel() {
   const { role, loading, user: me } = useAuth();
-  const [s, setS] = useState<any>(null);
-  const [recentTx, setRecentTx] = useState<any[]>([]);
+  const [s, setS] = useState<null | {
+    branches: number;
+    accounts: number;
+    txns: number;
+    admins: number;
+    users: number;
+    pkr: number;
+    aed: number;
+  }>(null);
+  const [recentTx, setRecentTx] = useState<RecentTransaction[]>([]);
   const [isExporting, setIsExporting] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (role !== "admin") return;
     try {
       const [{ count: branches }, { count: accounts }, { count: txns }, { data: roles }, { data: tx }, { data: rTx }] = await Promise.all([
@@ -29,8 +47,8 @@ export default function AdminPanel() {
       ]);
 
       let pkr = 0, aed = 0;
-      (tx ?? []).forEach((t: any) => {
-        const net = Number(t.credit) - Number(t.debit);
+      ((tx ?? []) as Array<{ credit?: number | string; debit?: number | string; accounts?: { currency?: string } }>).forEach((t) => {
+        const net = Number(t.credit ?? 0) - Number(t.debit ?? 0);
         if (t.accounts?.currency === "PKR") pkr += net; else aed += net;
       });
 
@@ -38,15 +56,15 @@ export default function AdminPanel() {
         branches: branches ?? 0,
         accounts: accounts ?? 0,
         txns: txns ?? 0,
-        admins: (roles ?? []).filter((r: any) => r.role === "admin").length,
-        users: (roles ?? []).filter((r: any) => r.role === "branch_user").length,
+        admins: ((roles ?? []) as Array<{ role?: string }>).filter((r) => r.role === "admin").length,
+        users: ((roles ?? []) as Array<{ role?: string }>).filter((r) => r.role === "branch_user").length,
         pkr, aed,
       });
       setRecentTx(rTx ?? []);
     } catch (error) {
       toast.error("Failed to fetch admin stats");
     }
-  };
+  }, [role]);
 
   useEffect(() => {
     if (role === "admin") {
@@ -70,7 +88,7 @@ export default function AdminPanel() {
         supabase.removeChannel(sub);
       };
     }
-  }, [role]);
+  }, [fetchData, role]);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -206,8 +224,8 @@ export default function AdminPanel() {
                 <motion.div key={tx.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="p-4 hover:bg-muted/30 transition-colors">
                   <div className="flex justify-between items-start mb-1">
                     <div className="font-semibold text-sm truncate max-w-[150px]">{tx.accounts?.name}</div>
-                    <div className={`text-xs font-bold num ${Number(tx.credit) > 0 ? "text-success" : "text-destructive"}`}>
-                      {Number(tx.credit) > 0 ? `+${formatMoney(tx.credit, tx.accounts?.currency)}` : `-${formatMoney(tx.debit, tx.accounts?.currency)}`}
+                    <div className={`text-xs font-bold num ${Number(tx.credit ?? 0) > 0 ? "text-success" : "text-destructive"}`}>
+                      {Number(tx.credit ?? 0) > 0 ? `+${formatMoney(tx.credit ?? 0, tx.accounts?.currency)}` : `-${formatMoney(tx.debit ?? 0, tx.accounts?.currency)}`}
                     </div>
                   </div>
                   <div className="text-[10px] text-muted-foreground line-clamp-1">{tx.details}</div>

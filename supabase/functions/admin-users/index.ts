@@ -26,10 +26,11 @@ Deno.serve(async (req) => {
     try {
       const payloadPart = token.split(".")[1];
       const decodedPayload = JSON.parse(atob(payloadPart));
-      userId = decodedPayload.sub;
+      userId = (decodedPayload as { sub?: string }).sub as string;
       if (!userId) throw new Error("Missing sub claim");
-    } catch (err: any) {
-      console.error("JWT decode failed:", err?.message);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("JWT decode failed:", msg);
       return json({ error: "Unauthorized" }, 401);
     }
 
@@ -51,14 +52,16 @@ Deno.serve(async (req) => {
     if (req.method === "GET") {
       const { data: list, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
       if (error) throw error;
-      let ids = list.users.map((u) => u.id);
+      const ids = list.users.map((u) => u.id);
       const [{ data: profiles }, { data: roles }] = await Promise.all([
         admin.from("profiles").select("id, full_name, branch_id").in("id", ids),
         admin.from("user_roles").select("user_id, role").in("user_id", ids),
       ]);
-      const pMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+      type ProfileRow = { id: string; full_name?: string | null; branch_id?: string | null };
+      type RoleRow = { user_id: string; role: string };
+      const pMap = new Map<string, ProfileRow>((profiles ?? []).map((p: ProfileRow) => [p.id, p]));
       const rMap = new Map<string, string[]>();
-      (roles ?? []).forEach((r: any) => {
+      (roles ?? []).forEach((r: RoleRow) => {
         const arr = rMap.get(r.user_id) ?? [];
         arr.push(r.role);
         rMap.set(r.user_id, arr);
@@ -68,8 +71,8 @@ Deno.serve(async (req) => {
         email: u.email,
         created_at: u.created_at,
         last_sign_in_at: u.last_sign_in_at,
-        full_name: (pMap.get(u.id) as any)?.full_name ?? null,
-        branch_id: (pMap.get(u.id) as any)?.branch_id ?? null,
+        full_name: pMap.get(u.id)?.full_name ?? null,
+        branch_id: pMap.get(u.id)?.branch_id ?? null,
         roles: rMap.get(u.id) ?? [],
       }));
 
@@ -83,7 +86,8 @@ Deno.serve(async (req) => {
 
     if (req.method === "POST") {
       const body = await req.json();
-      let { email, password, full_name, role, branch_id } = body ?? {};
+      const { email, password, full_name, role, branch_id: bodyBranchId } = (body ?? {}) as Record<string, unknown>;
+      let branch_id = bodyBranchId as string | undefined;
       if (!email || !password || !role) return json({ error: "email, password, role required" }, 400);
       if (role !== "admin" && !branch_id) return json({ error: "branch_id required" }, 400);
 
@@ -94,7 +98,7 @@ Deno.serve(async (req) => {
       }
 
       const { data: created, error } = await admin.auth.admin.createUser({
-        email, password, email_confirm: true, user_metadata: { full_name },
+        email: email as string, password: password as string, email_confirm: true, user_metadata: { full_name },
       });
       if (error) throw error;
       const uid = created.user!.id;
@@ -107,8 +111,11 @@ Deno.serve(async (req) => {
     }
 
     if (req.method === "PATCH") {
-      const body = await req.json();
-      let { id, full_name, branch_id, role, password } = body ?? {};
+      const body = (await req.json()) as Record<string, unknown>;
+      const { id, full_name, role, password, branch_id: initialBranch } = (body ?? {}) as {
+        id?: string; full_name?: string; branch_id?: string; role?: string; password?: string
+      };
+      let branch_id = initialBranch as string | undefined;
       if (!id) return json({ error: "id required" }, 400);
 
       // Security Checks for Manager
@@ -125,7 +132,7 @@ Deno.serve(async (req) => {
         if (error) throw error;
       }
       if (full_name !== undefined || branch_id !== undefined) {
-        const patch: any = {};
+        const patch: Record<string, unknown> = {};
         if (full_name !== undefined) patch.full_name = full_name;
         if (branch_id !== undefined) patch.branch_id = branch_id;
         await admin.from("profiles").update(patch).eq("id", id);
@@ -156,8 +163,9 @@ Deno.serve(async (req) => {
     }
 
     return json({ error: "Method not allowed" }, 405);
-  } catch (e: any) {
-    console.error("admin-users error", e);
-    return json({ error: e?.message ?? "Server error" }, 500);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("admin-users error", msg);
+    return json({ error: msg ?? "Server error" }, 500);
   }
 });

@@ -47,7 +47,10 @@ export default function Settings() {
       if (error) throw error;
       toast.success("Profile updated successfully");
       await refresh();
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(message);
+    }
     setBusy(false);
   };
 
@@ -65,7 +68,10 @@ export default function Settings() {
       if (error) throw error;
       toast.success("Business information updated");
       await refresh();
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(message);
+    }
     setBusy(false);
   };
 
@@ -99,8 +105,9 @@ export default function Settings() {
       
       toast.success("Avatar updated");
       await refresh();
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(message);
     } finally {
       setUploading(false);
     }
@@ -118,7 +125,10 @@ export default function Settings() {
       toast.success("Password changed successfully");
       setPass("");
       setConfirmPass("");
-    } catch (err: any) { toast.error(err.message); }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(message);
+    }
     setBusy(false);
   };
 

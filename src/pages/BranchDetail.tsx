@@ -9,10 +9,24 @@ import { ArrowLeft, Building2, Wallet, Users, Receipt, TrendingUp, MapPin, Hash,
 import { formatMoney } from "@/lib/format";
 import { motion } from "framer-motion";
 
+export type Branch = {
+  id?: string;
+  code?: string;
+  name?: string;
+};
+
+export type AccountRow = {
+  id?: string;
+  name?: string;
+  account_no?: string;
+  currency?: string;
+  transactions?: Array<{ debit?: number | string; credit?: number | string }>;
+};
+
 export default function BranchDetail() {
   const { id } = useParams();
-  const [branch, setBranch] = useState<any | null>(null);
-  const [accounts, setAccounts] = useState<any[] | null>(null);
+  const [branch, setBranch] = useState<Branch | null>(null);
+  const [accounts, setAccounts] = useState<AccountRow[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadBranch = async () => {
@@ -21,8 +35,8 @@ export default function BranchDetail() {
       supabase.from("branches").select("*").eq("id", id).maybeSingle(),
       supabase.from("accounts").select("*, transactions(debit, credit)").eq("branch_id", id),
     ]);
-    setBranch(b);
-    setAccounts(a ?? []);
+    setBranch(b as Branch | null);
+    setAccounts((a ?? []) as AccountRow[]);
     setLoading(false);
   };
 
@@ -51,11 +65,12 @@ export default function BranchDetail() {
   if (loading) return <div className="p-8 space-y-4"><Skeleton className="h-12 w-1/4" /><Skeleton className="h-64" /></div>;
   if (!branch) return <div className="p-8 text-center text-muted-foreground">Branch not found.</div>;
 
-  const stats = accounts?.reduce((acc: any, curr: any) => {
-    const balance = curr.transactions?.reduce((sum: number, tx: any) => sum + (Number(tx.credit) - Number(tx.debit)), 0) || 0;
-    if (!acc[curr.currency]) acc[curr.currency] = { count: 0, balance: 0 };
-    acc[curr.currency].count++;
-    acc[curr.currency].balance += balance;
+  const stats = accounts?.reduce((acc: Record<string, { count: number; balance: number }>, curr: AccountRow) => {
+    const balance = (curr.transactions ?? []).reduce((sum: number, tx) => sum + (Number(tx.credit ?? 0) - Number(tx.debit ?? 0)), 0);
+    const cur = curr.currency ?? "";
+    if (!acc[cur]) acc[cur] = { count: 0, balance: 0 };
+    acc[cur].count++;
+    acc[cur].balance += balance;
     return acc;
   }, {}) || {};
 
@@ -80,11 +95,11 @@ export default function BranchDetail() {
         </motion.div>
 
         <div className="grid grid-cols-2 gap-4">
-          {Object.entries(stats).map(([curr, data]: [string, any]) => (
+          {Object.entries(stats).map(([curr, data]: [string, { count: number; balance: number }]) => (
             <Card key={curr} className="glass p-4 border-l-4 border-l-primary/40">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1">{curr} Net Liquidity</div>
               <div className={`font-display font-bold text-xl num ${data.balance >= 0 ? "text-success" : "text-destructive"}`}>
-                {formatMoney(data.balance, curr as any)}
+                {formatMoney(data.balance, curr)}
               </div>
             </Card>
           ))}
@@ -145,7 +160,7 @@ export default function BranchDetail() {
               {accounts?.length === 0 ? (
                 <tr><td colSpan={4} className="text-center py-12 text-muted-foreground">No accounts registered in this branch.</td></tr>
               ) : accounts?.map((acc) => {
-                const balance = acc.transactions?.reduce((sum: number, tx: any) => sum + (Number(tx.credit) - Number(tx.debit)), 0) || 0;
+                const balance = acc.transactions?.reduce((sum: number, tx) => sum + (Number(tx.credit ?? 0) - Number(tx.debit ?? 0)), 0) || 0;
                 return (
                   <tr key={acc.id} className="hover:bg-muted/30 transition-colors group">
                     <td className="px-6 py-4">

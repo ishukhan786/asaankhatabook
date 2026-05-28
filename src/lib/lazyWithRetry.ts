@@ -2,7 +2,7 @@ import { lazy } from "react";
 
 const RETRY_KEY = "asaankhata:lazy-retry";
 
-export function lazyWithRetry<T extends { default: React.ComponentType<any> }>(
+export function lazyWithRetry<T extends { default: React.ComponentType<unknown> }>(
   importer: () => Promise<T>,
   retryKey: string
 ) {
