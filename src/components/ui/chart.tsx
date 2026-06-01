@@ -1,6 +1,4 @@
 import * as React from "react";
-import * as RechartsPrimitive from "recharts";
-
 import { cn } from "@/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -29,11 +27,28 @@ function useChart() {
   return context;
 }
 
+const LazyRecharts: React.FC<{ children: (R: any) => React.ReactNode }> = ({ children }) => {
+  const [R, setR] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+    import("recharts").then((mod) => {
+      if (mounted) setR(mod);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (!R) return null;
+  return <>{children(R)}</>;
+};
+
 const ChartContainer = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
     config: ChartConfig;
-    children: React.ComponentProps<typeof RechartsPrimitive.ResponsiveContainer>["children"];
+    children: React.ReactNode;
   }
 >(({ id, className, children, config, ...props }, ref) => {
   const uniqueId = React.useId();
@@ -51,7 +66,9 @@ const ChartContainer = React.forwardRef<
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>{children}</RechartsPrimitive.ResponsiveContainer>
+        <LazyRecharts>
+          {(R) => <R.ResponsiveContainer>{children}</R.ResponsiveContainer>}
+        </LazyRecharts>
       </div>
     </ChartContext.Provider>
   );
@@ -87,11 +104,13 @@ ${colorConfig
   );
 };
 
-const ChartTooltip = RechartsPrimitive.Tooltip;
+const ChartTooltip = (props: any) => {
+  return <LazyRecharts>{(R) => <R.Tooltip {...props} />}</LazyRecharts>;
+};
 
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+  any &
     React.ComponentProps<"div"> & {
       hideLabel?: boolean;
       hideIndicator?: boolean;
@@ -225,12 +244,14 @@ const ChartTooltipContent = React.forwardRef<
 );
 ChartTooltipContent.displayName = "ChartTooltip";
 
-const ChartLegend = RechartsPrimitive.Legend;
+const ChartLegend = (props: any) => {
+  return <LazyRecharts>{(R) => <R.Legend {...props} />}</LazyRecharts>;
+};
 
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+    any & {
       hideIcon?: boolean;
       nameKey?: string;
     }

@@ -8,7 +8,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { motion } from "framer-motion";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useTranslation } from "react-i18next";
 import { Tables } from "@/integrations/supabase/types";
 import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
@@ -38,6 +37,17 @@ export default function Dashboard() {
   const { profile, role } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<TransactionWithAccount[]>([]);
+  const [Recharts, setRecharts] = useState<any>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    import("recharts").then((mod) => {
+      if (mounted) setRecharts(mod);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
   const load = async () => {
     try {
       const [{ data: recentTx }, { data: summaryRow }, branchResult, { data: trendRows }] = await Promise.all([
@@ -235,29 +245,33 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stats.trend}>
-                <defs>
-                  <linearGradient id="colorPkr" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorAed" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.4} />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'hsl(var(--muted-foreground))'}} />
-                <YAxis hide />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }}
-                  itemStyle={{ fontWeight: 'bold' }}
-                />
-                <Area type="monotone" dataKey="pkr" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorPkr)" />
-                <Area type="monotone" dataKey="aed" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorAed)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {Recharts ? (
+              <Recharts.ResponsiveContainer width="100%" height="100%">
+                <Recharts.AreaChart data={stats.trend}>
+                  <defs>
+                    <linearGradient id="colorPkr" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorAed" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <Recharts.CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.4} />
+                  <Recharts.XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                  <Recharts.YAxis hide />
+                  <Recharts.Tooltip
+                    contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }}
+                    itemStyle={{ fontWeight: 'bold' }}
+                  />
+                  <Recharts.Area type="monotone" dataKey="pkr" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorPkr)" />
+                  <Recharts.Area type="monotone" dataKey="aed" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorAed)" />
+                </Recharts.AreaChart>
+              </Recharts.ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-sm text-muted-foreground">Loading chart...</div>
+            )}
           </div>
         </Card>
 
@@ -267,17 +281,19 @@ export default function Dashboard() {
             <h2 className="font-display font-semibold">Branch Distribution (PKR Balance)</h2>
           </div>
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.byBranch}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.4} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'hsl(var(--muted-foreground))'}} />
-                <YAxis hide />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }}
-                />
-                <Bar dataKey="pkr" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {Recharts ? (
+              <Recharts.ResponsiveContainer width="100%" height="100%">
+                <Recharts.BarChart data={stats.byBranch}>
+                  <Recharts.CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.4} />
+                  <Recharts.XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                  <Recharts.YAxis hide />
+                  <Recharts.Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }} />
+                  <Recharts.Bar dataKey="pkr" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                </Recharts.BarChart>
+              </Recharts.ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-sm text-muted-foreground">Loading chart...</div>
+            )}
           </div>
         </Card>
       </div>

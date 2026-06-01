@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
 // import { componentTagger } from "lovable-tagger";
 
@@ -59,6 +60,10 @@ export default defineConfig(({ mode }) => ({
           "vendor-i18n": ["i18next", "react-i18next", "i18next-browser-languagedetector"],
         },
       },
-    },
+        plugins: [
+          // generate an interactive bundle report at dist/bundle-report.html
+          visualizer({ filename: "dist/bundle-report.html", gzipSize: true, brotliSize: true }),
+        ],
+      },
   },
 }));
