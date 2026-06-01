@@ -223,10 +223,10 @@ export default function Dashboard() {
                     <c.icon className="w-5 h-5 text-white" />
                   </div>
                 </div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{c.label}</div>
-                <div className="text-2xl font-display font-bold mt-1 num">{c.value}</div>
-                <div className={`text-xs mt-1 num ${c.positive === false ? "text-destructive" : c.positive === true ? "text-success" : "text-muted-foreground"}`}>{c.sub}</div>
-                <div className="text-[11px] text-muted-foreground mt-2 leading-tight">{c.hint}</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium truncate" title={c.label}>{c.label}</div>
+                <div className="text-2xl font-display font-bold mt-1 num truncate" title={c.value}>{c.value}</div>
+                <div className={`text-xs mt-1 num truncate ${c.positive === false ? "text-destructive" : c.positive === true ? "text-success" : "text-muted-foreground"}`} title={c.sub}>{c.sub}</div>
+                <div className="text-[11px] text-muted-foreground mt-2 leading-tight truncate" title={c.hint}>{c.hint}</div>
               </div>
             </Card>
           </motion.div>
