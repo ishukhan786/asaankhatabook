@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Users, ArrowRight, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Users, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -148,7 +148,7 @@ export default function Accounts() {
       <Card className="glass p-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, account no, mobile…" className="pl-10" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, account no, mobile..." className="pl-10" />
         </div>
       </Card>
 
@@ -184,8 +184,8 @@ export default function Accounts() {
                   >
                     <td className="px-4 py-3 font-mono text-xs">{r.account_no}</td>
                     <td className="px-4 py-3 font-bold text-primary group-hover:underline">{r.name}</td>
-                    <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{r.mobile ?? "—"}</td>
-                    <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{r.branches?.name ?? "—"}</td>
+                    <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{r.mobile ?? "N/A"}</td>
+                    <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{r.branches?.name ?? "N/A"}</td>
                     <td className="px-4 py-3"><Badge variant="secondary" className="font-mono">{r.currency}</Badge></td>
                     <td className="px-4 py-3 text-right space-x-1" onClick={(e) => e.stopPropagation()}>
                       {role === "admin" && (

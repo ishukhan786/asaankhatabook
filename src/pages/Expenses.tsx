@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Receipt, Search, Filter, Trash2, Pencil, Calendar } from "lucide-react";
+import { Plus, Receipt, Search, Trash2, Pencil, Calendar } from "lucide-react";
 import { formatMoney, formatDate } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +14,16 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const CATEGORIES = ["Rent", "Salaries", "Electricity Bill", "Internet Bill", "Tea / Food", "Stationery", "Maintenance", "Others"];
 
@@ -40,6 +50,7 @@ export default function Expenses() {
   // Add/Edit state
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ExpenseRow | null>(null);
+  const [deleting, setDeleting] = useState<ExpenseRow | null>(null);
   const [form, setForm] = useState({
     category: "",
     description: "",
@@ -49,7 +60,12 @@ export default function Expenses() {
   });
 
   const load = async () => {
-    const { data } = await supabase.from("expenses").select("*, branches(name)").order("expense_date", { ascending: false });
+    const { data, error } = await supabase.from("expenses").select("*, branches(name)").order("expense_date", { ascending: false });
+    if (error) {
+      toast.error(error.message);
+      setRows([]);
+      return;
+    }
     setRows(data ?? []);
   };
 
@@ -63,8 +79,13 @@ export default function Expenses() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const amount = Number(form.amount);
     if (!form.category || !form.amount || !profile?.branch_id) {
       toast.error("Please fill all required fields");
+      return;
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error("Expense amount must be greater than zero");
       return;
     }
     setBusy(true);
@@ -72,7 +93,7 @@ export default function Expenses() {
       const payload = {
         category: form.category,
         description: form.description.trim(),
-        amount: Number(form.amount),
+        amount,
         currency: form.currency,
         expense_date: form.expense_date,
         branch_id: profile.branch_id,
@@ -92,17 +113,19 @@ export default function Expenses() {
     setBusy(false);
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this expense?")) return;
+  const remove = async () => {
+    if (!deleting) return;
     try {
-      const { error } = await supabase.from("expenses").delete().eq("id", id);
+      const { error } = await supabase.from("expenses").delete().eq("id", deleting.id);
       if (error) throw error;
-      toast.success("Deleted");
+      toast.success("Expense deleted");
+      setDeleting(null);
+      load();
     } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
   };
 
   const filtered = (rows ?? []).filter(r => {
-    if (q && !r.category.toLowerCase().includes(q.toLowerCase()) && !r.description.toLowerCase().includes(q.toLowerCase())) return false;
+    if (q && !r.category.toLowerCase().includes(q.toLowerCase()) && !String(r.description ?? "").toLowerCase().includes(q.toLowerCase())) return false;
     if (from && r.expense_date < from) return false;
     if (to && r.expense_date > to) return false;
     return true;
@@ -183,8 +206,8 @@ export default function Expenses() {
                     <td className="px-6 py-4 text-right">
                       {(role === "admin" || r.created_by === profile?.id) && (
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditing(r); setForm({ category: r.category, description: r.description, amount: r.amount.toString(), currency: r.currency, expense_date: r.expense_date }); setOpen(true); }}><Pencil className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => remove(r.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditing(r); setForm({ category: r.category, description: r.description ?? "", amount: r.amount.toString(), currency: r.currency ?? "PKR", expense_date: r.expense_date ?? new Date().toISOString().slice(0, 10) }); setOpen(true); }}><Pencil className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleting(r)}><Trash2 className="w-3.5 h-3.5" /></Button>
                         </div>
                       )}
                     </td>
@@ -226,7 +249,7 @@ export default function Expenses() {
             </div>
             <div className="space-y-1.5">
               <Label>Amount *</Label>
-              <Input type="number" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0.00" required />
+              <Input type="number" step="0.01" min="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0.00" required />
             </div>
             <div className="space-y-1.5">
               <Label>Description / Notes</Label>
@@ -240,6 +263,21 @@ export default function Expenses() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Expense?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the {deleting?.category} expense of <strong>{formatMoney(deleting?.amount ?? 0, deleting?.currency)}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={remove} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete Expense</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

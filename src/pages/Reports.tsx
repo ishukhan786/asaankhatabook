@@ -248,7 +248,7 @@ export default function Reports() {
                     <tr key={r.id} className="border-t border-border/50 hover:bg-muted/30">
                       <td className="px-4 py-2.5 font-mono text-xs">{r.account_no}</td>
                       <td className="px-4 py-2.5 font-medium">{r.name}</td>
-                      <td className="px-4 py-2.5 hidden md:table-cell text-muted-foreground">{r.branches?.name ?? "—"}</td>
+                      <td className="px-4 py-2.5 hidden md:table-cell text-muted-foreground">{r.branches?.name ?? "N/A"}</td>
                       <td className="px-4 py-2.5"><Badge variant="secondary" className="font-mono text-xs">{r.currency}</Badge></td>
                       <td className="px-4 py-2.5 text-right num text-destructive">{formatMoney(r.debit, r.currency)}</td>
                       <td className="px-4 py-2.5 text-right num text-success">{formatMoney(r.credit, r.currency)}</td>
@@ -318,8 +318,8 @@ export default function Reports() {
                       <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30">
                         <td className="px-6 py-4 num text-muted-foreground whitespace-nowrap">{formatDate(t.txn_date)}</td>
                         <td className="px-6 py-4 font-medium">{t.details}</td>
-                        <td className="px-6 py-4 text-right num text-destructive font-medium">{Number(t.debit) > 0 ? formatMoney(Number(t.debit)) : "—"}</td>
-                        <td className="px-6 py-4 text-right num text-success font-medium">{Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "—"}</td>
+                        <td className="px-6 py-4 text-right num text-destructive font-medium">{Number(t.debit) > 0 ? formatMoney(Number(t.debit)) : "-"}</td>
+                        <td className="px-6 py-4 text-right num text-success font-medium">{Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "-"}</td>
                         <td className={`px-6 py-4 text-right num font-bold ${t.balance >= 0 ? "text-success" : "text-destructive"}`}>
                           {formatMoney(t.balance)} <span className="text-[10px] opacity-60 ml-0.5">{balanceLabel(t.balance)}</span>
                         </td>

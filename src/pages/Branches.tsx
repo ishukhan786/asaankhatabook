@@ -164,7 +164,7 @@ export default function Branches() {
                           <h3 className="font-display font-bold text-xl">{b.name}</h3>
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
                             <Briefcase className="w-3 h-3" />
-                            <span>Active Branch • Click to view</span>
+                            <span>Active Branch - Click to view</span>
                           </div>
                         </div>
                         <Button 

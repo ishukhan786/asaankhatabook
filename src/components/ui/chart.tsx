@@ -3,6 +3,9 @@ import { cn } from "@/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
+type RechartsModule = typeof import("recharts");
+type ChartTooltipProps = React.ComponentProps<RechartsModule["Tooltip"]>;
+type ChartLegendProps = React.ComponentProps<RechartsModule["Legend"]>;
 
 export type ChartConfig = {
   [k in string]: {
@@ -27,8 +30,8 @@ function useChart() {
   return context;
 }
 
-const LazyRecharts: React.FC<{ children: (R: any) => React.ReactNode }> = ({ children }) => {
-  const [R, setR] = React.useState<any>(null);
+const LazyRecharts: React.FC<{ children: (R: RechartsModule) => React.ReactNode }> = ({ children }) => {
+  const [R, setR] = React.useState<RechartsModule | null>(null);
 
   React.useEffect(() => {
     let mounted = true;
@@ -104,13 +107,13 @@ ${colorConfig
   );
 };
 
-const ChartTooltip = (props: any) => {
+const ChartTooltip = (props: ChartTooltipProps) => {
   return <LazyRecharts>{(R) => <R.Tooltip {...props} />}</LazyRecharts>;
 };
 
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  any &
+  ChartTooltipProps &
     React.ComponentProps<"div"> & {
       hideLabel?: boolean;
       hideIndicator?: boolean;
@@ -244,14 +247,14 @@ const ChartTooltipContent = React.forwardRef<
 );
 ChartTooltipContent.displayName = "ChartTooltip";
 
-const ChartLegend = (props: any) => {
+const ChartLegend = (props: ChartLegendProps) => {
   return <LazyRecharts>{(R) => <R.Legend {...props} />}</LazyRecharts>;
 };
 
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
-    any & {
+    Pick<ChartLegendProps, "payload" | "verticalAlign"> & {
       hideIcon?: boolean;
       nameKey?: string;
     }

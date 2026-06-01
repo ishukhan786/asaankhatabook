@@ -12,6 +12,8 @@ import { useTranslation } from "react-i18next";
 import { Tables } from "@/integrations/supabase/types";
 import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
 
+type RechartsModule = typeof import("recharts");
+
 interface Stats {
   accounts: number;
   branches: number;
@@ -37,7 +39,7 @@ export default function Dashboard() {
   const { profile, role } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<TransactionWithAccount[]>([]);
-  const [Recharts, setRecharts] = useState<any>(null);
+  const [Recharts, setRecharts] = useState<RechartsModule | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -375,8 +377,8 @@ export default function Dashboard() {
                         <div className="text-xs text-muted-foreground font-mono">{t.accounts?.account_no}</div>
                       </td>
                       <td className="py-2.5 px-2 hidden md:table-cell text-muted-foreground truncate max-w-xs">{t.details}</td>
-                      <td className="py-2.5 px-2 text-end num text-destructive">{Number(t.debit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowDownLeft className="w-3 h-3" />{formatMoney(Number(t.debit), t.accounts?.currency)}</span> : "—"}</td>
-                      <td className="py-2.5 px-2 text-end num text-success">{Number(t.credit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowUpRight className="w-3 h-3" />{formatMoney(Number(t.credit), t.accounts?.currency)}</span> : "—"}</td>
+                      <td className="py-2.5 px-2 text-end num text-destructive">{Number(t.debit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowDownLeft className="w-3 h-3" />{formatMoney(Number(t.debit), t.accounts?.currency)}</span> : "-"}</td>
+                      <td className="py-2.5 px-2 text-end num text-success">{Number(t.credit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowUpRight className="w-3 h-3" />{formatMoney(Number(t.credit), t.accounts?.currency)}</span> : "-"}</td>
                     </tr>
                   ))}
                 </tbody>

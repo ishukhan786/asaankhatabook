@@ -219,7 +219,7 @@ export default function AdminUsers() {
     catch (e: unknown) { const msg = e instanceof Error ? e.message : String(e); toast.error(msg); }
   };
 
-  const branchName = (id: string | null) => branches.find((b) => b.id === id)?.name ?? "—";
+  const branchName = (id: string | null) => branches.find((b) => b.id === id)?.name ?? "N/A";
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
@@ -302,7 +302,7 @@ export default function AdminUsers() {
                 {users.map((u) => (
                   <tr key={u.id} className="border-t border-border/50 hover:bg-muted/30">
                     <td className="px-4 py-3">
-                      <div className="font-medium">{u.full_name ?? "—"}</div>
+                      <div className="font-medium">{u.full_name ?? "N/A"}</div>
                       <div className="text-xs text-muted-foreground">{u.email}{u.id === me?.id && <span className="ml-1 text-primary">(you)</span>}</div>
                     </td>
                     <td className="px-4 py-3">

@@ -153,13 +153,19 @@ export default function AccountDetail() {
 
   const submitEditTx = async (e: React.FormEvent) => {
     e.preventDefault();
+    const debit = Number(etDebit || 0);
+    const credit = Number(etCredit || 0);
+    if (!etDate) { toast.error("Date is required"); return; }
+    if (!etDetails.trim()) { toast.error("Details are required"); return; }
+    if (debit <= 0 && credit <= 0) { toast.error("Enter debit or credit amount"); return; }
+    if (debit > 0 && credit > 0) { toast.error("Enter either debit or credit, not both"); return; }
     setBusy(true);
     try {
       const { error } = await supabase.from("transactions").update({
         txn_date: etDate,
         details: etDetails.trim(),
-        debit: Number(etDebit) || 0,
-        credit: Number(etCredit) || 0,
+        debit,
+        credit,
       }).eq("id", editingTx.id);
       if (error) throw error;
       toast.success("Transaction updated");
@@ -197,7 +203,8 @@ export default function AccountDetail() {
     const debit = Number(quickForm.debit || 0);
     const credit = Number(quickForm.credit || 0);
     if (!quickForm.details.trim()) { toast.error("Details required"); return; }
-    if (debit <= 0 && credit <= 0) { toast.error("Enter amount"); return; }
+    if (debit <= 0 && credit <= 0) { toast.error("Enter debit or credit amount"); return; }
+    if (debit > 0 && credit > 0) { toast.error("Enter either debit or credit, not both"); return; }
     
     setBusy(true);
     try {
@@ -363,8 +370,8 @@ export default function AccountDetail() {
                 <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30 group">
                   <td className="px-6 py-4 num text-muted-foreground whitespace-nowrap">{formatDate(t.txn_date)}</td>
                   <td className="px-6 py-4 font-medium">{t.details}</td>
-                  <td className="px-6 py-4 text-right num text-destructive font-medium">{Number(t.debit) > 0 ? formatMoney(Number(t.debit)) : "—"}</td>
-                  <td className="px-6 py-4 text-right num text-success font-medium">{Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "—"}</td>
+                  <td className="px-6 py-4 text-right num text-destructive font-medium">{Number(t.debit) > 0 ? formatMoney(Number(t.debit)) : "-"}</td>
+                  <td className="px-6 py-4 text-right num text-success font-medium">{Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "-"}</td>
                   <td className={`px-6 py-4 text-right num font-bold ${t.balance >= 0 ? "text-success" : "text-destructive"}`}>
                     {formatMoney(t.balance)} <span className="text-[10px] opacity-60 ml-0.5">{balanceLabel(t.balance)}</span>
                   </td>
@@ -392,8 +399,8 @@ export default function AccountDetail() {
             <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={etDate} onChange={(e) => setEtDate(e.target.value)} required /></div>
             <div className="space-y-1.5"><Label>Details</Label><Input value={etDetails} onChange={(e) => setEtDetails(e.target.value)} required /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5"><Label>Debit (Nikala / Diya)</Label><Input type="number" step="0.01" value={etDebit} onChange={(e) => setEtDebit(e.target.value)} /></div>
-              <div className="space-y-1.5"><Label>Credit (Jama / Liya)</Label><Input type="number" step="0.01" value={etCredit} onChange={(e) => setEtCredit(e.target.value)} /></div>
+              <div className="space-y-1.5"><Label>Debit (Nikala / Diya)</Label><Input type="number" step="0.01" min="0" value={etDebit} onChange={(e) => setEtDebit(e.target.value)} /></div>
+              <div className="space-y-1.5"><Label>Credit (Jama / Liya)</Label><Input type="number" step="0.01" min="0" value={etCredit} onChange={(e) => setEtCredit(e.target.value)} /></div>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">Update Transaction</Button>
@@ -442,11 +449,11 @@ export default function AccountDetail() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-destructive font-bold">Debit (Nikala)</Label>
-                <Input type="number" step="0.01" value={quickForm.debit} onChange={(e) => setQuickForm({ ...quickForm, debit: e.target.value })} placeholder="0.00" className="border-destructive/30" />
+                <Input type="number" step="0.01" min="0" value={quickForm.debit} onChange={(e) => setQuickForm({ ...quickForm, debit: e.target.value })} placeholder="0.00" className="border-destructive/30" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-success font-bold">Credit (Jama)</Label>
-                <Input type="number" step="0.01" value={quickForm.credit} onChange={(e) => setQuickForm({ ...quickForm, credit: e.target.value })} placeholder="0.00" className="border-success/30" />
+                <Input type="number" step="0.01" min="0" value={quickForm.credit} onChange={(e) => setQuickForm({ ...quickForm, credit: e.target.value })} placeholder="0.00" className="border-success/30" />
               </div>
             </div>
             <div className="space-y-1.5">

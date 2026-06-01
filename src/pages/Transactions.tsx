@@ -114,13 +114,19 @@ export default function Transactions() {
 
   const submitEditTx = async (e: React.FormEvent) => {
     e.preventDefault();
+    const debit = Number(etDebit || 0);
+    const credit = Number(etCredit || 0);
+    if (!etDate) { toast.error("Date is required"); return; }
+    if (!etDetails.trim()) { toast.error("Details are required"); return; }
+    if (debit <= 0 && credit <= 0) { toast.error("Enter debit or credit amount"); return; }
+    if (debit > 0 && credit > 0) { toast.error("Enter either debit or credit, not both"); return; }
     setBusy(true);
     try {
       const { error } = await supabase.from("transactions").update({
         txn_date: etDate,
         details: etDetails.trim(),
-        debit: Number(etDebit) || 0,
-        credit: Number(etCredit) || 0,
+        debit,
+        credit,
       }).eq("id", editingTx.id);
       if (error) throw error;
       toast.success("Transaction updated");
@@ -159,7 +165,7 @@ export default function Transactions() {
           <Label className="text-xs text-muted-foreground">Search</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Code, account, details…" className="pl-10" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Code, account, details..." className="pl-10" />
           </div>
         </div>
         <div><Label className="text-xs text-muted-foreground">From</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
@@ -195,8 +201,8 @@ export default function Transactions() {
                       <div className="text-xs text-muted-foreground font-mono">{t.accounts?.account_no}</div>
                     </td>
                     <td className="px-4 py-2.5 hidden md:table-cell text-muted-foreground truncate max-w-md">{t.details}</td>
-                    <td className="px-4 py-2.5 text-right num text-destructive">{Number(t.debit) > 0 ? formatMoney(Number(t.debit), t.accounts?.currency) : "—"}</td>
-                    <td className="px-4 py-2.5 text-right num text-success">{Number(t.credit) > 0 ? formatMoney(Number(t.credit), t.accounts?.currency) : "—"}</td>
+                    <td className="px-4 py-2.5 text-right num text-destructive">{Number(t.debit) > 0 ? formatMoney(Number(t.debit), t.accounts?.currency) : "-"}</td>
+                    <td className="px-4 py-2.5 text-right num text-success">{Number(t.credit) > 0 ? formatMoney(Number(t.credit), t.accounts?.currency) : "-"}</td>
                     {(role === "admin" || t.created_by === profile?.id) && (
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -228,8 +234,8 @@ export default function Transactions() {
             <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={etDate} onChange={(e) => setEtDate(e.target.value)} required /></div>
             <div className="space-y-1.5"><Label>Details</Label><Input value={etDetails} onChange={(e) => setEtDetails(e.target.value)} required /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5"><Label>Debit (Nikala / Diya)</Label><Input type="number" step="0.01" value={etDebit} onChange={(e) => setEtDebit(e.target.value)} /></div>
-              <div className="space-y-1.5"><Label>Credit (Jama / Liya)</Label><Input type="number" step="0.01" value={etCredit} onChange={(e) => setEtCredit(e.target.value)} /></div>
+              <div className="space-y-1.5"><Label>Debit (Nikala / Diya)</Label><Input type="number" step="0.01" min="0" value={etDebit} onChange={(e) => setEtDebit(e.target.value)} /></div>
+              <div className="space-y-1.5"><Label>Credit (Jama / Liya)</Label><Input type="number" step="0.01" min="0" value={etCredit} onChange={(e) => setEtCredit(e.target.value)} /></div>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">Update Transaction</Button>

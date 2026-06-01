@@ -92,7 +92,7 @@ export default function Auth() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-display text-2xl font-bold text-foreground">{isSignIn ? "Welcome back" : "Create your account"}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{isSignIn ? "Sign in to your workspace" : "Get started — it only takes a minute"}</p>
+              <p className="text-sm text-muted-foreground mt-1">{isSignIn ? "Sign in to your workspace" : "Get started - it only takes a minute"}</p>
             </div>
             <div className="hidden sm:flex items-center gap-2 text-xs text-foreground/60">
               <Sparkles className="h-4 w-4" /> Premium

@@ -19,7 +19,8 @@ const schema = z.object({
   details: z.string().trim().min(2).max(300),
   debit: z.number().min(0),
   credit: z.number().min(0),
-}).refine((d) => d.debit > 0 || d.credit > 0, { message: "Enter debit or credit amount" });
+}).refine((d) => d.debit > 0 || d.credit > 0, { message: "Enter debit or credit amount" })
+  .refine((d) => !(d.debit > 0 && d.credit > 0), { message: "Enter either debit or credit, not both" });
 
 const transactionTypeOptions = [
   { value: "general", label: "General", prefix: "TXN" },
@@ -122,7 +123,7 @@ export default function NewTransaction() {
             <Select value={form.account_id} onValueChange={(v: string) => setForm({ ...form, account_id: v })}>
               <SelectTrigger><SelectValue placeholder={accounts.length ? "Select account" : "No accounts yet"} /></SelectTrigger>
               <SelectContent>
-                {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.account_no} — {a.name} ({a.currency})</SelectItem>)}
+                {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.account_no} - {a.name} ({a.currency})</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

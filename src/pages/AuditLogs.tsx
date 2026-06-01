@@ -86,16 +86,16 @@ export default function AuditLogs() {
       if (action === "INSERT") {
         const name = getRecordName(newObj);
         let details = "";
-        if (table === "accounts") details = ` · Currency: ${newObj.currency || "PKR"}`;
-        if (table === "transactions") details = ` · Debit: ${newObj.debit || 0}, Credit: ${newObj.credit || 0}`;
-        if (table === "expenses") details = ` · Amount: ${newObj.amount || 0} ${newObj.currency || ""}`;
-        if (table === "branches") details = ` · Location: ${newObj.location || newObj.address || "—"}`;
-        return `✨ Created new ${table.slice(0, -1)} ${name}${details}`;
+        if (table === "accounts") details = ` - Currency: ${newObj.currency || "PKR"}`;
+        if (table === "transactions") details = ` - Debit: ${newObj.debit || 0}, Credit: ${newObj.credit || 0}`;
+        if (table === "expenses") details = ` - Amount: ${newObj.amount || 0} ${newObj.currency || ""}`;
+        if (table === "branches") details = ` - Location: ${newObj.location || newObj.address || "N/A"}`;
+        return `Created new ${table.slice(0, -1)} ${name}${details}`;
       }
 
       if (action === "DELETE") {
         const name = getRecordName(oldObj as Record<string, unknown>);
-        return `🗑️ Deleted ${table.slice(0, -1)} ${name}`;
+        return `Deleted ${table.slice(0, -1)} ${name}`;
       }
 
       if (action === "UPDATE") {
@@ -109,15 +109,15 @@ export default function AuditLogs() {
           const oldVal = oldObj[k];
           const newVal = newObj[k];
           if (oldVal !== newVal && newVal !== undefined) {
-            changes.push(`${k}: "${oldVal ?? 'none'}" ➔ "${newVal ?? 'none'}"`);
+            changes.push(`${k}: "${oldVal ?? 'none'}" -> "${newVal ?? 'none'}"`);
           }
         });
 
         if (changes.length === 0) {
-          return `📝 Updated ${table.slice(0, -1)} ${name} (Metadata/System update)`;
+          return `Updated ${table.slice(0, -1)} ${name} (metadata/system update)`;
         }
 
-        return `📝 Updated ${table.slice(0, -1)} ${name} — ${changes.join(", ")}`;
+        return `Updated ${table.slice(0, -1)} ${name} - ${changes.join(", ")}`;
       }
 
       return JSON.stringify(newObj || oldObj);

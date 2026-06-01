@@ -5,16 +5,49 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Lock, Settings as SettingsIcon, Camera, Moon, Sun, Building2 } from "lucide-react";
+import { User, Lock, Settings as SettingsIcon, Camera, Moon, Sun, Building2, FileText, Globe2, Download, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { useTranslation } from "react-i18next";
+
+type AppPreferences = {
+  defaultCurrency: "PKR" | "AED";
+  dateFormat: "dd MMM yyyy" | "yyyy-MM-dd" | "MM/dd/yyyy";
+  language: "en" | "ur";
+  showBusinessHeader: boolean;
+  showSignatureLine: boolean;
+  showAccountMobile: boolean;
+};
+
+const defaultPreferences: AppPreferences = {
+  defaultCurrency: "PKR",
+  dateFormat: "dd MMM yyyy",
+  language: "en",
+  showBusinessHeader: true,
+  showSignatureLine: true,
+  showAccountMobile: true,
+};
+
+const loadPreferences = (): AppPreferences => {
+  try {
+    const raw = localStorage.getItem("asaankhata.preferences");
+    return raw ? { ...defaultPreferences, ...JSON.parse(raw) } : defaultPreferences;
+  } catch {
+    return defaultPreferences;
+  }
+};
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
-  const { profile, user, refresh } = useAuth();
+  const { profile, user, refresh, role, signOut } = useAuth();
+  const { i18n } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [prefs, setPrefs] = useState<AppPreferences>(() => loadPreferences());
   
   // Profile state
   const [fullName, setFullName] = useState("");
@@ -34,6 +67,11 @@ export default function Settings() {
       setBusinessAddress(profile.business_address || "");
     }
   }, [profile]);
+
+  useEffect(() => {
+    i18n.changeLanguage(prefs.language);
+    document.documentElement.dir = prefs.language === "ur" ? "rtl" : "ltr";
+  }, [i18n, prefs.language]);
 
   const updateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,14 +170,54 @@ export default function Settings() {
     setBusy(false);
   };
 
+  const savePreferences = () => {
+    localStorage.setItem("asaankhata.preferences", JSON.stringify(prefs));
+    toast.success("Preferences saved");
+  };
+
+  const exportPreferences = () => {
+    const payload = {
+      exported_at: new Date().toISOString(),
+      profile: {
+        full_name: fullName,
+        business_name: businessName,
+        business_phone: businessPhone,
+        business_address: businessAddress,
+      },
+      preferences: prefs,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "asaankhata-settings.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div>
         <div className="text-xs uppercase tracking-wider text-muted-foreground">Preferences</div>
         <h1 className="font-display text-3xl md:text-4xl font-bold flex items-center gap-2">
           <SettingsIcon className="w-7 h-7 text-primary" /> Settings
         </h1>
-        <p className="text-muted-foreground mt-1">Manage your profile and account security.</p>
+        <p className="text-muted-foreground mt-1">Manage business identity, PDF defaults, app preferences, and account security.</p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="glass p-4">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Signed in as</div>
+          <div className="mt-1 font-semibold truncate">{user?.email}</div>
+        </Card>
+        <Card className="glass p-4">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Role</div>
+          <div className="mt-1 font-semibold capitalize">{role?.replace("_", " ") ?? "User"}</div>
+        </Card>
+        <Card className="glass p-4">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Default Currency</div>
+          <div className="mt-1 font-semibold">{prefs.defaultCurrency}</div>
+        </Card>
       </div>
 
       <div className="grid gap-8">
@@ -233,11 +311,11 @@ export default function Settings() {
               <div className="grid gap-1.5">
                 <Label htmlFor="businessAddress">Business Address</Label>
                 <Input
-                  id="businessAddress"
-                  value={businessAddress}
-                  onChange={(e) => setBusinessAddress(e.target.value)}
-                  placeholder="Shop, market, city"
-                />
+                    id="businessAddress"
+                    value={businessAddress}
+                    onChange={(e) => setBusinessAddress(e.target.value)}
+                    placeholder="Shop, market, city"
+                  />
               </div>
               <div className="flex justify-end pt-2">
                 <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
@@ -249,6 +327,65 @@ export default function Settings() {
         </section>
 
         <Separator className="opacity-50" />
+
+        {/* PDF and Report Defaults */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-lg font-bold">
+            <FileText className="w-5 h-5 text-primary" /> PDF & Report Defaults
+          </div>
+          <Card className="glass p-6 space-y-5">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid gap-1.5">
+                <Label>Default Currency</Label>
+                <Select value={prefs.defaultCurrency} onValueChange={(value: "PKR" | "AED") => setPrefs({ ...prefs, defaultCurrency: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PKR">PKR - Pakistani Rupee</SelectItem>
+                    <SelectItem value="AED">AED - UAE Dirham</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-1.5">
+                <Label>Date Format</Label>
+                <Select value={prefs.dateFormat} onValueChange={(value: AppPreferences["dateFormat"]) => setPrefs({ ...prefs, dateFormat: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dd MMM yyyy">01 Jun 2026</SelectItem>
+                    <SelectItem value="yyyy-MM-dd">2026-06-01</SelectItem>
+                    <SelectItem value="MM/dd/yyyy">06/01/2026</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-3">
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-border/60 p-3">
+                <div>
+                  <div className="font-medium">Show business header</div>
+                  <div className="text-sm text-muted-foreground">Use business name, phone, and address on statements.</div>
+                </div>
+                <Switch checked={prefs.showBusinessHeader} onCheckedChange={(checked) => setPrefs({ ...prefs, showBusinessHeader: checked })} />
+              </div>
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-border/60 p-3">
+                <div>
+                  <div className="font-medium">Show customer mobile</div>
+                  <div className="text-sm text-muted-foreground">Include account mobile number in exported reports where available.</div>
+                </div>
+                <Switch checked={prefs.showAccountMobile} onCheckedChange={(checked) => setPrefs({ ...prefs, showAccountMobile: checked })} />
+              </div>
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-border/60 p-3">
+                <div>
+                  <div className="font-medium">Show signature line</div>
+                  <div className="text-sm text-muted-foreground">Reserve space for signature or stamp on printable statements.</div>
+                </div>
+                <Switch checked={prefs.showSignatureLine} onCheckedChange={(checked) => setPrefs({ ...prefs, showSignatureLine: checked })} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={exportPreferences}><Download className="w-4 h-4 mr-2" /> Export Settings</Button>
+              <Button type="button" onClick={savePreferences} className="gradient-primary text-primary-foreground">Save Preferences</Button>
+            </div>
+          </Card>
+        </section>
 
         {/* Security Section */}
         <section className="space-y-4">
@@ -265,7 +402,7 @@ export default function Settings() {
                     type="password" 
                     value={pass} 
                     onChange={(e) => setPass(e.target.value)} 
-                    placeholder="••••••••" 
+                    placeholder="********" 
                   />
                 </div>
                 <div className="grid gap-1.5">
@@ -275,7 +412,7 @@ export default function Settings() {
                     type="password" 
                     value={confirmPass} 
                     onChange={(e) => setConfirmPass(e.target.value)} 
-                    placeholder="••••••••" 
+                    placeholder="********" 
                   />
                 </div>
               </div>
@@ -291,23 +428,54 @@ export default function Settings() {
         {/* Preferences Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 text-lg font-bold">
-            <Sun className="w-5 h-5 text-primary" /> App Preferences
+            <Globe2 className="w-5 h-5 text-primary" /> App Preferences
           </div>
-          <Card className="glass p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <div className="font-medium">Theme Mode</div>
-                <div className="text-sm text-muted-foreground">Switch between light and dark themes.</div>
+          <Card className="glass p-6 space-y-5">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid gap-1.5">
+                <Label>Language</Label>
+                <Select value={prefs.language} onValueChange={(value: "en" | "ur") => setPrefs({ ...prefs, language: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="ur">Urdu / RTL</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="rounded-full h-10 w-10"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              >
-                {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </Button>
+              <div className="grid gap-1.5">
+                <Label>Theme</Label>
+                <Button 
+                  variant="outline" 
+                  className="justify-start"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                >
+                  {theme === "dark" ? <Sun className="w-5 h-5 mr-2" /> : <Moon className="w-5 h-5 mr-2" />}
+                  {theme === "dark" ? "Dark mode" : "Light mode"}
+                </Button>
+              </div>
             </div>
+            <div className="flex items-center justify-between rounded-lg border border-border/60 p-3">
+              <div className="space-y-0.5">
+                <div className="font-medium">Local preferences</div>
+                <div className="text-sm text-muted-foreground">Stored on this device for UI and export defaults.</div>
+              </div>
+              <Button type="button" variant="secondary" onClick={savePreferences}>Save</Button>
+            </div>
+          </Card>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-lg font-bold">
+            <LogOut className="w-5 h-5 text-primary" /> Session
+          </div>
+          <Card className="glass p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="font-medium">Sign out from this device</div>
+              <div className="text-sm text-muted-foreground">Use this when switching users or leaving a shared computer.</div>
+            </div>
+            <Button type="button" variant="outline" onClick={signOut}>
+              <LogOut className="w-4 h-4 mr-2" /> Sign Out
+            </Button>
           </Card>
         </section>
       </div>

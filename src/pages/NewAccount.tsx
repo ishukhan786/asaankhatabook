@@ -179,8 +179,8 @@ export default function NewAccount() {
               <Select value={form.currency} onValueChange={(v: string) => setForm({ ...form, currency: v as typeof form.currency })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PKR">PKR — Pakistani Rupee</SelectItem>
-                  <SelectItem value="AED">AED — UAE Dirham</SelectItem>
+                  <SelectItem value="PKR">PKR - Pakistani Rupee</SelectItem>
+                  <SelectItem value="AED">AED - UAE Dirham</SelectItem>
                 </SelectContent>
               </Select>
             </div>
