@@ -132,8 +132,8 @@ export default function AdminPanel() {
     { l: "Total Accounts", v: s.accounts, icon: Wallet },
     { l: "Total Transactions", v: s.txns, icon: Receipt },
     { l: "Active Users", v: `${s.admins + s.users}`, icon: Users },
-    { l: "Net PKR", v: formatMoney(s.pkr, "PKR"), color: s.pkr >= 0 ? "text-success" : "text-destructive" },
-    { l: "Net AED", v: formatMoney(s.aed, "AED"), color: s.aed >= 0 ? "text-success" : "text-destructive" },
+    { l: "Net PKR", v: formatMoney(s.pkr, "PKR"), color: s.pkr >= 0 ? "text-success" : "text-rose-500 dark:text-rose-400", icon: Wallet },
+    { l: "Net AED", v: formatMoney(s.aed, "AED"), color: s.aed >= 0 ? "text-success" : "text-rose-500 dark:text-rose-400", icon: Wallet },
   ] : [];
 
   return (
@@ -166,12 +166,12 @@ export default function AdminPanel() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {!s ? [...Array(6)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />) : stats.map((x, i) => (
           <motion.div key={x.l} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card className="glass p-5 border-t-2 border-t-primary/20 hover:border-t-primary transition-all group">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">{x.l}</div>
-                {x.icon && <x.icon className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors" />}
+            <Card className="glass p-5 border-t-2 border-t-primary/20 hover:border-t-primary transition-all group h-full">
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold truncate" title={x.l}>{x.l}</div>
+                {x.icon && <x.icon className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary transition-colors shrink-0" />}
               </div>
-              <div className={`font-display font-bold text-xl lg:text-2xl mt-1 num ${x.color || ""}`}>{x.v}</div>
+              <div className={`font-display font-bold text-xl lg:text-2xl mt-1 num truncate ${x.color || "text-foreground"}`} title={String(x.v)}>{x.v}</div>
             </Card>
           </motion.div>
         ))}
@@ -222,9 +222,9 @@ export default function AdminPanel() {
                 <div className="p-8 text-center text-muted-foreground text-sm">No recent activity</div>
               ) : recentTx.map((tx, i) => (
                 <motion.div key={tx.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="p-4 hover:bg-muted/30 transition-colors">
-                  <div className="flex justify-between items-start mb-1">
-                    <div className="font-semibold text-sm truncate max-w-[150px]">{tx.accounts?.name}</div>
-                    <div className={`text-xs font-bold num ${Number(tx.credit ?? 0) > 0 ? "text-success" : "text-destructive"}`}>
+                  <div className="flex justify-between items-start mb-1 gap-2">
+                    <div className="font-semibold text-sm truncate flex-1">{tx.accounts?.name}</div>
+                    <div className={`text-xs font-bold num whitespace-nowrap shrink-0 ${Number(tx.credit ?? 0) > 0 ? "text-success" : "text-rose-500 dark:text-rose-400"}`}>
                       {Number(tx.credit ?? 0) > 0 ? `+${formatMoney(tx.credit ?? 0, tx.accounts?.currency)}` : `-${formatMoney(tx.debit ?? 0, tx.accounts?.currency)}`}
                     </div>
                   </div>
