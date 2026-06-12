@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, TrendingUp, Building2, Lock } from "lucide-react";
@@ -41,14 +41,27 @@ export default function Dashboard() {
   const [recent, setRecent] = useState<TransactionWithAccount[]>([]);
   const [Recharts, setRecharts] = useState<RechartsModule | null>(null);
 
+  const chartsRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     let mounted = true;
-    import("recharts").then((mod) => {
-      if (mounted) setRecharts(mod);
-    });
-    return () => {
-      mounted = false;
-    };
+    const el = chartsRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          import("recharts").then((mod) => {
+            if (mounted) setRecharts(mod);
+          }).catch(() => {});
+          io.disconnect();
+          break;
+        }
+      }
+    }, { threshold: 0.1 });
+
+    io.observe(el);
+    return () => { mounted = false; io.disconnect(); };
   }, []);
   const load = async () => {
     try {
@@ -234,7 +247,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div ref={chartsRef} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="glass p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">

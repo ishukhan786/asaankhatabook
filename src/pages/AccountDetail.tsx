@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil, MessageSquare, Receipt } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
-import { exportStatementPDF } from "@/lib/pdf";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import {
@@ -237,6 +236,7 @@ export default function AccountDetail() {
   const handleExportStatement = async () => {
     setExporting(true);
     try {
+      const { exportStatementPDF } = await import("@/lib/pdf");
       await exportStatementPDF(account, rows, profile);
     } catch (error) {
       console.error("Statement export failed:", error);
