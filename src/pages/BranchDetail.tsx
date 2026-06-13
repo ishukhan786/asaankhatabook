@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ export default function BranchDetail() {
   const [accounts, setAccounts] = useState<AccountRow[] | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadBranch = async () => {
+  const loadBranch = useCallback(async () => {
     if (!id) return;
     const [{ data: b }, { data: a }] = await Promise.all([
       supabase.from("branches").select("*").eq("id", id).maybeSingle(),
@@ -38,7 +38,7 @@ export default function BranchDetail() {
     setBranch(b as Branch | null);
     setAccounts((a ?? []) as AccountRow[]);
     setLoading(false);
-  };
+  }, [id]);
 
   useEffect(() => {
     loadBranch();
@@ -59,8 +59,7 @@ export default function BranchDetail() {
     return () => {
       supabase.removeChannel(sub);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, loadBranch]);
 
   if (loading) return <div className="p-8 space-y-4"><Skeleton className="h-12 w-1/4" /><Skeleton className="h-64" /></div>;
   if (!branch) return <div className="p-8 text-center text-muted-foreground">Branch not found.</div>;

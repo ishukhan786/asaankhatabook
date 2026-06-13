@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -77,7 +78,7 @@ export default function Accounts() {
       })));
       setBranches(brs ?? []);
     } catch (err: unknown) {
-      console.error("Accounts load error:", err);
+        logger.error("Accounts load error:", err);
       const msg = err instanceof Error ? err.message : String(err);
       toast.error(msg ?? "Could not load accounts");
       setRows([]);

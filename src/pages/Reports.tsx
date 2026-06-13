@@ -15,6 +15,7 @@ import { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
+import { logger } from "@/lib/logger";
 
 export default function Reports() {
   const { profile } = useAuth();
@@ -97,7 +98,7 @@ export default function Reports() {
 
   const selectedAccount = useMemo(() => accounts.find(a => a.id === selectedAccId), [accounts, selectedAccId]);
 
-  const loadStatement = () => {
+  const loadStatement = useCallback(() => {
     if (!selectedAccId) { setStatementTxns([]); return; }
     setLoadingStatement(true);
     supabase.from("transactions")
@@ -109,7 +110,7 @@ export default function Reports() {
         setStatementTxns(data ?? []);
         setLoadingStatement(false);
       });
-  };
+  }, [selectedAccId]);
 
   useEffect(() => {
     loadStatement();
@@ -124,8 +125,7 @@ export default function Reports() {
     return () => {
       supabase.removeChannel(sub);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAccId]);
+  }, [selectedAccId, loadStatement]);
 
   const filteredStatement = useMemo(() => {
     return statementTxns.filter(t => (!from || t.txn_date >= from) && (!to || t.txn_date <= to));
@@ -151,7 +151,7 @@ export default function Reports() {
     try {
       await exportLedgerPDF(summary);
     } catch (error) {
-      console.error("Ledger export failed:", error);
+      logger.error("Ledger export failed:", error);
       toast.error("Could not export ledger PDF");
     } finally {
       setExporting(false);
@@ -163,7 +163,7 @@ export default function Reports() {
     try {
       await exportStatementPDF(accountData, statementData, profile);
     } catch (error) {
-      console.error("Statement export failed:", error);
+      logger.error("Statement export failed:", error);
       toast.error("Could not export statement PDF");
     } finally {
       setExporting(false);
@@ -183,7 +183,7 @@ export default function Reports() {
       const accountRows = (data ?? []).filter((t) => (!from || t.txn_date >= from) && (!to || t.txn_date <= to));
       await exportStatementPDF(accountData, accountRows, profile);
     } catch (error) {
-      console.error("Ledger row statement export failed:", error);
+      logger.error("Ledger row statement export failed:", error);
       toast.error("Could not export statement PDF");
     } finally {
       setExporting(false);

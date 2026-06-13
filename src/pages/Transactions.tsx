@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,19 +89,23 @@ export default function Transactions() {
     setBusy(false);
   };
 
+  // Keep a ref to the latest `load` so subscription handlers call the current implementation
+  const loadRef = useRef<typeof load | null>(null);
+  useEffect(() => { loadRef.current = load; }, [load]);
+
   useEffect(() => {
     load(true);
     const sub = supabase.channel('txns-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => load(true))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+        (loadRef.current ?? load)(true);
+      })
       .subscribe();
     return () => { supabase.removeChannel(sub); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     setHasMore(true);
     load(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQ, from, to]);
 
   const openEditTx = (t: TxnRow) => {

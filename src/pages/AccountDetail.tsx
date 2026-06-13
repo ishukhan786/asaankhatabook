@@ -9,6 +9,7 @@ import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircl
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -239,7 +240,7 @@ export default function AccountDetail() {
       const { exportStatementPDF } = await import("@/lib/pdf");
       await exportStatementPDF(account, rows, profile);
     } catch (error) {
-      console.error("Statement export failed:", error);
+        logger.error("Statement export failed:", error);
       toast.error("Could not export statement PDF");
     } finally {
       setExporting(false);

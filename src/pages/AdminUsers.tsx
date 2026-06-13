@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { UserCog, Plus, Trash2, KeyRound, Pencil } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 interface AdminUser {
   id: string;
@@ -108,7 +109,7 @@ export default function AdminUsers() {
     supabase.from("branches").select("id, name, code").order("name")
       .then(({ data, error }) => {
         if (error) {
-          console.error("Error fetching branches:", error);
+          logger.error("Error fetching branches:", error);
           toast.error("Failed to load branches");
         } else {
           setBranches(data ?? []);
@@ -119,7 +120,7 @@ export default function AdminUsers() {
       const res = await call("GET", undefined, 8000);
       setUsers(Array.isArray(res.users) ? (res.users as AdminUser[]) : []);
     } catch (err: unknown) {
-      console.error("Reload error:", err);
+      logger.error("Reload error:", err);
       const e = err instanceof Error ? err : new Error(String(err));
       const msg = e.name === "AbortError"
         ? "User service timed out. Showing locally stored profiles instead."
@@ -134,7 +135,7 @@ export default function AdminUsers() {
         toast.warning(msg);
       } catch (fallbackError: unknown) {
         const fe = fallbackError instanceof Error ? fallbackError : new Error(String(fallbackError));
-        console.error("Fallback users load error:", fe);
+        logger.error("Fallback users load error:", fe);
         setLoadError(fe.message ?? msg);
         toast.error("Failed to load users: " + (fe.message ?? msg));
         setUsers([]);

@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, TrendingUp, Building2, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { logger } from "@/lib/logger";
 import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
@@ -63,7 +64,7 @@ export default function Dashboard() {
     io.observe(el);
     return () => { mounted = false; io.disconnect(); };
   }, []);
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const [{ data: recentTx }, { data: summaryRow }, branchResult, { data: trendRows }] = await Promise.all([
         supabase.from("transactions").select("*, accounts(name, account_no, currency)").order("created_at", { ascending: false }).limit(5),
@@ -121,9 +122,10 @@ export default function Dashboard() {
       });
       setRecent((recentTx ?? []) as Tables<"transactions">[]);
     } catch (err) {
-      console.error("Dashboard load error:", err);
+      logger.error("Dashboard load error:", err);
     }
-  };
+  }, [i18n.language]);
+
   const scheduleLoad = useRealtimeRefresh(load, 700);
 
   useEffect(() => {
@@ -139,8 +141,7 @@ export default function Dashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [load, scheduleLoad]);
 
   if (!stats) {
     return (
@@ -210,7 +211,7 @@ export default function Dashboard() {
         </div>
 
         {/* Access Debugger (Hidden from non-admins eventually, but shown now for troubleshooting) */}
-        {!role && (
+        {role === "admin" && (
           <div className="mt-4 p-4 rounded-2xl bg-destructive/5 border border-destructive/20 text-destructive text-sm flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Lock className="w-4 h-4" />

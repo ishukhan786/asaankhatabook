@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { logger } from "@/lib/logger";
 
 interface AccountBalance {
   id: string;
@@ -305,7 +306,7 @@ export default function PayablesReceivables() {
       setReceivables(processed.filter(p => p.balance < 0).sort((a, b) => a.balance - b.balance));
       setPayables(processed.filter(p => p.balance > 0).sort((a, b) => b.balance - a.balance));
     } catch (err) {
-      console.error(err);
+        logger.error(err);
     } finally {
       setLoading(false);
     }
