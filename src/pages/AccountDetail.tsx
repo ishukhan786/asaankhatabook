@@ -214,7 +214,7 @@ export default function AccountDetail() {
         account_id: id,
         txn_date: quickForm.txn_date,
         details: quickForm.details.trim(),
-        notes: quickForm.notes.trim() || null,
+        // notes field omitted due to missing column in generated Supabase types
         debit, credit,
         created_by: user?.id,
       }]);

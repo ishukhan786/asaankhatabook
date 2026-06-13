@@ -10,14 +10,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-
 // Validation schema for sign‑in / sign‑up form
 const schema = z.object({
   email: z.string().trim().email("Invalid email").max(255),
   password: z.string().min(6, "Min 6 characters").max(72),
   fullName: z.string().trim().min(2).max(80).optional(),
 });
-
 
 export default function Auth() {
   const nav = useNavigate();
@@ -183,4 +181,4 @@ export default function Auth() {
       </motion.div>
     </div>
   );
-                  <Button type="submit" disabled={busy} className="w-full flex items-center justify-center">
+};

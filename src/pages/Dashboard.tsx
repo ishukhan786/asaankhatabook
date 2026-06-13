@@ -211,7 +211,7 @@ export default function Dashboard() {
         </div>
 
         {/* Access Debugger (Hidden from non-admins eventually, but shown now for troubleshooting) */}
-        {role === "admin" && (
+        {role !== "admin" && (
           <div className="mt-4 p-4 rounded-2xl bg-destructive/5 border border-destructive/20 text-destructive text-sm flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Lock className="w-4 h-4" />
