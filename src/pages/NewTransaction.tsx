@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { ArrowLeft, MessageSquare, Loader } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { z } from "zod";
 
@@ -37,6 +37,7 @@ export default function NewTransaction() {
   type AccountShort = { id: string; account_no?: string | null; name?: string | null; currency?: string | null; mobile?: string | null };
   const [accounts, setAccounts] = useState<AccountShort[]>([]);
   const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({
     account_id: params.get("account") ?? "",
     transaction_type: "general" as "general" | "payment" | "receipt" | "transfer" | "expense" | "journal",
@@ -67,7 +68,8 @@ export default function NewTransaction() {
     const debit = Number(form.debit || 0);
     const credit = Number(form.credit || 0);
     const parsed = schema.safeParse({ ...form, debit, credit });
-    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    if (!parsed.success) { setFormError(parsed.error.issues[0].message); return; }
+    setFormError(null);
     setBusy(true);
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase.from("transactions").insert([{
@@ -102,6 +104,11 @@ export default function NewTransaction() {
 
       <Card className="glass p-6">
         <form onSubmit={submit} className="space-y-5">
+          {formError && (
+            <div className="p-3 bg-destructive/10 border border-destructive rounded text-sm text-destructive">
+              {formError}
+            </div>
+          )}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Transaction Type *</Label>
@@ -153,7 +160,14 @@ export default function NewTransaction() {
 
           <div className="flex flex-wrap gap-2 pt-2">
             <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground shadow-soft">
-              {busy ? "Saving..." : "Record transaction"}
+              {busy ? (
+                <>
+                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Record transaction"
+              )}
             </Button>
             <Button 
               type="submit" 

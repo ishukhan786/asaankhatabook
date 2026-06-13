@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil, MessageSquare, Receipt } from "lucide-react";
+import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil, MessageSquare, Receipt, Loader } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -379,9 +379,9 @@ export default function AccountDetail() {
                   {(role === "admin" || t.created_by === profile?.id) && (
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-success" onClick={() => sendWhatsApp(t)} title="WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)}><Pencil className="w-3.5 h-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingTx(t)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-success" onClick={() => sendWhatsApp(t)} aria-label="Send WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)} aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingTx(t)} aria-label="Delete transaction"><Trash2 className="w-3.5 h-3.5" /></Button>
                       </div>
                     </td>
                   )}
@@ -404,7 +404,16 @@ export default function AccountDetail() {
               <div className="space-y-1.5"><Label>Credit (Jama / Liya)</Label><Input type="number" step="0.01" min="0" value={etCredit} onChange={(e) => setEtCredit(e.target.value)} /></div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">Update Transaction</Button>
+              <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
+                {busy ? (
+                  <>
+                    <Loader className="w-4 h-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Transaction"
+                )}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

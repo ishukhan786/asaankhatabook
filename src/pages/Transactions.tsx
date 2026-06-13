@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,7 +11,6 @@ import { formatMoney, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
-import { Pencil, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -210,8 +209,8 @@ export default function Transactions() {
                     {(role === "admin" || t.created_by === profile?.id) && (
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)}><Pencil className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingTx(t)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)} aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingTx(t)} aria-label="Delete transaction"><Trash2 className="w-3.5 h-3.5" /></Button>
                         </div>
                       </td>
                     )}
@@ -242,7 +241,16 @@ export default function Transactions() {
               <div className="space-y-1.5"><Label>Credit (Jama / Liya)</Label><Input type="number" step="0.01" min="0" value={etCredit} onChange={(e) => setEtCredit(e.target.value)} /></div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">Update Transaction</Button>
+              <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
+                {busy ? (
+                  <>
+                    <Loader className="w-4 h-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Transaction"
+                )}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

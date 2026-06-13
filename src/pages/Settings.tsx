@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Lock, Settings as SettingsIcon, Camera, Moon, Sun, Building2, FileText, Globe2, Download, LogOut } from "lucide-react";
+import { User, Lock, Settings as SettingsIcon, Camera, Moon, Sun, Building2, FileText, Globe2, Download, LogOut, Loader } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
@@ -272,7 +272,14 @@ export default function Settings() {
               </div>
               <div className="flex justify-end pt-2">
                 <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
-                  Save Changes
+                  {busy ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </Button>
               </div>
             </form>
@@ -319,7 +326,14 @@ export default function Settings() {
               </div>
               <div className="flex justify-end pt-2">
                 <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
-                  Save Business Info
+                  {busy ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Business Info"
+                  )}
                 </Button>
               </div>
             </form>
@@ -418,7 +432,14 @@ export default function Settings() {
               </div>
               <div className="flex justify-end pt-2">
                 <Button type="submit" disabled={busy} variant="secondary">
-                  Update Password
+                  {busy ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Password"
+                  )}
                 </Button>
               </div>
             </form>

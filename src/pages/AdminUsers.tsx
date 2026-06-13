@@ -15,7 +15,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { UserCog, Plus, Trash2, KeyRound, Pencil } from "lucide-react";
+import { UserCog, Plus, Trash2, KeyRound, Pencil, Loader } from "lucide-react";
 import { logger } from "@/lib/logger";
 
 interface AdminUser {
@@ -272,7 +272,16 @@ export default function AdminUsers() {
                 </div>
               )}
               <DialogFooter>
-                <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">Create</Button>
+                <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
+                  {busy ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create"
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -316,8 +325,8 @@ export default function AdminUsers() {
                       {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : "Never"}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(u)}><Pencil className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => remove(u)} disabled={u.id === me?.id}>
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(u)} aria-label="Edit user"><Pencil className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => remove(u)} disabled={u.id === me?.id} aria-label="Delete user">
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     </td>
@@ -370,7 +379,16 @@ export default function AdminUsers() {
                 <Input type="text" minLength={6} value={ePassword} onChange={(e) => setEPassword(e.target.value)} placeholder="Leave blank to keep current" />
               </div>
               <DialogFooter>
-                <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">Save</Button>
+                <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
+                  {busy ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           )}

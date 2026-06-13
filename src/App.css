@@ -37,6 +37,12 @@
   padding: 2em;
 }
 
+/* Global focus-visible styling for better keyboard accessibility */
+*:focus-visible {
+  outline: 2px solid #3b82f6; /* Tailwind primary-500 */
+  outline-offset: 2px;
+}
+
 .read-the-docs {
   color: #888;
 }

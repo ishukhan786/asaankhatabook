@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Building2, Plus, Trash2, MapPin, Hash, Briefcase } from "lucide-react";
+import { Building2, Plus, Trash2, MapPin, Hash, Briefcase, Loader } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
@@ -123,7 +123,14 @@ export default function Branches() {
               <p className="text-[11px] text-muted-foreground">Code is generated automatically on save and cannot be edited later.</p>
             </div>
             <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground shadow-soft py-6 text-base font-semibold">
-              {busy ? "Establishing..." : "Establish Branch"}
+              {busy ? (
+                <>
+                  <Loader className="w-5 h-5 mr-2 animate-spin" />
+                  Establishing...
+                </>
+              ) : (
+                "Establish Branch"
+              )}
             </Button>
           </form>
         </Card>

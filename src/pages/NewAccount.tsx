@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader } from "lucide-react";
 import { z } from "zod";
 
 const schema = z.object({
@@ -44,6 +44,7 @@ export default function NewAccount() {
   const { role, profile } = useAuth();
   const [branches, setBranches] = useState<BranchShort[]>([]);
   const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({ 
     name: "", 
     mobile: "", 
@@ -82,13 +83,14 @@ export default function NewAccount() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse(form);
-    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    if (!parsed.success) { setFormError(parsed.error.issues[0].message); return; }
+    setFormError(null);
     
     // Logic: Use selected branch, or fallback to user's branch
     const finalBranchId = form.branch_id || profile?.branch_id;
     
     if (!finalBranchId) {
-      toast.error("Please select a branch or assign your user to a branch first.");
+      setFormError("Please select a branch or assign your user to a branch first.");
       return;
     }
 
@@ -141,6 +143,11 @@ export default function NewAccount() {
 
       <Card className="glass p-6">
         <form onSubmit={submit} className="space-y-5">
+          {formError && (
+            <div className="p-3 bg-destructive/10 border border-destructive rounded text-sm text-destructive">
+              {formError}
+            </div>
+          )}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Account Type *</Label>
@@ -205,7 +212,16 @@ export default function NewAccount() {
           </div>
 
           <div className="flex gap-2 pt-2">
-            <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground shadow-soft">{busy ? "Saving..." : "Create account"}</Button>
+            <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground shadow-soft">
+              {busy ? (
+                <>
+                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Create account"
+              )}
+            </Button>
             <Link to="/accounts"><Button type="button" variant="ghost">Cancel</Button></Link>
           </div>
         </form>

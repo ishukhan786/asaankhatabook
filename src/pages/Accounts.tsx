@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Users, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Users, Pencil, Trash2, Loader } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -163,7 +163,7 @@ export default function Accounts() {
           <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground"><Plus className="w-4 h-4 mr-1" /> Create account</Button></Link>
         </Card>
       ) : (
-        <Card className="glass overflow-hidden">
+        <Card className="glass overflow-hidden hidden md:block">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
@@ -191,8 +191,8 @@ export default function Accounts() {
                     <td className="px-4 py-3 text-right space-x-1" onClick={(e) => e.stopPropagation()}>
                       {role === "admin" && (
                         <>
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-8 w-8"><Pencil className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => setDeleting({ id: r.id, name: r.name })} className="h-8 w-8 text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-8 w-8" aria-label="Edit account"><Pencil className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleting({ id: r.id, name: r.name })} className="h-8 w-8 text-destructive" aria-label="Delete account"><Trash2 className="w-3.5 h-3.5" /></Button>
                         </>
                       )}
                     </td>
@@ -203,6 +203,16 @@ export default function Accounts() {
           </div>
         </Card>
       )}
+      {/* Mobile view: simple cards for each account */}
+      <div className="md:hidden space-y-4 mt-4">
+        {filtered.map((r) => (
+          <Card key={r.id} className="p-4">
+            <div className="font-medium mb-1">{r.name}</div>
+            <div className="text-sm text-muted-foreground mb-1">{r.account_no}</div>
+            <div className="text-sm">{r.currency}</div>
+          </Card>
+        ))}
+      </div>
 
       {/* Edit Dialog */}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
@@ -221,7 +231,16 @@ export default function Accounts() {
               </Select>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">Save Changes</Button>
+              <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
+                {busy ? (
+                  <>
+                    <Loader className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

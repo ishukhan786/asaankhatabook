@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Receipt, Search, Trash2, Pencil, Calendar } from "lucide-react";
+import { Plus, Receipt, Search, Trash2, Pencil, Calendar, Loader } from "lucide-react";
 import { formatMoney, formatDate } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -206,8 +206,8 @@ export default function Expenses() {
                     <td className="px-6 py-4 text-right">
                       {(role === "admin" || r.created_by === profile?.id) && (
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditing(r); setForm({ category: r.category, description: r.description ?? "", amount: r.amount.toString(), currency: r.currency ?? "PKR", expense_date: r.expense_date ?? new Date().toISOString().slice(0, 10) }); setOpen(true); }}><Pencil className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleting(r)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditing(r); setForm({ category: r.category, description: r.description ?? "", amount: r.amount.toString(), currency: r.currency ?? "PKR", expense_date: r.expense_date ?? new Date().toISOString().slice(0, 10) }); setOpen(true); }} aria-label="Edit expense"><Pencil className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleting(r)} aria-label="Delete expense"><Trash2 className="w-3.5 h-3.5" /></Button>
                         </div>
                       )}
                     </td>
@@ -257,7 +257,14 @@ export default function Expenses() {
             </div>
             <DialogFooter className="pt-4">
               <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground shadow-soft">
-                {busy ? "Saving..." : editing ? "Update Expense" : "Save Expense"}
+                {busy ? (
+                  <>
+                    <Loader className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  editing ? "Update Expense" : "Save Expense"
+                )}
               </Button>
             </DialogFooter>
           </form>

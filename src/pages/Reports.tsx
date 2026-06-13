@@ -256,7 +256,7 @@ export default function Reports() {
                         {formatMoney(r.net, r.currency)} <span className="text-xs">{balanceLabel(r.net)}</span>
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={exporting} onClick={() => handleExportLedgerRowStatement(r)} title="Statement"><FileDown className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={exporting} onClick={() => handleExportLedgerRowStatement(r)} aria-label="Export statement"><FileDown className="w-3.5 h-3.5" /></Button>
                       </td>
                     </tr>
                   ))}

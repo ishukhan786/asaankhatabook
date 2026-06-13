@@ -241,8 +241,8 @@ const ScreenTable = React.memo(({
               </td>
               <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {a.mobile && <Button variant="ghost" size="icon" className="h-7 w-7 text-green-500 hover:bg-green-500/10" onClick={e => sendWhatsApp(e, a)}><MessageSquare className="w-3.5 h-3.5" /></Button>}
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate(`/accounts/${a.id}`)}><ExternalLink className="w-3.5 h-3.5" /></Button>
+                  {a.mobile && <Button variant="ghost" size="icon" className="h-7 w-7 text-green-500 hover:bg-green-500/10" onClick={e => sendWhatsApp(e, a)} aria-label="Send WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>}
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate(`/accounts/${a.id}`)} aria-label="View account details"><ExternalLink className="w-3.5 h-3.5" /></Button>
                 </div>
               </td>
             </tr>
