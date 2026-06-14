@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ import { logger } from "@/lib/logger";
 
 interface AdminUser {
   id: string;
-  email: string;
+  username: string;
   full_name: string | null;
   branch_id: string | null;
   roles: string[];
@@ -30,8 +31,7 @@ interface AdminUser {
 
 const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`;
 
-async function call(method: string, body?: Record<string, unknown> | null, timeoutMs = 10000) {
-  const { data: { session } } = await supabase.auth.getSession();
+async function call(method: string, token: string, body?: Record<string, unknown> | null, timeoutMs = 10000) {
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
 
@@ -39,7 +39,7 @@ async function call(method: string, body?: Record<string, unknown> | null, timeo
     method,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session?.access_token ?? ""}`,
+      Authorization: `Bearer ${token}`,
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -48,12 +48,13 @@ async function call(method: string, body?: Record<string, unknown> | null, timeo
   window.clearTimeout(timeoutId);
 
   const json = await res.json();
-  if (!res.ok) throw new Error(json.error ?? "Request failed");
+  if (!res.ok) throw new Error(json.message ?? json.error ?? `Request failed with status ${res.status}`);
   return json;
 }
 
 export default function AdminUsers() {
   const { role, loading, user: me } = useAuth();
+  const { getToken } = useClerkAuth();
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [branches, setBranches] = useState<{ id: string; name: string; code: string }[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
@@ -62,7 +63,7 @@ export default function AdminUsers() {
   const [loadError, setLoadError] = useState("");
 
   // Create form
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [newRole, setNewRole] = useState<string>("branch_user");
@@ -93,7 +94,7 @@ export default function AdminUsers() {
 
     return (profiles ?? []).map((profile: { id: string; full_name?: string | null; branch_id?: string | null; created_at?: string }) => ({
       id: profile.id,
-      email: profile.id === me?.id ? (me.email ?? "Current user") : "Email unavailable",
+      username: profile.id === me?.id ? (me.username ?? "Current user") : "Username unavailable",
       full_name: profile.full_name ?? null,
       branch_id: profile.branch_id ?? null,
       roles: roleMap.get(profile.id) ?? [],
@@ -117,7 +118,8 @@ export default function AdminUsers() {
       });
 
     try {
-      const res = await call("GET", undefined, 8000);
+      const token = await getToken() ?? "";
+      const res = await call("GET", token, undefined, 8000);
       setUsers(Array.isArray(res.users) ? (res.users as AdminUser[]) : []);
     } catch (err: unknown) {
       logger.error("Reload error:", err);
@@ -173,13 +175,14 @@ export default function AdminUsers() {
     if (newRole !== "admin" && !branchId) { toast.error("Select a branch"); return; }
     setBusy(true);
     try {
-      await call("POST", {
-        email: email.trim(), password, full_name: fullName.trim() || null,
+      const token = await getToken({ template: "supabase" }) ?? "";
+      await call("POST", token, {
+        username: username.trim().toLowerCase(), password, full_name: fullName.trim() || null,
         role: newRole, branch_id: newRole !== "admin" ? branchId : null,
       });
       toast.success("User created");
       setCreateOpen(false);
-      setEmail(""); setPassword(""); setFullName(""); setNewRole("branch_user"); setBranchId("");
+      setUsername(""); setPassword(""); setFullName(""); setNewRole("branch_user"); setBranchId("");
       reload();
     } catch (e: unknown) { const msg = e instanceof Error ? e.message : String(e); toast.error(msg); }
     setBusy(false);
@@ -199,7 +202,8 @@ export default function AdminUsers() {
     if (eRole !== "admin" && !eBranch) { toast.error("Select a branch"); return; }
     setBusy(true);
     try {
-      await call("PATCH", {
+      const token = await getToken() ?? "";
+      await call("PATCH", token, {
         id: editing.id,
         full_name: eName.trim() || null,
         branch_id: eRole !== "admin" ? eBranch : null,
@@ -215,8 +219,13 @@ export default function AdminUsers() {
 
   const remove = async (u: AdminUser) => {
     if (u.id === me?.id) { toast.error("You can't delete yourself"); return; }
-    if (!confirm(`Delete ${u.email}? This cannot be undone.`)) return;
-    try { await call("DELETE", { id: u.id }); toast.success("Deleted"); reload(); }
+    if (!confirm(`Delete ${u.username}? This cannot be undone.`)) return;
+    try { 
+      const token = await getToken() ?? "";
+      await call("DELETE", token, { id: u.id }); 
+      toast.success("Deleted"); 
+      reload(); 
+    }
     catch (e: unknown) { const msg = e instanceof Error ? e.message : String(e); toast.error(msg); }
   };
 
@@ -240,7 +249,7 @@ export default function AdminUsers() {
             <DialogHeader><DialogTitle>Create user</DialogTitle></DialogHeader>
             <form onSubmit={submitCreate} className="space-y-3">
               <div className="space-y-1.5"><Label>Full name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
-              <div className="space-y-1.5"><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+              <div className="space-y-1.5"><Label>Username</Label><Input type="text" required value={username} onChange={(e) => setUsername(e.target.value)} /></div>
               <div className="space-y-1.5"><Label>Password</Label><Input type="text" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
               <div className="space-y-1.5">
                 <Label>Role</Label>
@@ -313,7 +322,7 @@ export default function AdminUsers() {
                   <tr key={u.id} className="border-t border-border/50 hover:bg-muted/30">
                     <td className="px-4 py-3">
                       <div className="font-medium">{u.full_name ?? "N/A"}</div>
-                      <div className="text-xs text-muted-foreground">{u.email}{u.id === me?.id && <span className="ml-1 text-primary">(you)</span>}</div>
+                      <div className="text-xs text-muted-foreground">@{u.username}{u.id === me?.id && <span className="ml-1 text-primary">(you)</span>}</div>
                     </td>
                     <td className="px-4 py-3">
                       {u.roles.map((r) => (

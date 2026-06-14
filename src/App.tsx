@@ -58,7 +58,7 @@ const App = () => {
             <AuthProvider>
               <Suspense fallback={<PageFallback />}>
                 <Routes>
-                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/auth/*" element={<Auth />} />
                   <Route element={<AppLayout />}>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/accounts" element={<Accounts />} />
@@ -86,6 +86,5 @@ const App = () => {
     </QueryClientProvider>
   );
 };
-
 
 export default App;

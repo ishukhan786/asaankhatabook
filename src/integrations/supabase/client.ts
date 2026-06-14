@@ -14,10 +14,21 @@ export const supabase = createClient<Database>(
   SUPABASE_URL || "https://placeholder.supabase.co", 
   SUPABASE_PUBLISHABLE_KEY || "placeholder", 
   {
-    auth: {
-      storage: localStorage,
-      persistSession: true,
-      autoRefreshToken: true,
+    global: {
+      fetch: async (url, options = {}) => {
+        // @ts-ignore - window.Clerk is injected by ClerkProvider
+        const clerkToken = typeof window !== 'undefined' && window.Clerk?.session
+          // @ts-ignore
+          ? await window.Clerk.session.getToken({ template: 'supabase' })
+          : null;
+        
+        const headers = new Headers(options?.headers);
+        if (clerkToken) {
+          headers.set('Authorization', `Bearer ${clerkToken}`);
+        }
+        
+        return fetch(url, { ...options, headers });
+      }
     }
   }
 );

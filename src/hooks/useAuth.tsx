@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Session, User } from "@supabase/supabase-js";
+import { useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
 
 export type Role = "admin" | "branch_manager" | "accountant" | "cashier" | "viewer" | "branch_user";
 
@@ -16,8 +16,8 @@ interface Profile {
 }
 
 interface AuthCtx {
-  user: User | null;
-  session: Session | null;
+  user: any | null; // using any for Clerk User to avoid complex type mapping, or map it
+  session: any | null;
   profile: Profile | null;
   role: Role | null;
   loading: boolean;
@@ -33,13 +33,26 @@ interface AuthCtx {
 const Ctx = createContext<AuthCtx | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isLoaded: userLoaded } = useUser();
+  const { signOut: clerkSignOut, isLoaded: authLoaded } = useClerkAuth();
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole] = useState<Role | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingExtras, setLoadingExtras] = useState(false);
 
-  const loadExtras = async (uid: string) => {
+  const loadExtras = async (uid: string, clerkUser?: any) => {
+    setLoadingExtras(true);
+
+    // Auto-upsert profile so it always exists for logged-in Clerk users
+    const fullName = clerkUser
+      ? [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") || clerkUser.username || null
+      : null;
+
+    await supabase.from("profiles").upsert(
+      { id: uid, full_name: fullName },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+
     const [{ data: p }, { data: r }] = await Promise.all([
       supabase
         .from("profiles")
@@ -62,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else if (roles.includes("branch_user")) finalRole = "branch_user"; // legacy
     
     setRole(finalRole);
+    setLoadingExtras(false);
   };
 
   const refresh = async () => {
@@ -69,30 +83,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) {
-        loadExtras(s.user.id);
-      } else {
-        setProfile(null);
-        setRole(null);
-      }
-    });
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) loadExtras(s.user.id).finally(() => setLoading(false));
-      else setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
-  }, []);
+    if (userLoaded && user) {
+      loadExtras(user.id, user);
+    } else if (userLoaded && !user) {
+      setProfile(null);
+      setRole(null);
+    }
+  }, [user, userLoaded]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await clerkSignOut();
     setProfile(null);
     setRole(null);
   };
+
+  const loading = !userLoaded || !authLoaded || (user ? loadingExtras : false);
 
   // RBAC Helpers
   const canManageUsers = role === "admin" || role === "branch_manager";
@@ -102,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={{ 
-      user, session, profile, role, loading, signOut, refresh,
+      user, session: null, profile, role, loading, signOut, refresh,
       canManageUsers, canWriteTransactions, canDeleteTransactions, canAccessReports
     }}>
       {children}

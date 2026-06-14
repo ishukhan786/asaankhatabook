@@ -1,88 +1,59 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Lock, Mail, ShieldCheck, Sparkles, User, XCircle, Loader } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
-import { z } from "zod";
+import { useSignIn, useAuth as useClerkAuth } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-// Validation schema for sign‑in / sign‑up form
-const schema = z.object({
-  email: z.string().trim().email("Invalid email").max(255),
-  password: z.string().min(6, "Min 6 characters").max(72),
-  fullName: z.string().trim().min(2).max(80).optional(),
-});
+import { Eye, EyeOff, User, Lock, Loader2 } from "lucide-react";
 
 export default function Auth() {
-  const nav = useNavigate();
-  const { user, loading } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [authError, setAuthError] = useState("");
-  const isSignIn = mode === "signin";
+  const [showPass, setShowPass] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  const { signIn, setActive } = useSignIn();
+  const { userId, signOut } = useClerkAuth();
+  const navigate = useNavigate();
+
+  // Agar user pehle se logged in hai toh usay seedha dashboard pe bhej dein
   useEffect(() => {
-    if (!loading && user) nav("/", { replace: true });
-  }, [user, loading, nav]);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError("");
-
-    const parsed = schema.safeParse({ email, password, fullName: mode === "signup" ? fullName : undefined });
-    if (!parsed.success) {
-      const message = parsed.error.issues[0].message;
-      setAuthError(message);
-      toast.error(message);
-      return;
+    if (userId) {
+      navigate("/");
     }
+  }, [userId, navigate]);
 
-    setBusy(true);
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signIn) return;
+    setError("");
+    setLoading(true);
     try {
-      if (mode === "signin") {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        if (!data.session) throw new Error("Sign in failed. Please check your email and password.");
-        toast.success("Welcome back");
+      const result = await signIn.create({
+        identifier: username,
+        password,
+      });
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        navigate("/");
       } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { full_name: fullName },
-          },
-        });
-        if (error) throw error;
-
-        if (data.session) {
-          toast.success("Account created");
-        } else {
-          toast.success("Account created. Please check your email to confirm it, then sign in.");
-          setMode("signin");
-        }
+        setError("Login mein masla hua. Dobara try karein.");
       }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err ?? "Authentication failed");
-      setAuthError(message);
-      toast.error(message);
+    } catch (err: any) {
+      const errCode = err?.errors?.[0]?.code;
+      if (errCode === "session_exists") {
+        navigate("/"); // Agar pehle se session hai toh seedha andar le jayen
+      } else {
+        const msg = err?.errors?.[0]?.message || "Username ya password ghalat hai.";
+        setError(msg);
+      }
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4 py-8 text-foreground">
-      {/* Decorative animated blobs */}
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4 py-8 text-foreground">
+      {/* Animated background blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <motion.div
           className="absolute -left-20 top-10 h-72 w-72 rounded-full bg-primary/15 blur-3xl"
@@ -97,88 +68,84 @@ export default function Auth() {
       </div>
 
       <motion.div
-        className="relative w-full max-w-md rounded-2xl bg-card/90 backdrop-blur-xl border border-border/30 shadow-xl p-8"
-        initial={{ opacity: 0, y: 20 }}
+        className="relative w-full max-w-sm"
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="mb-6 text-center">
-          <h2 className="font-display text-3xl font-bold text-primary">{isSignIn ? "Welcome back" : "Create your account"}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {isSignIn ? "Sign in to continue to your workspace" : "Get started in under a minute"}
-          </p>
+        {/* App Name */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">آسان کھاتہ بک</h1>
+          <p className="text-muted-foreground text-sm mt-1">اپنے اکاؤنٹ میں لاگ ان کریں</p>
         </div>
 
-        <form onSubmit={submit} className="space-y-5">
-          <AnimatePresence>
-            {authError && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                <Alert variant="destructive" className="rounded-xl px-4 py-3 mb-4">
-                  <XCircle className="h-4 w-4" />
-                  <AlertDescription>{authError}</AlertDescription>
-                </Alert>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          {/* Full name for signup */}
-          <AnimatePresence mode="popLayout">
-            {mode === "signup" && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-1.5">
-                <Label htmlFor="fullName" className="text-sm font-semibold">
-                  Full name <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative group">
-                  <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input id="fullName" placeholder="John Doe" value={fullName} onChange={e => setFullName(e.target.value)} className="pl-10" aria-label="Full name" required />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          {/* Email */}
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-sm font-semibold">
-              Email address <span className="text-destructive">*</span>
-            </Label>
-            <div className="relative group">
-              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <Input id="email" placeholder="you@example.com" type="email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" aria-label="Email address" required />
+        <div className="bg-card/90 backdrop-blur-xl border border-border/30 shadow-2xl rounded-2xl p-8">
+          <form onSubmit={handleSignIn} className="space-y-5">
+            {/* Username */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Username</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  placeholder="apna username dalein"
+                  required
+                  className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition"
+                />
+              </div>
             </div>
-          </div>
-          {/* Password */}
-          <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-sm font-semibold">
-              Password <span className="text-destructive">*</span>
-            </Label>
-            <div className="relative group">
-              <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <Input id="password" placeholder="••••••••" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className="pl-10" aria-label="Password" required />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-primary transition-colors" aria-label={showPassword ? "Hide password" : "Show password"}>
-                {showPassword ? <XCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-              </button>
+
+            {/* Password */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type={showPass ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="password dalein"
+                  required
+                  className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+                >
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-          </div>
-          {/* Remember me & forgot */}
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center space-x-2">
-              <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" aria-label="Remember me" />
-              <span className="text-muted-foreground">Remember me</span>
-            </label>
-            <Link to="/forgot-password" className="font-medium text-primary hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-          <Button type="submit" disabled={busy} className="w-full flex items-center justify-center">
-            {busy && <Loader className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-            {isSignIn ? "Sign In" : "Create Account"}
-          </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            {isSignIn ? "Don’t have an account?" : "Already have an account?"}
-            <button type="button" onClick={() => setMode(isSignIn ? "signup" : "signin")} className="ml-1 font-medium text-primary hover:underline">
-              {isSignIn ? "Sign up" : "Sign in"}
+
+            {/* Error */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2"
+                >
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 transition disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading ? "Please wait..." : "Login"}
             </button>
-          </p>
-        </form>
+          </form>
+        </div>
       </motion.div>
     </div>
   );
-};
+}

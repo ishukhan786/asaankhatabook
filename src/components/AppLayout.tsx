@@ -7,8 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-
+import { UserButton } from "@clerk/clerk-react";
 export default function AppLayout() {
   const { theme, setTheme } = useTheme();
   const { user, loading } = useAuth();
@@ -52,6 +51,9 @@ export default function AppLayout() {
               >
                 {theme === "dark" ? <Sun className="w-4 h-4 text-yellow-500" /> : <Moon className="w-4 h-4 text-primary" />}
               </Button>
+              <div className="flex items-center justify-center pl-2 border-l border-border/50 ml-1">
+                <UserButton />
+              </div>
             </div>
           </header>
           <main className="flex-1 overflow-x-hidden">

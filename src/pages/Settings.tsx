@@ -119,28 +119,32 @@ export default function Settings() {
       if (!e.target.files || e.target.files.length === 0) throw new Error("Select an image to upload");
       
       const file = e.target.files[0];
-      const fileExt = file.name.split(".").pop();
-      const filePath = `${user?.id}-${Math.random()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .upsert({ 
-          id: user?.id,
-          avatar_url: publicUrl 
-        });
-
-      if (updateError) throw updateError;
       
+      // Use Edge Function for upload (bypasses Clerk JWT + Storage RLS issue)
+      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-avatar`;
+      
+      // Get Clerk token
+      const clerkToken = typeof window !== 'undefined' && (window as any).Clerk?.session
+        ? await (window as any).Clerk.session.getToken()
+        : null;
+
+      if (!clerkToken) throw new Error("Not authenticated");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(fnUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${clerkToken}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+
       toast.success("Avatar updated");
       await refresh();
     } catch (err: unknown) {
