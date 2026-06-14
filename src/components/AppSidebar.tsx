@@ -13,6 +13,7 @@ import {
   UserCog,
   Users,
   Wallet,
+  Sparkles,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -109,46 +110,58 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
       side={i18n.language === "ur" ? "right" : "left"}
-      className="border-r-0 bg-[#071821] text-white"
+      className="border-r border-white/5 bg-gradient-to-b from-[#09111c] to-[#04080c] text-white overflow-hidden shadow-2xl relative"
     >
-      <SidebarHeader className="border-b border-white/10 bg-[#071821] px-4 py-4">
+      {/* Decorative ambient background glows */}
+      <div className="absolute top-[-10%] left-[-20%] w-[150%] h-[50%] bg-primary/5 rounded-[100%] blur-[80px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-20%] w-[150%] h-[50%] bg-blue-500/5 rounded-[100%] blur-[100px] pointer-events-none" />
+
+      <SidebarHeader className="bg-transparent px-4 py-6 z-10">
         <motion.div
           layout
-          className={cn("flex items-center", collapsed ? "justify-center" : "gap-3")}
+          className={cn("flex items-center", collapsed ? "justify-center" : "gap-4")}
           transition={{ duration: 0.2, ease: "easeOut" }}
         >
-          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-[#071821] shadow-[0_16px_40px_-18px_rgba(245,158,11,0.9)] ring-1 ring-amber-300/40">
-            <Wallet className="h-5 w-5" strokeWidth={2.4} />
-            <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-[#071821] bg-emerald-400" />
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-blue-600 shadow-[0_0_25px_-5px_rgba(var(--primary),0.6)] border border-white/10 overflow-hidden group">
+            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Wallet className="h-6 w-6 text-white drop-shadow-md z-10" strokeWidth={2} />
+            <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border-[2.5px] border-[#09111c] bg-emerald-400 z-20 shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
           </div>
           {!collapsed && (
-            <motion.div initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} className="min-w-0">
-              <div className="truncate font-display text-[17px] font-bold leading-tight text-white">AsaanKhata</div>
-              <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Ledger Suite</div>
+            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="min-w-0">
+              <div className="truncate font-display text-xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">
+                AsaanKhata
+              </div>
+              <div className="mt-0.5 flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-primary" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80">Ledger Suite</span>
+              </div>
             </motion.div>
           )}
         </motion.div>
       </SidebarHeader>
 
-      <SidebarContent className="premium-sidebar-scroll bg-[#071821] px-3 py-4">
+      <SidebarContent className="premium-sidebar-scroll bg-transparent px-3 py-2 z-10">
         {!collapsed && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="relative mb-4">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="relative mb-6 mx-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               aria-label="Search navigation"
-              placeholder="Search navigation"
-              className="h-10 rounded-2xl border-white/10 bg-white/[0.045] pl-9 text-sm text-white placeholder:text-slate-500 shadow-inner outline-none transition focus-visible:ring-1 focus-visible:ring-cyan-400/50"
+              placeholder="Quick search..."
+              className="h-11 rounded-2xl border-white/5 bg-white/[0.03] pl-10 text-sm text-white placeholder:text-slate-400 shadow-inner outline-none transition-all duration-300 focus-visible:bg-white/[0.05] focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50 hover:bg-white/[0.05]"
             />
           </motion.div>
         )}
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {visibleSections.map((section) => (
             <nav key={section.label} aria-label={section.label} className="space-y-2">
               {!collapsed && (
-                <div className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{section.label}</div>
+                <div className="px-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500/80 mb-1">
+                  {section.label}
+                </div>
               )}
-              <SidebarMenu className="gap-1.5">
+              <SidebarMenu className="gap-1">
                 {section.items.map((item) => {
                   const active = isActive(item.url, item.exact);
                   const Icon = item.icon;
@@ -160,39 +173,41 @@ export function AppSidebar() {
                           to={item.url}
                           aria-current={active ? "page" : undefined}
                           className={cn(
-                            "group relative flex h-12 w-full items-center overflow-hidden rounded-2xl border border-transparent text-sm font-medium outline-none transition duration-200 ease-out focus-visible:ring-2 focus-visible:ring-amber-400/60",
+                            "group relative flex h-12 w-full items-center overflow-hidden rounded-2xl border border-transparent text-sm font-medium outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/60",
                             collapsed ? "justify-center px-0" : "gap-3 px-3",
                             active
-                              ? "border-amber-400/20 bg-amber-500/[0.12] text-white shadow-[0_14px_34px_-24px_rgba(245,158,11,0.95)]"
-                              : "text-slate-300 hover:border-white/10 hover:bg-cyan-300/[0.07] hover:text-white",
+                              ? "bg-gradient-to-r from-primary/20 via-primary/5 to-transparent border-white/5 text-white shadow-[inset_2px_0_0_0_rgba(var(--primary),1)]"
+                              : "text-slate-400 hover:bg-white/[0.04] hover:text-white",
                           )}
                         >
                           {active && (
-                            <motion.span
-                              layoutId="sidebar-active-indicator"
-                              className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-amber-400 shadow-[0_0_18px_rgba(245,158,11,0.8)]"
-                              transition={{ duration: 0.2, ease: "easeOut" }}
+                            <motion.div
+                              layoutId="sidebar-active-glow"
+                              className="absolute inset-0 bg-primary/5 pointer-events-none"
+                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                           )}
                           <motion.span
                             className={cn(
-                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors",
-                              active ? "bg-amber-400/15 text-amber-300" : "text-slate-400 group-hover:text-cyan-200",
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors duration-300 relative z-10",
+                              active ? "text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : "text-slate-400 group-hover:text-white",
                             )}
-                            whileHover={{ x: collapsed ? 0 : 2 }}
-                            transition={{ duration: 0.18 }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
                           >
-                            <Icon className="h-[18px] w-[18px]" strokeWidth={2.2} />
+                            <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
                           </motion.span>
                           {!collapsed && (
                             <>
-                              <span className={cn("min-w-0 flex-1 truncate", active && "font-semibold")}>{item.title}</span>
+                              <span className={cn("min-w-0 flex-1 truncate transition-colors relative z-10", active ? "font-bold tracking-wide" : "font-medium")}>
+                                {item.title}
+                              </span>
                               {item.badge && (
-                                <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-0.5 text-[10px] font-bold text-cyan-100">
+                                <span className="relative z-10 rounded-full bg-gradient-to-r from-primary/30 to-blue-500/30 border border-primary/20 px-2.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.2)]">
                                   {item.badge}
                                 </span>
                               )}
-                              {item.dot && <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_14px_rgba(245,158,11,0.9)]" />}
+                              {item.dot && <span className="relative z-10 h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.8)]" />}
                             </>
                           )}
                         </NavLink>
@@ -206,50 +221,50 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-white/10 bg-[#071821] p-3">
+      <SidebarFooter className="bg-gradient-to-t from-[#04080c] to-transparent pt-6 pb-4 px-3 z-10">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <motion.button
-              whileHover={{ y: -1 }}
+              whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
-                "group flex w-full items-center rounded-2xl border border-white/10 bg-white/[0.045] text-left outline-none transition hover:border-cyan-300/20 hover:bg-white/[0.07] focus-visible:ring-2 focus-visible:ring-amber-400/60",
+                "group flex w-full items-center rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-md text-left outline-none transition-all hover:bg-white/[0.06] hover:border-white/10 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary/60",
                 collapsed ? "justify-center p-2" : "gap-3 p-3",
               )}
               aria-label="Open user menu"
             >
-              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-cyan-300/15 bg-cyan-300/10">
+              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#09111c]">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Profile" className="h-full w-full object-cover" />
+                  <img src={profile.avatar_url} alt="Profile" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" />
                 ) : (
-                  <Users className="h-5 w-5 text-cyan-100" />
+                  <UserCog className="h-5 w-5 text-slate-300 transition-colors group-hover:text-white" />
                 )}
-                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#0b1f2a] bg-emerald-400" />
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-[#09111c] bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
               </div>
               {!collapsed && (
                 <>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold text-white">{profile?.full_name ?? "User"}</div>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-200">
+                    <div className="truncate text-sm font-bold text-slate-200 group-hover:text-white transition-colors">{profile?.full_name ?? "User"}</div>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-slate-300">
                         {role?.replace("_", " ") ?? "Guest"}
                       </span>
-                      {loading && <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />}
+                      {loading && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />}
                     </div>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-slate-500 transition group-data-[state=open]:rotate-180 group-hover:text-slate-300" />
+                  <ChevronDown className="h-4 w-4 text-slate-500 transition-transform duration-300 group-data-[state=open]:rotate-180 group-hover:text-slate-300" />
                 </>
               )}
             </motion.button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="right" align="end" className="w-56">
-            <DropdownMenuLabel>Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
+          <DropdownMenuContent side="right" align="end" className="w-56 border-white/10 bg-[#09111c]/95 backdrop-blur-xl text-slate-200 shadow-2xl rounded-xl">
+            <DropdownMenuLabel className="text-xs uppercase tracking-wider text-slate-400">My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg m-1 transition-colors">
               <Bell className="mr-2 h-4 w-4" />
               Notifications
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg m-1 transition-colors">
               <SettingsIcon className="mr-2 h-4 w-4" />
               Settings
             </DropdownMenuItem>
@@ -261,12 +276,12 @@ export function AppSidebar() {
           variant="ghost"
           size={collapsed ? "icon" : "sm"}
           className={cn(
-            "mt-2 h-11 rounded-2xl text-slate-300 transition duration-200 hover:bg-red-500/10 hover:text-red-300",
+            "mt-3 h-11 rounded-xl text-slate-400 transition-all duration-300 hover:bg-destructive/15 hover:text-destructive hover:shadow-[0_0_15px_-5px_rgba(var(--destructive),0.4)]",
             collapsed ? "w-full" : "w-full justify-start px-3",
           )}
         >
-          <LogOut className={cn("h-4 w-4", !collapsed && "mr-2")} />
-          {!collapsed && <span>{t("SignOut")}</span>}
+          <LogOut className={cn("h-[18px] w-[18px]", !collapsed && "mr-2.5")} strokeWidth={2} />
+          {!collapsed && <span className="font-semibold text-sm">{t("SignOut")}</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>
