@@ -110,11 +110,11 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
       side={i18n.language === "ur" ? "right" : "left"}
-      className="border-r border-white/5 bg-gradient-to-b from-[#09111c] to-[#04080c] text-white overflow-hidden shadow-2xl relative"
+      className="border-r border-white/5 bg-gradient-to-b from-[#09111c] to-[#04080c] text-white shadow-2xl"
     >
       {/* Decorative ambient background glows */}
-      <div className="absolute top-[-10%] left-[-20%] w-[150%] h-[50%] bg-primary/5 rounded-[100%] blur-[80px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-20%] w-[150%] h-[50%] bg-blue-500/5 rounded-[100%] blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-20%] w-[150%] h-[50%] bg-primary/5 rounded-[100%] blur-[80px] pointer-events-none overflow-hidden" />
+      <div className="absolute bottom-[-10%] right-[-20%] w-[150%] h-[50%] bg-blue-500/5 rounded-[100%] blur-[100px] pointer-events-none overflow-hidden" />
 
       <SidebarHeader className="bg-transparent px-4 py-6 z-10">
         <motion.div
