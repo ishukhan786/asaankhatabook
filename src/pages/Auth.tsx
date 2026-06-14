@@ -24,7 +24,10 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signIn) return;
+    if (!signIn) {
+      alert("Clerk is not fully loaded yet (signIn is undefined). Please check your internet or Adblocker.");
+      return;
+    }
     setError("");
     setLoading(true);
     try {
