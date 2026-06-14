@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, TrendingUp, Building2, Lock } from "lucide-react";
@@ -42,27 +42,13 @@ export default function Dashboard() {
   const [recent, setRecent] = useState<TransactionWithAccount[]>([]);
   const [Recharts, setRecharts] = useState<RechartsModule | null>(null);
 
-  const chartsRef = useRef<HTMLDivElement | null>(null);
-
+  // Load recharts immediately on mount (charts are always visible on dashboard)
   useEffect(() => {
     let mounted = true;
-    const el = chartsRef.current;
-    if (!el) return;
-
-    const io = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          import("recharts").then((mod) => {
-            if (mounted) setRecharts(mod);
-          }).catch(() => {});
-          io.disconnect();
-          break;
-        }
-      }
-    }, { threshold: 0.1 });
-
-    io.observe(el);
-    return () => { mounted = false; io.disconnect(); };
+    import("recharts").then((mod) => {
+      if (mounted) setRecharts(mod);
+    }).catch(() => {});
+    return () => { mounted = false; };
   }, []);
   const load = useCallback(async () => {
     try {
@@ -248,7 +234,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Section */}
-      <div ref={chartsRef} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="glass p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
@@ -286,7 +272,15 @@ export default function Dashboard() {
                 </Recharts.AreaChart>
               </Recharts.ResponsiveContainer>
             ) : (
-              <div className="h-full w-full flex items-center justify-center text-sm text-muted-foreground">Loading chart...</div>
+              <div className="h-full w-full space-y-3 pt-4">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-40 w-full" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
             )}
           </div>
         </Card>
@@ -308,7 +302,11 @@ export default function Dashboard() {
                 </Recharts.BarChart>
               </Recharts.ResponsiveContainer>
             ) : (
-              <div className="h-full w-full flex items-center justify-center text-sm text-muted-foreground">Loading chart...</div>
+              <div className="h-full w-full flex items-end gap-3 px-4 pb-4 pt-8">
+                {[60, 85, 45, 70, 55, 90, 40].map((h, i) => (
+                  <Skeleton key={i} className="flex-1 rounded-t-md" style={{ height: `${h}%` }} />
+                ))}
+              </div>
             )}
           </div>
         </Card>
