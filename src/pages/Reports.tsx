@@ -210,8 +210,17 @@ export default function Reports() {
       credit += Number(t.credit) || 0;
     });
     const net = credit - debit;
-    return { debit, credit, net };
-  }, [statementRows]);
+
+    const opening = from 
+      ? statementTxns
+          .filter(t => t.txn_date < from)
+          .reduce((acc, t) => acc + (Number(t.credit) - Number(t.debit)), 0)
+      : 0;
+
+    const closing = opening + net;
+
+    return { debit, credit, net, opening, closing };
+  }, [statementRows, statementTxns, from]);
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 animate-fade-in">
@@ -462,9 +471,9 @@ export default function Reports() {
           ) : (
             <div className="space-y-6">
               {/* Account Detail Overview Cards */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                 {/* Profile Card */}
-                <Card className="glass p-5 rounded-2xl border-none shadow-md lg:col-span-2 flex flex-col justify-between space-y-4">
+                <Card className="glass p-5 rounded-2xl border-none shadow-md md:col-span-2 lg:col-span-2 flex flex-col justify-between space-y-4">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Account Profile</span>
                     <h3 className="text-xl font-extrabold text-foreground mt-1 tracking-tight">{selectedAccount?.name}</h3>
@@ -492,16 +501,19 @@ export default function Reports() {
                   </div>
                 </Card>
 
-                {/* Cash Out */}
+                {/* Opening Balance */}
                 <Card className="glass p-5 rounded-2xl border-none shadow-md flex items-center justify-between group">
                   <div className="space-y-1">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Period Cash Out</span>
-                    <h4 className="text-xl font-bold num text-destructive tracking-tight">
-                      {formatMoney(statementTotals.debit, selectedAccount?.currency || "")}
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Opening Balance</span>
+                    <h4 className={`text-xl font-bold num tracking-tight ${statementTotals.opening >= 0 ? "text-success" : "text-destructive"}`}>
+                      {formatMoney(statementTotals.opening, selectedAccount?.currency || "")}
+                      <span className="text-[10px] font-bold opacity-75 bg-muted/30 px-1 py-0.5 rounded ml-1">
+                        {balanceLabel(statementTotals.opening)}
+                      </span>
                     </h4>
                   </div>
-                  <div className="p-2.5 bg-destructive/10 rounded-lg text-destructive">
-                    <ArrowUpRight className="w-5 h-5" />
+                  <div className="p-2.5 bg-muted/10 rounded-lg text-muted-foreground">
+                    <Scale className="w-5 h-5" />
                   </div>
                 </Card>
 
@@ -515,6 +527,35 @@ export default function Reports() {
                   </div>
                   <div className="p-2.5 bg-success/10 rounded-lg text-success">
                     <ArrowDownLeft className="w-5 h-5" />
+                  </div>
+                </Card>
+
+                {/* Cash Out */}
+                <Card className="glass p-5 rounded-2xl border-none shadow-md flex items-center justify-between group">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Period Cash Out</span>
+                    <h4 className="text-xl font-bold num text-destructive tracking-tight">
+                      {formatMoney(statementTotals.debit, selectedAccount?.currency || "")}
+                    </h4>
+                  </div>
+                  <div className="p-2.5 bg-destructive/10 rounded-lg text-destructive">
+                    <ArrowUpRight className="w-5 h-5" />
+                  </div>
+                </Card>
+
+                {/* Closing Balance */}
+                <Card className="glass p-5 rounded-2xl border-none shadow-md flex items-center justify-between group">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Closing Balance</span>
+                    <h4 className={`text-xl font-bold num tracking-tight ${statementTotals.closing >= 0 ? "text-success" : "text-destructive"}`}>
+                      {formatMoney(statementTotals.closing, selectedAccount?.currency || "")}
+                      <span className="text-[10px] font-bold opacity-75 bg-muted/30 px-1 py-0.5 rounded ml-1">
+                        {balanceLabel(statementTotals.closing)}
+                      </span>
+                    </h4>
+                  </div>
+                  <div className={`p-2.5 rounded-lg ${statementTotals.closing >= 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
+                    <Scale className="w-5 h-5" />
                   </div>
                 </Card>
               </div>
