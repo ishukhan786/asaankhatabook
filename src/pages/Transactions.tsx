@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +59,7 @@ export default function Transactions() {
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 50;
 
-  const load = async (reset = false, pageOverride?: number) => {
+  const load = useCallback(async (reset = false, pageOverride?: number) => {
     const nextPage = reset ? 0 : (pageOverride ?? page);
     const start = nextPage * PAGE_SIZE;
     const end = start + PAGE_SIZE - 1;
@@ -81,12 +81,12 @@ export default function Transactions() {
     const { data } = await query;
 
     if (data) {
-      setRows(reset ? data : [...(rows ?? []), ...data]);
+      setRows(reset ? data : (prev) => [...(prev ?? []), ...data]);
       setHasMore(data.length === PAGE_SIZE);
       setPage(nextPage + 1);
     }
     setBusy(false);
-  };
+  }, [from, to, debouncedQ, page]);
 
   // Keep a ref to the latest `load` so subscription handlers call the current implementation
   const loadRef = useRef<typeof load | null>(null);
@@ -100,12 +100,12 @@ export default function Transactions() {
       })
       .subscribe();
     return () => { supabase.removeChannel(sub); };
-  }, []);
+  }, [load]);
 
   useEffect(() => {
     setHasMore(true);
     load(true);
-  }, [debouncedQ, from, to]);
+  }, [debouncedQ, from, to, load]);
 
   const openEditTx = (t: TxnRow) => {
     setEditingTx(t);

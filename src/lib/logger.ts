@@ -1,20 +1,20 @@
 export const logger = {
-  error: (...args: any[]) => {
+  error: (...args: unknown[]) => {
     try {
       if (import.meta.env?.MODE !== 'production') console.error(...args);
       // In production you can forward logs to a monitoring service here.
-    } catch (e) {
+    } catch {
       // noop
     }
   },
-  warn: (...args: any[]) => {
-    try { if (import.meta.env?.MODE !== 'production') console.warn(...args); } catch (e) {}
+  warn: (...args: unknown[]) => {
+    try { if (import.meta.env?.MODE !== 'production') console.warn(...args); } catch { /* noop */ }
   },
-  info: (...args: any[]) => {
-    try { if (import.meta.env?.MODE !== 'production') console.log(...args); } catch (e) {}
+  info: (...args: unknown[]) => {
+    try { if (import.meta.env?.MODE !== 'production') console.log(...args); } catch { /* noop */ }
   },
-  debug: (...args: any[]) => {
-    try { if (import.meta.env?.MODE !== 'production') console.debug(...args); } catch (e) {}
+  debug: (...args: unknown[]) => {
+    try { if (import.meta.env?.MODE !== 'production') console.debug(...args); } catch { /* noop */ }
   }
 };
 
