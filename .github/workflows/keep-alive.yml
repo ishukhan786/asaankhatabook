@@ -11,8 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase Database
+        if: ${{ secrets.SUPABASE_URL != '' && secrets.SUPABASE_ANON_KEY != '' }}
         run: |
-          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/branches?select=id&limit=1" \
+          curl --fail -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/branches?select=id&limit=1" \
           -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
         shell: bash
+
+      - name: Skip (secrets not configured)
+        if: ${{ secrets.SUPABASE_URL == '' || secrets.SUPABASE_ANON_KEY == '' }}
+        run: echo "SUPABASE_URL or SUPABASE_ANON_KEY secret is not set — skipping ping."
