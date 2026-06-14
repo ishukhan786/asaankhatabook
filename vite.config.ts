@@ -31,33 +31,18 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         // Split vendor libraries into separate cached chunks
-        manualChunks: {
-          // Core React — smallest, cached longest
-          "vendor-react": ["react", "react-dom", "react/jsx-runtime"],
-          // React Router
-          "vendor-router": ["react-router-dom"],
-          // Supabase client
-          "vendor-supabase": ["@supabase/supabase-js"],
-          // TanStack Query (data fetching)
-          "vendor-query": ["@tanstack/react-query"],
-          // Charts
-          "vendor-charts": ["recharts"],
-          // PDF generation — heaviest, lazy loaded
-          "vendor-pdf": ["jspdf", "jspdf-autotable"],
-          // Radix UI primitives
-          "vendor-radix": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-select",
-            "@radix-ui/react-tabs",
-            "@radix-ui/react-toast",
-            "@radix-ui/react-tooltip",
-            "@radix-ui/react-popover",
-          ],
-          // Animation
-          "vendor-motion": ["framer-motion"],
-          // i18n
-          "vendor-i18n": ["i18next", "react-i18next", "i18next-browser-languagedetector"],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) return 'vendor-react';
+            if (id.includes('react-router-dom')) return 'vendor-router';
+            if (id.includes('@supabase')) return 'vendor-supabase';
+            if (id.includes('@tanstack/react-query')) return 'vendor-query';
+            if (id.includes('recharts')) return 'vendor-charts';
+            if (id.includes('jspdf')) return 'vendor-pdf';
+            if (id.includes('@radix-ui')) return 'vendor-radix';
+            if (id.includes('framer-motion')) return 'vendor-motion';
+            if (id.includes('i18next')) return 'vendor-i18n';
+          }
         },
       },
         plugins: [
