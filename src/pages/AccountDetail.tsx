@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,9 @@ import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import { Account, Transaction, TransactionWithBalance } from "@/types";
+import { validateTransaction, validateDebitCredit } from "@/lib/validation";
+import { handleSupabaseError, handleFormError } from "@/lib/errors";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,25 +30,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-export type AccountType = {
-  id?: string;
-  account_no?: string;
-  name?: string;
-  mobile?: string | null;
-  currency?: string | null;
-  branches?: { name?: string } | null;
-  address?: string | null;
+// Type aliases for backward compatibility
+export type AccountType = Account;
+export type TxnType = Transaction;
+
+type EditTransactionForm = {
+  txn_date: string;
+  details: string;
+  debit: string;
+  credit: string;
 };
 
-export type TxnType = {
-  id?: string;
-  txn_date?: string | null;
-  details?: string | null;
-  notes?: string | null;
-  debit?: number | string | null;
-  credit?: number | string | null;
-  balance?: number | null;
-  created_by?: string | null;
+type QuickEntryForm = {
+  txn_date: string;
+  details: string;
+  notes: string;
+  debit: string;
+  credit: string;
 };
 
 export default function AccountDetail() {
@@ -60,28 +62,28 @@ export default function AccountDetail() {
 
   // Edit Transaction state
   const [editingTx, setEditingTx] = useState<TxnType | null>(null);
-  const [etDate, setEtDate] = useState("");
-  const [etDetails, setEtDetails] = useState("");
-  const [etDebit, setEtDebit] = useState("");
-  const [etCredit, setEtCredit] = useState("");
+  const editForm = useForm<EditTransactionForm>({
+    defaultValues: {
+      txn_date: "",
+      details: "",
+      debit: "",
+      credit: "",
+    },
+  });
   
   // Deletion state
   const [deletingTx, setDeletingTx] = useState<TxnType | null>(null);
   
   // Quick Entry state
   const [quickOpen, setQuickOpen] = useState(false);
-  const [quickForm, setQuickForm] = useState<{
-    txn_date: string;
-    details: string;
-    notes: string;
-    debit: string;
-    credit: string;
-  }>({
-    txn_date: new Date().toISOString().slice(0, 10),
-    details: "",
-    notes: "",
-    debit: "",
-    credit: "",
+  const quickForm = useForm<QuickEntryForm>({
+    defaultValues: {
+      txn_date: new Date().toISOString().slice(0, 10),
+      details: "",
+      notes: "",
+      debit: "",
+      credit: "",
+    },
   });
 
   const load = useCallback(async () => {
@@ -137,43 +139,49 @@ export default function AccountDetail() {
       toast.success("Account deleted");
       navigate("/accounts");
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error(msg);
+      handleSupabaseError(e, { operation: "deleteAccount", table: "accounts", userId: profile?.id });
     }
     setBusy(false);
   };
 
   const openEditTx = (t: TxnType) => {
     setEditingTx(t);
-    setEtDate(String(t.txn_date ?? ""));
-    setEtDetails(t.details ?? "");
-    setEtDebit(String(t.debit ?? ""));
-    setEtCredit(String(t.credit ?? ""));
+    editForm.reset({
+      txn_date: String(t.txn_date ?? ""),
+      details: t.details ?? "",
+      debit: String(t.debit ?? ""),
+      credit: String(t.credit ?? ""),
+    });
   };
 
-  const submitEditTx = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const debit = Number(etDebit || 0);
-    const credit = Number(etCredit || 0);
-    if (!etDate) { toast.error("Date is required"); return; }
-    if (!etDetails.trim()) { toast.error("Details are required"); return; }
-    if (debit <= 0 && credit <= 0) { toast.error("Enter debit or credit amount"); return; }
-    if (debit > 0 && credit > 0) { toast.error("Enter either debit or credit, not both"); return; }
+  const submitEditTx = editForm.handleSubmit(async (data) => {
+    const error = validateTransaction(data.txn_date, data.details, data.debit, data.credit);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
     setBusy(true);
     try {
-      const { error } = await supabase.from("transactions").update({
-        txn_date: etDate,
-        details: etDetails.trim(),
+      const debit = Number(data.debit || 0);
+      const credit = Number(data.credit || 0);
+      
+      const { error: dbError } = await supabase.from("transactions").update({
+        txn_date: data.txn_date,
+        details: data.details.trim(),
         debit,
         credit,
-      }).eq("id", editingTx.id);
-      if (error) throw error;
+      }).eq("id", editingTx?.id);
+      
+      if (dbError) throw dbError;
       toast.success("Transaction updated");
       setEditingTx(null);
       load();
-    } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
+    } catch (err: unknown) {
+      handleFormError(err, "Update Transaction");
+    }
     setBusy(false);
-  };
+  });
 
   const removeTx = async () => {
     if (!deletingTx) return;
@@ -183,7 +191,9 @@ export default function AccountDetail() {
       toast.success("Transaction deleted");
       setDeletingTx(null);
       load();
-    } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
+    } catch (err: unknown) {
+      handleSupabaseError(err, { operation: "deleteTransaction", table: "transactions", userId: profile?.id });
+    }
   };
 
   const sendWhatsApp = (t: TxnType & { balance?: number | null }) => {
@@ -198,31 +208,33 @@ export default function AccountDetail() {
     window.open(`https://wa.me/${account.mobile.replace(/\D/g, "")}?text=${encoded}`, "_blank");
   };
 
-  const submitQuick = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const debit = Number(quickForm.debit || 0);
-    const credit = Number(quickForm.credit || 0);
-    if (!quickForm.details.trim()) { toast.error("Details required"); return; }
-    if (debit <= 0 && credit <= 0) { toast.error("Enter debit or credit amount"); return; }
-    if (debit > 0 && credit > 0) { toast.error("Enter either debit or credit, not both"); return; }
+  const submitQuick = quickForm.handleSubmit(async (data) => {
+    const error = validateTransaction(data.txn_date, data.details, data.debit, data.credit);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     
     setBusy(true);
     try {
+      const debit = Number(data.debit || 0);
+      const credit = Number(data.credit || 0);
       const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase.from("transactions").insert([{
+      
+      const { error: dbError } = await supabase.from("transactions").insert([{
         txn_code: "",
         account_id: id,
-        txn_date: quickForm.txn_date,
-        details: quickForm.details.trim(),
-        // notes field omitted due to missing column in generated Supabase types
-        debit, credit,
+        txn_date: data.txn_date,
+        details: data.details.trim(),
+        debit, 
+        credit,
         created_by: user?.id,
       }]);
       
-      if (error) throw error;
+      if (dbError) throw dbError;
       toast.success("Transaction recorded");
       setQuickOpen(false);
-      setQuickForm({
+      quickForm.reset({
         txn_date: new Date().toISOString().slice(0, 10),
         details: "",
         notes: "",
@@ -230,9 +242,11 @@ export default function AccountDetail() {
         credit: "",
       });
       load();
-    } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
+    } catch (err: unknown) {
+      handleFormError(err, "Save Transaction");
+    }
     setBusy(false);
-  };
+  });
 
   const handleExportStatement = async () => {
     setExporting(true);
@@ -397,11 +411,40 @@ export default function AccountDetail() {
         <DialogContent>
           <DialogHeader><DialogTitle>Edit Transaction</DialogTitle></DialogHeader>
           <form onSubmit={submitEditTx} className="space-y-4">
-            <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={etDate} onChange={(e) => setEtDate(e.target.value)} required /></div>
-            <div className="space-y-1.5"><Label>Details</Label><Input value={etDetails} onChange={(e) => setEtDetails(e.target.value)} required /></div>
+            <div className="space-y-1.5">
+              <Label>Date</Label>
+              <Input 
+                type="date"
+                {...editForm.register("txn_date")}
+                required 
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Details</Label>
+              <Input 
+                {...editForm.register("details")}
+                required 
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5"><Label>Debit (Nikala / Diya)</Label><Input type="number" step="0.01" min="0" value={etDebit} onChange={(e) => setEtDebit(e.target.value)} /></div>
-              <div className="space-y-1.5"><Label>Credit (Jama / Liya)</Label><Input type="number" step="0.01" min="0" value={etCredit} onChange={(e) => setEtCredit(e.target.value)} /></div>
+              <div className="space-y-1.5">
+                <Label>Debit (Nikala / Diya)</Label>
+                <Input 
+                  type="number" 
+                  step="0.01" 
+                  min="0"
+                  {...editForm.register("debit")}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Credit (Jama / Liya)</Label>
+                <Input 
+                  type="number" 
+                  step="0.01" 
+                  min="0"
+                  {...editForm.register("credit")}
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
@@ -445,30 +488,57 @@ export default function AccountDetail() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Date *</Label>
-                <Input type="date" value={quickForm.txn_date} onChange={(e) => setQuickForm({ ...quickForm, txn_date: e.target.value })} required className="bg-muted/30" />
+                <Input 
+                  type="date"
+                  {...quickForm.register("txn_date")}
+                  required 
+                  className="bg-muted/30" 
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Account</Label>
-                <Input value={account.name} disabled className="bg-muted/50 cursor-not-allowed text-xs" />
+                <Input value={account?.name} disabled className="bg-muted/50 cursor-not-allowed text-xs" />
               </div>
             </div>
             <div className="space-y-1.5">
               <Label>Details / Narration *</Label>
-              <Textarea value={quickForm.details} onChange={(e) => setQuickForm({ ...quickForm, details: e.target.value })} placeholder="What is this transaction for?" required rows={2} />
+              <Textarea 
+                {...quickForm.register("details")}
+                placeholder="What is this transaction for?" 
+                required 
+                rows={2} 
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-destructive font-bold">Debit (Nikala)</Label>
-                <Input type="number" step="0.01" min="0" value={quickForm.debit} onChange={(e) => setQuickForm({ ...quickForm, debit: e.target.value })} placeholder="0.00" className="border-destructive/30" />
+                <Input 
+                  type="number" 
+                  step="0.01" 
+                  min="0"
+                  {...quickForm.register("debit")}
+                  placeholder="0.00" 
+                  className="border-destructive/30" 
+                />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-success font-bold">Credit (Jama)</Label>
-                <Input type="number" step="0.01" min="0" value={quickForm.credit} onChange={(e) => setQuickForm({ ...quickForm, credit: e.target.value })} placeholder="0.00" className="border-success/30" />
+                <Input 
+                  type="number" 
+                  step="0.01" 
+                  min="0"
+                  {...quickForm.register("credit")}
+                  placeholder="0.00" 
+                  className="border-success/30" 
+                />
               </div>
             </div>
             <div className="space-y-1.5">
               <Label>Notes (Optional)</Label>
-              <Input value={quickForm.notes} onChange={(e) => setQuickForm({ ...quickForm, notes: e.target.value })} placeholder="Extra info, ref no, etc." />
+              <Input 
+                {...quickForm.register("notes")}
+                placeholder="Extra info, ref no, etc." 
+              />
             </div>
             <DialogFooter className="pt-4">
               <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground shadow-lg h-11 text-base">
