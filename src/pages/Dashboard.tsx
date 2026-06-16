@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, TrendingUp, Building2, Lock } from "lucide-react";
+import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, TrendingUp, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { logger } from "@/lib/logger";
@@ -232,17 +232,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Access Debugger (Hidden from non-admins eventually, but shown now for troubleshooting) */}
-        {role !== "admin" && (
-          <div className="mt-4 p-4 rounded-2xl bg-destructive/5 border border-destructive/20 text-destructive text-sm flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4" />
-              <span><strong>Access Limited:</strong> Your account does not have Admin privileges. Role: <strong>{role ?? "None"}</strong></span>
-            </div>
-            <div className="text-[10px] font-mono opacity-50">UID: {profile?.id}</div>
-          </div>
-        )}
-      </motion.div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
