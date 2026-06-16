@@ -10,6 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useEditFormDialog, useDeleteDialog } from "@/hooks/useFormState";
+import { transactionSchema } from "@/lib/schemas";
+import { handleSupabaseError, handleFormError } from "@/lib/errors";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -46,13 +49,43 @@ export default function Transactions() {
   const { role, profile } = useAuth();
   const [busy, setBusy] = useState(false);
 
-  // Edit/Delete state
-  const [editingTx, setEditingTx] = useState<TxnRow | null>(null);
-  const [etDate, setEtDate] = useState("");
-  const [etDetails, setEtDetails] = useState("");
-  const [etDebit, setEtDebit] = useState("");
-  const [etCredit, setEtCredit] = useState("");
-  const [deletingTx, setDeletingTx] = useState<TxnRow | null>(null);
+  // Edit form with react-hook-form
+  const editForm = useEditFormDialog({
+    schema: transactionSchema,
+    defaultValues: {
+      txn_date: "",
+      details: "",
+      debit: "",
+      credit: "",
+      notes: "",
+    },
+    onSuccess: async (data) => {
+      setBusy(true);
+      try {
+        const debit = Number(data.debit || 0);
+        const credit = Number(data.credit || 0);
+
+        const { error: dbError } = await supabase.from("transactions").update({
+          txn_date: data.txn_date,
+          details: data.details.trim(),
+          debit,
+          credit,
+        }).eq("id", editForm.editingItem?.id);
+
+        if (dbError) throw dbError;
+        toast.success("Transaction updated");
+        editForm.closeDialog();
+        load(true);
+      } catch (err: unknown) {
+        handleFormError(err, "Update Transaction");
+      } finally {
+        setBusy(false);
+      }
+    },
+  });
+
+  // Delete dialog with confirmation
+  const deleteDialog = useDeleteDialog();
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -107,50 +140,17 @@ export default function Transactions() {
     load(true);
   }, [debouncedQ, from, to, load]);
 
-  const openEditTx = (t: TxnRow) => {
-    setEditingTx(t);
-    setEtDate(t.txn_date ?? "");
-    setEtDetails(t.details ?? "");
-    setEtDebit(String(t.debit ?? ""));
-    setEtCredit(String(t.credit ?? ""));
-  };
-
-  const submitEditTx = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const debit = Number(etDebit || 0);
-    const credit = Number(etCredit || 0);
-    if (!etDate) { toast.error("Date is required"); return; }
-    if (!etDetails.trim()) { toast.error("Details are required"); return; }
-    if (debit <= 0 && credit <= 0) { toast.error("Enter debit or credit amount"); return; }
-    if (debit > 0 && credit > 0) { toast.error("Enter either debit or credit, not both"); return; }
-    setBusy(true);
-    try {
-      const { error } = await supabase.from("transactions").update({
-        txn_date: etDate,
-        details: etDetails.trim(),
-        debit,
-        credit,
-      }).eq("id", editingTx.id);
-      if (error) throw error;
-      toast.success("Transaction updated");
-      setEditingTx(null);
-      load(true);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      toast.error(msg);
-    }
-    setBusy(false);
-  };
-
   const removeTx = async () => {
-    if (!deletingTx) return;
+    if (!deleteDialog.itemToDelete) return;
     try {
-      const { error } = await supabase.from("transactions").delete().eq("id", deletingTx.id);
+      const { error } = await supabase.from("transactions").delete().eq("id", deleteDialog.itemToDelete.id);
       if (error) throw error;
       toast.success("Transaction deleted");
-      setDeletingTx(null);
+      deleteDialog.closeDialog();
       load(true);
-    } catch (e: unknown) { const msg = e instanceof Error ? e.message : String(e); toast.error(msg); }
+    } catch (err: unknown) {
+      handleSupabaseError(err, { operation: "deleteTransaction", table: "transactions", userId: profile?.id });
+    }
   };
 
   return (
@@ -209,8 +209,8 @@ export default function Transactions() {
                     {(role === "admin" || t.created_by === profile?.id) && (
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)} aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingTx(t)} aria-label="Delete transaction"><Trash2 className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => editForm.openDialog(t)} aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteDialog.openDialog(t)} aria-label="Delete transaction"><Trash2 className="w-3.5 h-3.5" /></Button>
                         </div>
                       </td>
                     )}
@@ -230,19 +230,31 @@ export default function Transactions() {
       )}
 
       {/* Edit Transaction Dialog */}
-      <Dialog open={!!editingTx} onOpenChange={(o) => !o && setEditingTx(null)}>
+      <Dialog open={editForm.open} onOpenChange={(o) => !o && editForm.closeDialog()}>
         <DialogContent>
           <DialogHeader><DialogTitle>Edit Transaction</DialogTitle></DialogHeader>
-          <form onSubmit={submitEditTx} className="space-y-4">
-            <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={etDate} onChange={(e) => setEtDate(e.target.value)} required /></div>
-            <div className="space-y-1.5"><Label>Details</Label><Input value={etDetails} onChange={(e) => setEtDetails(e.target.value)} required /></div>
+          <form onSubmit={editForm.form.handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Date</Label>
+              <Input type="date" {...editForm.form.register("txn_date")} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Details</Label>
+              <Input {...editForm.form.register("details")} required />
+            </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5"><Label>Debit (Nikala / Diya)</Label><Input type="number" step="0.01" min="0" value={etDebit} onChange={(e) => setEtDebit(e.target.value)} /></div>
-              <div className="space-y-1.5"><Label>Credit (Jama / Liya)</Label><Input type="number" step="0.01" min="0" value={etCredit} onChange={(e) => setEtCredit(e.target.value)} /></div>
+              <div className="space-y-1.5">
+                <Label>Debit (Nikala / Diya)</Label>
+                <Input type="number" step="0.01" min="0" {...editForm.form.register("debit")} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Credit (Jama / Liya)</Label>
+                <Input type="number" step="0.01" min="0" {...editForm.form.register("credit")} />
+              </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
-                {busy ? (
+              <Button type="submit" disabled={busy || editForm.form.isSubmitting} className="gradient-primary text-primary-foreground">
+                {busy || editForm.form.isSubmitting ? (
                   <>
                     <Loader className="w-4 h-4 mr-2 animate-spin" />
                     Updating...
@@ -257,12 +269,12 @@ export default function Transactions() {
       </Dialog>
 
       {/* Delete Transaction Confirmation */}
-      <AlertDialog open={!!deletingTx} onOpenChange={(o) => !o && setDeletingTx(null)}>
+      <AlertDialog open={deleteDialog.open} onOpenChange={(o) => !o && deleteDialog.closeDialog()}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this transaction from <strong>{formatDate(deletingTx?.txn_date)}</strong>? This will update the running balance.
+              Are you sure you want to delete this transaction from <strong>{formatDate(deleteDialog.itemToDelete?.txn_date)}</strong>? This will update the running balance.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
