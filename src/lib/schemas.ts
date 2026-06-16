@@ -8,7 +8,7 @@ import { z } from "zod";
 
 export const transactionSchema = z.object({
   txn_date: z.string().min(1, "Date is required"),
-  details: z.string().min(1, "Details are required").min(3, "Details must be at least 3 characters"),
+  details: z.string().min(1, "Details are required"),
   debit: z.union([z.string(), z.number()]).optional().default(""),
   credit: z.union([z.string(), z.number()]).optional().default(""),
   notes: z.string().optional().default(""),

@@ -54,16 +54,17 @@ export function useFormState<T extends FieldValues>(
  * Hook for managing edit form dialog state
  * Combines form state with dialog open/close logic
  */
-export function useEditFormDialog<T extends FieldValues>(
-  options: UseFormStateOptions<T>
-) {
+export function useEditFormDialog<
+  T extends FieldValues,
+  TItem extends Record<string, unknown> = Record<string, unknown>,
+>(options: UseFormStateOptions<T>) {
   const [open, setOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingItem, setEditingItem] = useState<TItem | null>(null);
 
   const form = useFormState(options);
 
-  const openDialog = (item?: any) => {
-    setEditingItem(item);
+  const openDialog = (item?: TItem) => {
+    setEditingItem(item ?? null);
     if (item && options.defaultValues) {
       const values: Record<string, unknown> = {};
       for (const [key, defaultVal] of Object.entries(options.defaultValues)) {
@@ -98,12 +99,12 @@ export function useEditFormDialog<T extends FieldValues>(
 /**
  * Hook for managing delete confirmation dialog
  */
-export function useDeleteDialog() {
+export function useDeleteDialog<TItem extends { id: string }>() {
   const [open, setOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [itemToDelete, setItemToDelete] = useState<TItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const openDialog = (item: any) => {
+  const openDialog = (item: TItem) => {
     setItemToDelete(item);
     setOpen(true);
   };

@@ -11,7 +11,7 @@ import { formatMoney, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useEditFormDialog, useDeleteDialog } from "@/hooks/useFormState";
-import { transactionSchema } from "@/lib/schemas";
+import { transactionSchema, type TransactionFormData } from "@/lib/schemas";
 import { handleSupabaseError, handleFormError } from "@/lib/errors";
 import { toast } from "sonner";
 import {
@@ -50,7 +50,7 @@ export default function Transactions() {
   const [busy, setBusy] = useState(false);
 
   // Edit form with react-hook-form
-  const editForm = useEditFormDialog({
+  const editForm = useEditFormDialog<TransactionFormData, TxnRow>({
     schema: transactionSchema,
     defaultValues: {
       txn_date: "",
@@ -85,7 +85,7 @@ export default function Transactions() {
   });
 
   // Delete dialog with confirmation
-  const deleteDialog = useDeleteDialog();
+  const deleteDialog = useDeleteDialog<TxnRow>();
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -139,6 +139,8 @@ export default function Transactions() {
     setHasMore(true);
     load(true);
   }, [debouncedQ, from, to, load]);
+
+  const editErrors = editForm.form.formState.errors;
 
   const removeTx = async () => {
     if (!deleteDialog.itemToDelete) return;
@@ -236,20 +238,32 @@ export default function Transactions() {
           <form onSubmit={editForm.form.handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Date</Label>
-              <Input type="date" {...editForm.form.register("txn_date")} required />
+              <Input type="date" {...editForm.form.register("txn_date")} />
+              {editErrors.txn_date && (
+                <p className="text-sm font-medium text-destructive">{editErrors.txn_date.message}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>Details</Label>
-              <Input {...editForm.form.register("details")} required />
+              <Input {...editForm.form.register("details")} />
+              {editErrors.details && (
+                <p className="text-sm font-medium text-destructive">{editErrors.details.message}</p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Debit (Nikala / Diya)</Label>
                 <Input type="number" step="0.01" min="0" {...editForm.form.register("debit")} />
+                {editErrors.debit && (
+                  <p className="text-sm font-medium text-destructive">{editErrors.debit.message}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label>Credit (Jama / Liya)</Label>
                 <Input type="number" step="0.01" min="0" {...editForm.form.register("credit")} />
+                {editErrors.credit && (
+                  <p className="text-sm font-medium text-destructive">{editErrors.credit.message}</p>
+                )}
               </div>
             </div>
             <DialogFooter>
