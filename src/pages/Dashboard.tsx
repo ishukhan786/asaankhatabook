@@ -245,24 +245,34 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {cards.map((c, i) => (
           <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className={c.url ? "cursor-pointer" : ""}>
             <Card 
               className="glass p-5 relative overflow-hidden group hover:shadow-lift transition-all h-full"
               onClick={() => c.url && navigate(c.url)}
             >
-              <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br ${c.gradient} opacity-20 blur-2xl group-hover:opacity-30 transition-opacity`} />
-              <div className="relative">
-                <div className="flex items-start justify-between mb-3">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.gradient} flex items-center justify-center shadow-soft`}>
-                    <c.icon className="w-5 h-5 text-white" />
+              <div className={`absolute -top-10 -right-10 w-36 h-36 rounded-full bg-gradient-to-br ${c.gradient} opacity-15 blur-2xl group-hover:opacity-25 transition-opacity`} />
+              <div className="relative flex flex-col gap-2">
+                {/* Icon + Label Row */}
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${c.gradient} flex items-center justify-center shadow-soft flex-shrink-0`}>
+                    <c.icon className="w-4 h-4 text-white" />
                   </div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{c.label}</div>
                 </div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium" title={c.label}>{c.label}</div>
-                <div className="text-xl font-display font-bold mt-1 num break-all leading-tight" title={c.value}>{c.value}</div>
-                <div className={`text-xs mt-1 num ${c.positive === false ? "text-destructive" : c.positive === true ? "text-success" : "text-muted-foreground"}`} title={c.sub}>{c.sub}</div>
-                <div className="text-[11px] text-muted-foreground mt-2 leading-tight" title={c.hint}>{c.hint}</div>
+                {/* Main Value */}
+                <div className="text-2xl font-display font-bold num leading-tight" title={c.value}>{c.value}</div>
+                {/* Sub Label */}
+                <div className={`text-xs font-medium num ${c.positive === false ? "text-destructive" : c.positive === true ? "text-success" : "text-muted-foreground"}`}>
+                  {c.sub}
+                </div>
+                {/* Hint */}
+                {c.hint && (
+                  <div className="text-[11px] text-muted-foreground leading-snug border-t border-border/40 pt-2 mt-1">
+                    {c.hint}
+                  </div>
+                )}
               </div>
             </Card>
           </motion.div>
