@@ -15,8 +15,16 @@ interface Profile {
   business_address: string | null;
 }
 
+type ClerkUser = {
+  id: string;
+  email?: string | null;
+  username: string | null;
+  firstName: string | null;
+  lastName: string | null;
+};
+
 interface AuthCtx {
-  user: import("@clerk/clerk-react").User | null | undefined; // Clerk User object
+  user: ClerkUser | null | undefined; // Clerk User object
   session: null;
   profile: Profile | null;
   role: Role | null;
@@ -40,15 +48,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<Role | null>(null);
   const [loadingExtras, setLoadingExtras] = useState(false);
 
-  const loadExtras = async (uid: string, clerkUser?: Record<string, unknown>) => {
+  const loadExtras = async (uid: string, clerkUser?: ClerkUser) => {
     setLoadingExtras(true);
 
     // Auto-upsert profile so it always exists for logged-in Clerk users
     const fullName = clerkUser
       ? [
-          typeof clerkUser.firstName === 'string' ? clerkUser.firstName : '',
-          typeof clerkUser.lastName === 'string' ? clerkUser.lastName : ''
-        ].filter(Boolean).join(" ") || (typeof clerkUser.username === 'string' ? clerkUser.username : null) || null
+          typeof clerkUser.firstName === "string" ? clerkUser.firstName : "",
+          typeof clerkUser.lastName === "string" ? clerkUser.lastName : "",
+        ].filter(Boolean).join(" ") || (typeof clerkUser.username === "string" ? clerkUser.username : null) || null
       : null;
 
     await supabase.from("profiles").upsert(

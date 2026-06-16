@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
 type RechartsModule = typeof import("recharts");
-type ChartTooltipProps = React.ComponentProps<RechartsModule["Tooltip"]>;
-type ChartLegendProps = React.ComponentProps<RechartsModule["Legend"]>;
+type ChartTooltipProps = React.ComponentPropsWithoutRef<RechartsModule["Tooltip"]>;
+type ChartLegendProps = React.ComponentPropsWithoutRef<RechartsModule["Legend"]>;
 
 export type ChartConfig = {
   [k in string]: {
@@ -70,7 +70,7 @@ const ChartContainer = React.forwardRef<
       >
         <ChartStyle id={chartId} config={config} />
         <LazyRecharts>
-          {(R) => <R.ResponsiveContainer>{children}</R.ResponsiveContainer>}
+          {(R) => <R.ResponsiveContainer>{children as React.ReactElement}</R.ResponsiveContainer>}
         </LazyRecharts>
       </div>
     </ChartContext.Provider>

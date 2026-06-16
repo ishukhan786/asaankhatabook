@@ -10,6 +10,7 @@ import { formatDate } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import type { Json } from "@/integrations/supabase/types";
 
 export type AuditLog = {
   id: string;
@@ -17,8 +18,8 @@ export type AuditLog = {
   action_type?: string | null;
   user_email?: string | null;
   created_at?: string | null;
-  old_data?: Record<string, unknown> | null;
-  new_data?: Record<string, unknown> | null;
+  old_data?: Json | null;
+  new_data?: Json | null;
 };
 
 export default function AuditLogs() {
@@ -61,8 +62,8 @@ export default function AuditLogs() {
 
   const renderChangesText = (l: AuditLog) => {
     try {
-      const oldObj = l.old_data || {};
-      const newObj = l.new_data || {};
+      const oldObj = (l.old_data && typeof l.old_data === "object" && !Array.isArray(l.old_data) ? l.old_data : {}) as Record<string, unknown>;
+      const newObj = (l.new_data && typeof l.new_data === "object" && !Array.isArray(l.new_data) ? l.new_data : {}) as Record<string, unknown>;
       const table = String(l.table_name ?? "").toLowerCase();
       const action = String(l.action_type ?? "").toUpperCase();
 
@@ -207,7 +208,7 @@ export default function AuditLogs() {
                     </td>
                     <td className="px-4 py-4">
                       <Badge 
-                        variant={l.action_type === 'DELETE' ? 'destructive' : l.action_type === 'INSERT' ? 'success' : 'secondary'}
+                        variant={l.action_type === 'DELETE' ? 'destructive' : l.action_type === 'INSERT' ? 'default' : 'secondary'}
                         className="text-[10px] font-bold"
                       >
                         {l.action_type}

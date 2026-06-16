@@ -22,6 +22,7 @@ import { logger } from "@/lib/logger";
 interface AdminUser {
   id: string;
   username: string;
+  email?: string | null;
   full_name: string | null;
   branch_id: string | null;
   roles: string[];
@@ -101,7 +102,7 @@ export default function AdminUsers() {
       created_at: profile.created_at ?? "",
       last_sign_in_at: null,
     }));
-  }, [me?.email, me?.id]);
+  }, [me?.id, me?.username]);
 
   const reload = useCallback(async () => {
     setLoadError("");
@@ -143,7 +144,7 @@ export default function AdminUsers() {
         setUsers([]);
       }
     }
-  }, [loadFallbackUsers]);
+  }, [getToken, loadFallbackUsers]);
 
   useEffect(() => {
     if (role === "admin") {
