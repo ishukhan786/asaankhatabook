@@ -14,6 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "react-i18next";
 
+interface ClerkWindow extends Window {
+  Clerk?: { session?: { getToken: () => Promise<string | null> } };
+}
+
 type AppPreferences = {
   defaultCurrency: "PKR" | "AED";
   dateFormat: "dd MMM yyyy" | "yyyy-MM-dd" | "MM/dd/yyyy";
@@ -124,8 +128,8 @@ export default function Settings() {
       const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-avatar`;
       
       // Get Clerk token
-      const clerkToken = typeof window !== 'undefined' && (window as any).Clerk?.session
-        ? await (window as any).Clerk.session.getToken()
+      const clerkToken = typeof window !== 'undefined' && (window as ClerkWindow).Clerk?.session
+        ? await (window as ClerkWindow).Clerk!.session!.getToken()
         : null;
 
       if (!clerkToken) throw new Error("Not authenticated");

@@ -41,12 +41,13 @@ export default function Auth() {
       } else {
         setError("Login mein masla hua. Dobara try karein.");
       }
-    } catch (err: any) {
-      const errCode = err?.errors?.[0]?.code;
+    } catch (err: unknown) {
+      const clerkErr = err as { errors?: Array<{ code?: string; message?: string }> };
+      const errCode = clerkErr?.errors?.[0]?.code;
       if (errCode === "session_exists") {
         navigate("/"); // Agar pehle se session hai toh seedha andar le jayen
       } else {
-        const msg = err?.errors?.[0]?.message || "Username ya password ghalat hai.";
+        const msg = clerkErr?.errors?.[0]?.message || "Username ya password ghalat hai.";
         setError(msg);
       }
     } finally {

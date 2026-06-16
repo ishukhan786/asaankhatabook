@@ -16,9 +16,9 @@ export const supabase = createClient<Database>(
   {
     global: {
       fetch: async (url, options = {}) => {
-        // @ts-ignore - window.Clerk is injected by ClerkProvider
+        // @ts-expect-error - window.Clerk is injected by ClerkProvider
         const clerkToken = typeof window !== 'undefined' && window.Clerk?.session
-          // @ts-ignore
+          // @ts-expect-error - window.Clerk.session.getToken is injected at runtime
           ? await window.Clerk.session.getToken({ template: 'supabase' })
           : null;
         

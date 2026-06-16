@@ -231,7 +231,7 @@ export default function Dashboard() {
             <Link to="/transactions/new"><Button variant="outline" className="border-2"><Receipt className="w-4 h-4 mr-1" /> {t("NewTransaction")}</Button></Link>
           </div>
         </div>
-
+      </motion.div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
