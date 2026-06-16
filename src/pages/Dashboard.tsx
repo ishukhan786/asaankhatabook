@@ -52,12 +52,22 @@ export default function Dashboard() {
   }, []);
   const load = useCallback(async () => {
     try {
-      const [{ data: recentTx }, { data: summaryRow }, branchResult, { data: trendRows }] = await Promise.all([
+      const [recentTxRes, summaryRes, branchRes, trendRes] = await Promise.all([
         supabase.from("transactions").select("*, accounts(name, account_no, currency)").order("created_at", { ascending: false }).limit(5),
-        supabase.rpc("dashboard_summary").single(),
+        supabase.rpc("dashboard_summary").maybeSingle(),
         supabase.rpc("dashboard_branch_distribution"),
         supabase.rpc("dashboard_trend", { p_days: 15 }),
       ]);
+
+      if (recentTxRes.error) console.error("recentTx error:", recentTxRes.error);
+      if (summaryRes.error) console.error("summary error:", summaryRes.error);
+      if (branchRes.error) console.error("branch error:", branchRes.error);
+      if (trendRes.error) console.error("trend error:", trendRes.error);
+
+      const recentTx = recentTxRes.data;
+      const summaryRow = summaryRes.data;
+      const branchResult = branchRes;
+      const trendRows = trendRes.data;
 
       const netPKR = Number(summaryRow?.net_pkr ?? 0), netAED = Number(summaryRow?.net_aed ?? 0);
       const todayPKR = { debit: Number(summaryRow?.today_debit_pkr ?? 0), credit: Number(summaryRow?.today_credit_pkr ?? 0) };
@@ -90,11 +100,14 @@ export default function Dashboard() {
         }));
       }
 
-      const trendData = (trendRows ?? []).map((tRow: { txn_date?: string; pkr?: number | string; aed?: number | string }) => ({
-        date: new Date(String(tRow.txn_date ?? "")).toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-PK", { day: "2-digit", month: "short" }),
-        pkr: Number(tRow.pkr ?? 0),
-        aed: Number(tRow.aed ?? 0),
-      }));
+      const trendData = (trendRows ?? []).map((tRow: { txn_date?: string; pkr?: number | string; aed?: number | string }) => {
+        const parsedDate = tRow.txn_date ? new Date(tRow.txn_date) : new Date();
+        return {
+          date: parsedDate.toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-PK", { day: "2-digit", month: "short" }),
+          pkr: Number(tRow.pkr ?? 0),
+          aed: Number(tRow.aed ?? 0),
+        };
+      });
 
       setStats({
         accounts: Number(summaryRow?.accounts_count ?? 0),
