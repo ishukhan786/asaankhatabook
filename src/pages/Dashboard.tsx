@@ -269,7 +269,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className={`grid grid-cols-1 ${role === "admin" ? "lg:grid-cols-2" : ""} gap-4`}>
         <Card className="glass p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
@@ -320,31 +320,33 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card className="glass p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Building2 className="w-4 h-4 text-primary" />
-            <h2 className="font-display font-semibold">Branch Distribution (PKR Balance)</h2>
-          </div>
-          <div className="h-[300px] w-full">
-            {Recharts ? (
-              <Recharts.ResponsiveContainer width="100%" height="100%">
-                <Recharts.BarChart data={stats.byBranch}>
-                  <Recharts.CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.4} />
-                  <Recharts.XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
-                  <Recharts.YAxis hide />
-                  <Recharts.Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }} />
-                  <Recharts.Bar dataKey="pkr" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-                </Recharts.BarChart>
-              </Recharts.ResponsiveContainer>
-            ) : (
-              <div className="h-full w-full flex items-end gap-3 px-4 pb-4 pt-8">
-                {[60, 85, 45, 70, 55, 90, 40].map((h, i) => (
-                  <Skeleton key={i} className="flex-1 rounded-t-md" style={{ height: `${h}%` }} />
-                ))}
-              </div>
-            )}
-          </div>
-        </Card>
+        {role === "admin" && (
+          <Card className="glass p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <Building2 className="w-4 h-4 text-primary" />
+              <h2 className="font-display font-semibold">Branch Distribution (PKR Balance)</h2>
+            </div>
+            <div className="h-[300px] w-full">
+              {Recharts ? (
+                <Recharts.ResponsiveContainer width="100%" height="100%">
+                  <Recharts.BarChart data={stats.byBranch}>
+                    <Recharts.CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.4} />
+                    <Recharts.XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                    <Recharts.YAxis hide />
+                    <Recharts.Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }} />
+                    <Recharts.Bar dataKey="pkr" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                  </Recharts.BarChart>
+                </Recharts.ResponsiveContainer>
+              ) : (
+                <div className="h-full w-full flex items-end gap-3 px-4 pb-4 pt-8">
+                  {[60, 85, 45, 70, 55, 90, 40].map((h, i) => (
+                    <Skeleton key={i} className="flex-1 rounded-t-md" style={{ height: `${h}%` }} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Branch breakdown + recent */}
