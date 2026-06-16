@@ -154,13 +154,36 @@ export default function Dashboard() {
   }
 
   const cards = [
-    { label: t("Accounts"), value: stats.accounts.toString(), icon: Users, gradient: "from-primary to-primary-glow", sub: `${stats.branches} ${t("Branches").toLowerCase()}`, hint: t("HintActiveAccounts") },
-    { label: t("NetBalance") + " (PKR)", value: formatMoney(stats.netPKR, "PKR"), icon: Wallet, gradient: "from-accent to-accent-glow", sub: balanceLabel(stats.netPKR), hint: `${t("Today")} D ${formatMoney(stats.todayPKR.debit, "PKR")} | C ${formatMoney(stats.todayPKR.credit, "PKR")}`, positive: stats.netPKR >= 0 },
-    { label: t("NetBalance") + " (AED)", value: formatMoney(stats.netAED, "AED"), icon: TrendingUp, gradient: "from-emerald-600 to-teal-500", sub: balanceLabel(stats.netAED), hint: `${t("Today")} D ${formatMoney(stats.todayAED.debit, "AED")} | C ${formatMoney(stats.todayAED.credit, "AED")}`, positive: stats.netAED >= 0 },
+    {
+      label: t("Accounts"),
+      value: stats.accounts.toString(),
+      icon: Users,
+      gradient: "from-primary to-primary-glow",
+      sub: `${stats.branches} ${t("Branches").toLowerCase()}`,
+      hint: t("HintActiveAccounts")
+    },
+    {
+      label: "PKR Balance",
+      value: formatMoney(stats.netPKR, "PKR"),
+      icon: Wallet,
+      gradient: "from-accent to-accent-glow",
+      sub: balanceLabel(stats.netPKR),
+      hint: `Today: Dr ${formatMoney(stats.todayPKR.debit, "PKR")} | Cr ${formatMoney(stats.todayPKR.credit, "PKR")}`,
+      positive: stats.netPKR >= 0
+    },
+    {
+      label: "AED Balance",
+      value: formatMoney(stats.netAED, "AED"),
+      icon: TrendingUp,
+      gradient: "from-emerald-600 to-teal-500",
+      sub: balanceLabel(stats.netAED),
+      hint: `Today: Dr ${formatMoney(stats.todayAED.debit, "AED")} | Cr ${formatMoney(stats.todayAED.credit, "AED")}`,
+      positive: stats.netAED >= 0
+    },
     {
       label: t("Expenses"),
       value: formatMoney(stats.totalExpensePKR, "PKR"),
-      sub: stats.totalExpenseAED > 0 ? `+ ${formatMoney(stats.totalExpenseAED, "AED")}` : "0 AED",
+      sub: stats.totalExpenseAED > 0 ? `AED: ${formatMoney(stats.totalExpenseAED, "AED")}` : "0 AED",
       icon: Receipt,
       gradient: "from-rose-500 to-orange-500",
       hint: t("HintExpenses"),
@@ -222,7 +245,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {cards.map((c, i) => (
           <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className={c.url ? "cursor-pointer" : ""}>
             <Card 
@@ -236,10 +259,10 @@ export default function Dashboard() {
                     <c.icon className="w-5 h-5 text-white" />
                   </div>
                 </div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium truncate" title={c.label}>{c.label}</div>
-                <div className="text-2xl font-display font-bold mt-1 num truncate" title={c.value}>{c.value}</div>
-                <div className={`text-xs mt-1 num truncate ${c.positive === false ? "text-destructive" : c.positive === true ? "text-success" : "text-muted-foreground"}`} title={c.sub}>{c.sub}</div>
-                <div className="text-[11px] text-muted-foreground mt-2 leading-tight truncate" title={c.hint}>{c.hint}</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium" title={c.label}>{c.label}</div>
+                <div className="text-xl font-display font-bold mt-1 num break-all leading-tight" title={c.value}>{c.value}</div>
+                <div className={`text-xs mt-1 num ${c.positive === false ? "text-destructive" : c.positive === true ? "text-success" : "text-muted-foreground"}`} title={c.sub}>{c.sub}</div>
+                <div className="text-[11px] text-muted-foreground mt-2 leading-tight" title={c.hint}>{c.hint}</div>
               </div>
             </Card>
           </motion.div>
