@@ -17,9 +17,11 @@ export type AuditLog = {
   table_name?: string | null;
   action_type?: string | null;
   user_email?: string | null;
+  user_id?: string | null;
   created_at?: string | null;
   old_data?: Json | null;
   new_data?: Json | null;
+  user_name?: string | null;
 };
 
 export default function AuditLogs() {
@@ -34,6 +36,27 @@ export default function AuditLogs() {
       .select("*")
       .order("created_at", { ascending: false })
       .limit(200);
+
+    if (data && data.length > 0) {
+      const userIds = Array.from(new Set(data.map((d) => d.user_id).filter(Boolean))) as string[];
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase.from("profiles")
+          .select("id, full_name")
+          .in("id", userIds);
+        
+        const profileMap = (profiles || []).reduce((acc, p) => {
+          acc[p.id] = p.full_name || "Unknown User";
+          return acc;
+        }, {} as Record<string, string>);
+
+        data.forEach((d) => {
+          if (d.user_id && profileMap[d.user_id]) {
+            d.user_name = profileMap[d.user_id];
+          }
+        });
+      }
+    }
+
     setLogs(data ?? []);
     if (showSpinner) setRefreshing(false);
   };
@@ -197,7 +220,7 @@ export default function AuditLogs() {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <User className="w-3.5 h-3.5 text-primary" />
-                        <span className="font-medium">{l.user_email ?? "System/Unknown"}</span>
+                        <span className="font-medium">{l.user_name || l.user_email || l.user_id || "System/Unknown"}</span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
