@@ -199,58 +199,59 @@ export default function AdminPanel() {
     { title: "All Transactions", desc: "Full history of all ledger entries", icon: Receipt, to: "/transactions", grad: "from-rose-600 to-pink-600" },
   ];
 
-  const stats = s ? [
+  const financialStats = s ? [
+    { 
+      l: "Net PKR Balance", 
+      v: formatMoney(s.pkr, "PKR"), 
+      rawVal: s.pkr,
+      credit: s.pkrCredit,
+      debit: s.pkrDebit,
+      color: s.pkr >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400", 
+      icon: Wallet,
+      desc: "Net cash reserves in PKR (Pakistan)",
+      grad: s.pkr >= 0 ? "from-emerald-500/10 to-teal-500/5 border-t-emerald-500" : "from-rose-500/10 to-pink-500/5 border-t-rose-500"
+    },
+    { 
+      l: "Net AED Balance", 
+      v: formatMoney(s.aed, "AED"), 
+      rawVal: s.aed,
+      credit: s.aedCredit,
+      debit: s.aedDebit,
+      color: s.aed >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400", 
+      icon: Wallet,
+      desc: "Net cash reserves in AED (Dubai)",
+      grad: s.aed >= 0 ? "from-emerald-500/10 to-teal-500/5 border-t-emerald-500" : "from-rose-500/10 to-pink-500/5 border-t-rose-500"
+    },
+  ] : [];
+
+  const overviewStats = s ? [
     { 
       l: "Total Branches", 
       v: String(s.branches), 
       icon: Building2, 
       desc: "Registered branches",
-      grad: "from-blue-500/5 to-indigo-500/5 border-t-blue-500/30"
+      grad: "from-blue-500/5 to-indigo-500/5 border-t-blue-500"
     },
     { 
       l: "Total Accounts", 
       v: String(s.accounts), 
       icon: Wallet, 
       desc: "Active ledgers in system",
-      grad: "from-emerald-500/5 to-teal-500/5 border-t-emerald-500/30"
+      grad: "from-emerald-500/5 to-teal-500/5 border-t-emerald-500"
     },
     { 
       l: "Total Transactions", 
       v: String(s.txns), 
       icon: Receipt, 
       desc: "Recorded journal entries",
-      grad: "from-amber-500/5 to-orange-500/5 border-t-amber-500/30"
+      grad: "from-amber-500/5 to-orange-500/5 border-t-amber-500"
     },
     { 
       l: "Active Operators", 
       v: String(s.admins + s.users), 
       icon: Users, 
       desc: `${s.admins} Admin, ${s.users} Users`,
-      grad: "from-purple-500/5 to-pink-500/5 border-t-purple-500/30"
-    },
-    { 
-      l: "Net PKR Balance", 
-      v: formatMoney(s.pkr, "PKR"), 
-      rawVal: s.pkr,
-      isCurrency: true,
-      credit: s.pkrCredit,
-      debit: s.pkrDebit,
-      color: s.pkr >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400", 
-      icon: Wallet,
-      desc: "Net cash reserves in PKR",
-      grad: s.pkr >= 0 ? "from-emerald-500/10 to-teal-500/5 border-t-emerald-500/50" : "from-rose-500/10 to-pink-500/5 border-t-rose-500/50"
-    },
-    { 
-      l: "Net AED Balance", 
-      v: formatMoney(s.aed, "AED"), 
-      rawVal: s.aed,
-      isCurrency: true,
-      credit: s.aedCredit,
-      debit: s.aedDebit,
-      color: s.aed >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400", 
-      icon: Wallet,
-      desc: "Net cash reserves in AED",
-      grad: s.aed >= 0 ? "from-emerald-500/10 to-teal-500/5 border-t-emerald-500/50" : "from-rose-500/10 to-pink-500/5 border-t-rose-500/50"
+      grad: "from-purple-500/5 to-pink-500/5 border-t-purple-500"
     },
   ] : [];
 
@@ -301,81 +302,124 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* Stats Grid - Responsive columns, increased gap, and robust formatting */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-        {!s ? (
-          [...Array(6)].map((_, i) => <Skeleton key={i} className="h-36 rounded-2xl" />)
-        ) : (
-          stats.map((x, i) => {
-            const fontClass = getFontSizeClass(x.v);
-            return (
+      {/* Financial Treasury - 2 columns grid for massive space and readability */}
+      <div className="space-y-4">
+        <h2 className="font-display font-bold text-lg flex items-center gap-2 text-foreground/80">
+          <Wallet className="w-5 h-5 text-primary" /> Treasury & Cash Reserves
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {!s ? (
+            [...Array(2)].map((_, i) => <Skeleton key={i} className="h-44 rounded-2xl" />)
+          ) : (
+            financialStats.map((x, i) => (
               <motion.div 
                 key={x.l} 
-                initial={{ opacity: 0, y: 20 }} 
+                initial={{ opacity: 0, y: 15 }} 
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ delay: i * 0.05 }}
-                className="h-full"
               >
-                <Card className={`glass p-5 border-t-4 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:translate-y-[-2px] group h-full flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${x.grad}`}>
-                  <div>
-                    {/* Card Label and Icon Header */}
-                    <div className="flex items-start justify-between mb-3 gap-2">
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold truncate">
-                          {x.l}
-                        </span>
-                        {x.desc && (
-                          <span className="text-[9px] text-muted-foreground/60 font-medium mt-0.5 line-clamp-1">
-                            {x.desc}
-                          </span>
-                        )}
-                      </div>
-                      {x.icon && (
-                        <div className="p-1.5 rounded-lg bg-background/60 border border-border/10 group-hover:text-primary transition-colors shrink-0">
-                          <x.icon className="w-3.5 h-3.5 text-muted-foreground group-hover:scale-110 transition-transform" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Formatted Number - Dynamic styling, no truncation, responsive wrapping */}
-                    <div className="my-2 flex items-baseline flex-wrap gap-1.5 min-w-0">
-                      <span className={`font-display tracking-tight break-words ${fontClass} ${x.color || "text-foreground"}`}>
-                        {x.v}
+                <Card className={`glass p-6 border-t-4 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:translate-y-[-2px] group relative overflow-hidden bg-gradient-to-br ${x.grad}`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/20">
+                    <div className="min-w-0">
+                      <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-extrabold block">
+                        {x.l}
                       </span>
-                      {x.isCurrency && (
-                        <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded shrink-0 select-none ${
-                          x.rawVal >= 0 
-                            ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" 
-                            : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
-                        }`}>
-                          {balanceLabel(x.rawVal || 0)}
-                        </span>
-                      )}
+                      <span className="text-[10px] text-muted-foreground/70 font-medium mt-0.5 block">
+                        {x.desc}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-[10px] font-black px-2.5 py-1 rounded select-none ${
+                        x.rawVal >= 0 
+                          ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" 
+                          : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
+                      }`}>
+                        {balanceLabel(x.rawVal || 0)}
+                      </span>
+                      <div className="p-2 rounded-xl bg-background/80 border border-border/10 group-hover:text-primary transition-colors">
+                        <x.icon className="w-4 h-4 text-muted-foreground group-hover:scale-110 transition-transform" />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Dynamic Treasury Breakdowns for Currencies to avoid clipping and give complete info */}
-                  {x.isCurrency && (x.credit !== undefined && x.debit !== undefined) && (
-                    <div className="mt-4 pt-3 border-t border-border/20 space-y-1.5 text-[10px] font-mono text-muted-foreground/80">
-                      <div className="flex justify-between items-center gap-2">
-                        <span className="flex items-center gap-0.5"><ArrowUpRight className="w-3 h-3 text-emerald-500" /> Total Cr:</span>
-                        <span className="text-emerald-500 font-bold truncate">
-                          {formatMoney(x.credit, x.l.includes("PKR") ? "PKR" : "AED")}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center gap-2">
-                        <span className="flex items-center gap-0.5"><ArrowDownLeft className="w-3 h-3 text-rose-500" /> Total Dr:</span>
-                        <span className="text-rose-500 font-bold truncate">
-                          {formatMoney(x.debit, x.l.includes("PKR") ? "PKR" : "AED")}
-                        </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 items-center">
+                    {/* Net Balance (Spans full or main col) */}
+                    <div className="sm:col-span-1 min-w-0">
+                      <div className="text-[10px] text-muted-foreground font-bold uppercase mb-1">Net Balance</div>
+                      <div className={`font-display text-2xl lg:text-3xl font-extrabold tracking-tight break-words whitespace-normal leading-none ${x.color}`}>
+                        {x.v}
                       </div>
                     </div>
-                  )}
+
+                    {/* Credit Breakdown */}
+                    <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3 flex flex-col justify-center min-w-0">
+                      <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1 mb-1">
+                        <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Total Credit (Cr)
+                      </span>
+                      <span className="text-emerald-500 font-mono text-sm lg:text-base font-bold break-words whitespace-normal">
+                        {formatMoney(x.credit, x.l.includes("PKR") ? "PKR" : "AED")}
+                      </span>
+                    </div>
+
+                    {/* Debit Breakdown */}
+                    <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-3 flex flex-col justify-center min-w-0">
+                      <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1 mb-1">
+                        <ArrowDownLeft className="w-3.5 h-3.5 text-rose-500 shrink-0" /> Total Debit (Dr)
+                      </span>
+                      <span className="text-rose-500 font-mono text-sm lg:text-base font-bold break-words whitespace-normal">
+                        {formatMoney(x.debit, x.l.includes("PKR") ? "PKR" : "AED")}
+                      </span>
+                    </div>
+                  </div>
                 </Card>
               </motion.div>
-            );
-          })
-        )}
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* System Overview - 4 columns grid for perfect distribution */}
+      <div className="space-y-4">
+        <h2 className="font-display font-bold text-lg flex items-center gap-2 text-foreground/80">
+          <Activity className="w-5 h-5 text-primary" /> System Overview
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {!s ? (
+            [...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)
+          ) : (
+            overviewStats.map((x, i) => (
+              <motion.div 
+                key={x.l} 
+                initial={{ opacity: 0, y: 15 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ delay: i * 0.05 }}
+              >
+                <Card className={`glass p-5 border-t-4 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:translate-y-[-2px] group h-full flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${x.grad}`}>
+                  <div className="flex items-start justify-between mb-3 gap-2">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-extrabold truncate">
+                        {x.l}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground/60 font-medium mt-0.5 line-clamp-1">
+                        {x.desc}
+                      </span>
+                    </div>
+                    <div className="p-1.5 rounded-lg bg-background/60 border border-border/10 group-hover:text-primary transition-colors shrink-0">
+                      <x.icon className="w-3.5 h-3.5 text-muted-foreground group-hover:scale-110 transition-transform" />
+                    </div>
+                  </div>
+
+                  <div className="mt-1 flex items-baseline gap-1.5 min-w-0">
+                    <span className="font-display text-2xl md:text-3xl font-extrabold tracking-tight text-foreground num">
+                      {x.v}
+                    </span>
+                  </div>
+                </Card>
+              </motion.div>
+            ))
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
