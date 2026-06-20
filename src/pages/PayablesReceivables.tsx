@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Search, ArrowDownLeft, ArrowUpRight, Phone, MapPin,
-  Building2, MessageSquare, Printer, ExternalLink
+  Building2, MessageSquare, Printer, ExternalLink, Wallet
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -215,53 +215,132 @@ const ScreenTable = React.memo(({
   const totalAED = list.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
   
   return (
-    <div className="overflow-x-auto rounded-xl border border-border/50">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-muted/50 text-[10px] uppercase tracking-widest text-muted-foreground font-bold border-b border-border/50">
-            {["#", "Account No", "Account Name", "Branch", "Mobile", "Address", "Balance", ""].map((h, i) => (
-              <th key={i} className={`px-4 py-3 font-bold ${i === 6 ? "text-right" : "text-left"}`}>{h}</th>
+    <Card className="glass overflow-hidden shadow-lg border-none mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm whitespace-nowrap">
+          <thead>
+            <tr className="bg-muted/40 border-b border-border/50 text-[11px] uppercase tracking-wider text-muted-foreground font-bold">
+              <th className="px-5 py-4 text-left">Account</th>
+              <th className="px-5 py-4 text-left">Details</th>
+              <th className="px-5 py-4 text-left hidden md:table-cell">Location</th>
+              <th className="px-5 py-4 text-right">Balance</th>
+              <th className="px-5 py-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/50">
+            {list.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-16">
+                  <div className="flex flex-col items-center justify-center space-y-3">
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                      <Wallet className="w-8 h-8 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-muted-foreground font-medium">No {isR ? "receivables" : "payables"} found.</p>
+                  </div>
+                </td>
+              </tr>
+            ) : list.map((a, i) => (
+              <tr 
+                key={a.id} 
+                className="hover:bg-muted/30 transition-all cursor-pointer group" 
+                onClick={() => navigate(`/accounts/${a.id}`)}
+              >
+                <td className="px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                      {a.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-base">{a.name}</div>
+                      <div className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground inline-block mt-1 border">
+                        {a.account_no}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-5 py-4">
+                  <div className="space-y-1">
+                    {a.mobile ? (
+                      <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
+                        <Phone className="w-3.5 h-3.5" />{a.mobile}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground/40 text-xs">No Phone</span>
+                    )}
+                    {a.branch_name && (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Building2 className="w-3.5 h-3.5" />{a.branch_name}
+                      </div>
+                    )}
+                  </div>
+                </td>
+                <td className="px-5 py-4 hidden md:table-cell">
+                  <div className="max-w-[200px]">
+                    {a.address ? (
+                      <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                        <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        <span className="truncate" title={a.address}>{a.address}</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground/40 text-xs">No Address</span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-5 py-4 text-right">
+                  <div className={`font-bold font-display text-lg tracking-tight num ${isR ? "text-destructive" : "text-success"}`}>
+                    {formatMoney(Math.abs(a.balance), a.currency)}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest bg-muted/40 inline-block px-1.5 py-0.5 rounded">
+                    {a.currency}
+                  </div>
+                </td>
+                <td className="px-5 py-4 text-right" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                    {a.mobile && (
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50" 
+                        onClick={e => sendWhatsApp(e, a)} 
+                        title="Send WhatsApp"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 hover:bg-primary/10 hover:text-primary" 
+                      onClick={() => navigate(`/accounts/${a.id}`)} 
+                      title="View Details"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {list.length === 0 ? (
-            <tr><td colSpan={8} className="text-center py-12 text-muted-foreground">No {isR ? "receivables" : "payables"} found.</td></tr>
-          ) : list.map((a, i) => (
-            <tr key={a.id} className="border-t border-border/40 hover:bg-muted/30 transition-colors cursor-pointer group" onClick={() => navigate(`/accounts/${a.id}`)}>
-              <td className="px-4 py-3 text-muted-foreground text-xs">{i + 1}</td>
-              <td className="px-4 py-3"><span className="font-mono text-xs bg-muted/50 px-2 py-0.5 rounded border">{a.account_no}</span></td>
-              <td className="px-4 py-3 font-semibold">{a.name}</td>
-              <td className="px-4 py-3"><div className="flex items-center gap-1.5 text-muted-foreground text-xs"><Building2 className="w-3 h-3" />{a.branch_name}</div></td>
-              <td className="px-4 py-3">{a.mobile ? <div className="flex items-center gap-1.5 text-xs font-mono"><Phone className="w-3 h-3 text-muted-foreground" />{a.mobile}</div> : <span className="text-muted-foreground/40 text-xs">N/A</span>}</td>
-              <td className="px-4 py-3 max-w-[180px]">{a.address ? <div className="flex items-start gap-1.5 text-xs text-muted-foreground"><MapPin className="w-3 h-3 mt-0.5 shrink-0" /><span className="line-clamp-2">{a.address}</span></div> : <span className="text-muted-foreground/40 text-xs">N/A</span>}</td>
-              <td className="px-4 py-3 text-right">
-                <div className={`font-bold font-mono text-sm num ${isR ? "text-destructive" : "text-success"}`}>{formatMoney(Math.abs(a.balance), a.currency)}</div>
-                <div className="text-[9px] text-muted-foreground uppercase">{a.currency}</div>
-              </td>
-              <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {a.mobile && <Button variant="ghost" size="icon" className="h-7 w-7 text-green-500 hover:bg-green-500/10" onClick={e => sendWhatsApp(e, a)} aria-label="Send WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>}
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate(`/accounts/${a.id}`)} aria-label="View account details"><ExternalLink className="w-3.5 h-3.5" /></Button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-        {list.length > 0 && (
-          <tfoot>
-            <tr className={`border-t-2 font-bold text-sm ${isR ? "border-destructive/30 bg-destructive/5" : "border-success/30 bg-success/5"}`}>
-              <td colSpan={6} className="px-4 py-3 text-right uppercase tracking-wider text-xs">Total ({list.length} accounts)</td>
-              <td className={`px-4 py-3 text-right font-display font-black num ${isR ? "text-destructive" : "text-success"}`}>
-                <div className="text-base">{formatMoney(totalPKR, "PKR")}</div>
-                {totalAED > 0 && <div className="text-sm mt-0.5 opacity-90">{formatMoney(totalAED, "AED")}</div>}
-              </td>
-              <td />
-            </tr>
-          </tfoot>
-        )}
-      </table>
-    </div>
+          </tbody>
+          {list.length > 0 && (
+            <tfoot>
+              <tr className={`border-t-2 ${isR ? "border-destructive/20 bg-destructive/5" : "border-success/20 bg-success/5"}`}>
+                <td colSpan={3} className="px-5 py-5 text-right uppercase tracking-widest text-xs font-bold text-muted-foreground hidden md:table-cell">
+                  Grand Total ({list.length} accounts)
+                </td>
+                <td colSpan={2} className="px-5 py-5 text-right uppercase tracking-widest text-xs font-bold text-muted-foreground md:hidden">
+                  Total ({list.length})
+                </td>
+                <td className={`px-5 py-5 text-right font-display font-black num ${isR ? "text-destructive" : "text-success"}`}>
+                  <div className="text-xl">{formatMoney(totalPKR, "PKR")}</div>
+                  {totalAED > 0 && <div className="text-sm mt-1 opacity-80">{formatMoney(totalAED, "AED")}</div>}
+                </td>
+                <td />
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+    </Card>
   );
 });
 ScreenTable.displayName = "ScreenTable";
@@ -403,9 +482,13 @@ export default function PayablesReceivables() {
 
   if (loading) {
     return (
-      <div className="p-8 space-y-4">
+      <div className="p-8 space-y-6 max-w-[1600px] mx-auto">
         <Skeleton className="h-12 w-1/3" />
-        <Skeleton className="h-96 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+        </div>
+        <Skeleton className="h-[500px] w-full rounded-2xl" />
       </div>
     );
   }
@@ -432,18 +515,19 @@ export default function PayablesReceivables() {
       </div>
 
       {/* Screen UI */}
-      <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500">
+      <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-700">
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">{t("Reports")} - {branchHeaderLabel}</div>
-            <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">{t("PayablesReceivables")}</h1>
+            <div className="text-xs font-bold uppercase tracking-widest text-primary/80 mb-1">{t("Reports")} • {branchHeaderLabel}</div>
+            <h1 className="font-display text-4xl md:text-5xl font-black tracking-tight">{t("PayablesReceivables")}</h1>
+            <p className="text-muted-foreground mt-2">Monitor all outstanding balances grouped by receivables and payables.</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {role === "admin" && (
-              <div className="w-56">
+              <div className="w-64">
                 <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                  <SelectTrigger className="h-11 glass border-2 font-medium">
+                  <SelectTrigger className="h-12 glass border-2 font-medium rounded-xl shadow-sm hover:border-primary/50 transition-colors">
                     <Building2 className="w-4 h-4 mr-2 text-primary" />
                     <SelectValue placeholder="Select Branch" />
                   </SelectTrigger>
@@ -456,49 +540,62 @@ export default function PayablesReceivables() {
                 </Select>
               </div>
             )}
-            <Button onClick={() => window.print()} variant="outline" className="h-11 gap-2 border-2 hover:bg-primary/5 shadow-sm">
+            <Button onClick={() => window.print()} variant="outline" className="h-12 px-6 gap-2 border-2 hover:bg-primary hover:text-primary-foreground transition-all rounded-xl shadow-sm font-semibold">
               <Printer className="w-4 h-4" />
-              Print / Save PDF
+              Print Report
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="glass p-5 border-l-4 border-l-destructive shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
-                <ArrowDownLeft className="w-5 h-5 text-destructive" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Receivables Card */}
+          <Card className="relative overflow-hidden group cursor-pointer" onClick={() => setActiveTab("receivables")}>
+            <div className={`absolute inset-0 bg-gradient-to-br from-destructive/20 via-destructive/5 to-transparent transition-opacity duration-500 ${activeTab === 'receivables' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
+            <div className={`absolute left-0 top-0 bottom-0 w-2 transition-colors duration-500 ${activeTab === 'receivables' ? 'bg-destructive' : 'bg-destructive/20 group-hover:bg-destructive/50'}`} />
+            <div className="p-6 md:p-8 relative z-10 flex flex-col md:flex-row md:items-center gap-6">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-transform duration-500 group-hover:scale-110 ${activeTab === 'receivables' ? 'bg-destructive text-destructive-foreground' : 'bg-background border-2 border-destructive text-destructive'}`}>
+                <ArrowDownLeft className="w-8 h-8" />
               </div>
               <div className="flex-1">
-                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("TotalReceivable")} - {filteredReceivables.length} accounts</div>
-                <div className="flex items-baseline gap-4 mt-1">
-                  <div>
-                    <span className="text-2xl font-display font-black text-destructive num">{formatMoney(totalReceivablePKR, "PKR")}</span>
-                  </div>
+                <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <span>{t("TotalReceivable")}</span>
+                  <span className="bg-destructive/10 text-destructive px-2 py-0.5 rounded-full text-[10px]">{filteredReceivables.length} ACCOUNTS</span>
+                </div>
+                <div className="mt-2 flex items-baseline gap-4">
+                  <span className="text-3xl md:text-4xl font-display font-black text-destructive num tracking-tight">
+                    {formatMoney(totalReceivablePKR, "PKR")}
+                  </span>
                   {totalReceivableAED > 0 && (
-                    <div>
-                      <span className="text-xl font-display font-bold text-destructive/80 num">{formatMoney(totalReceivableAED, "AED")}</span>
-                    </div>
+                    <span className="text-xl md:text-2xl font-display font-bold text-destructive/70 num">
+                      {formatMoney(totalReceivableAED, "AED")}
+                    </span>
                   )}
                 </div>
               </div>
             </div>
           </Card>
-          <Card className="glass p-5 border-l-4 border-l-success shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
-                <ArrowUpRight className="w-5 h-5 text-success" />
+
+          {/* Payables Card */}
+          <Card className="relative overflow-hidden group cursor-pointer" onClick={() => setActiveTab("payables")}>
+            <div className={`absolute inset-0 bg-gradient-to-br from-success/20 via-success/5 to-transparent transition-opacity duration-500 ${activeTab === 'payables' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
+            <div className={`absolute left-0 top-0 bottom-0 w-2 transition-colors duration-500 ${activeTab === 'payables' ? 'bg-success' : 'bg-success/20 group-hover:bg-success/50'}`} />
+            <div className="p-6 md:p-8 relative z-10 flex flex-col md:flex-row md:items-center gap-6">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-transform duration-500 group-hover:scale-110 ${activeTab === 'payables' ? 'bg-success text-success-foreground' : 'bg-background border-2 border-success text-success'}`}>
+                <ArrowUpRight className="w-8 h-8" />
               </div>
               <div className="flex-1">
-                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("TotalPayable")} - {filteredPayables.length} accounts</div>
-                <div className="flex items-baseline gap-4 mt-1">
-                  <div>
-                    <span className="text-2xl font-display font-black text-success num">{formatMoney(totalPayablePKR, "PKR")}</span>
-                  </div>
+                <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <span>{t("TotalPayable")}</span>
+                  <span className="bg-success/10 text-success px-2 py-0.5 rounded-full text-[10px]">{filteredPayables.length} ACCOUNTS</span>
+                </div>
+                <div className="mt-2 flex items-baseline gap-4">
+                  <span className="text-3xl md:text-4xl font-display font-black text-success num tracking-tight">
+                    {formatMoney(totalPayablePKR, "PKR")}
+                  </span>
                   {totalPayableAED > 0 && (
-                    <div>
-                      <span className="text-xl font-display font-bold text-success/80 num">{formatMoney(totalPayableAED, "AED")}</span>
-                    </div>
+                    <span className="text-xl md:text-2xl font-display font-bold text-success/70 num">
+                      {formatMoney(totalPayableAED, "AED")}
+                    </span>
                   )}
                 </div>
               </div>
@@ -506,33 +603,35 @@ export default function PayablesReceivables() {
           </Card>
         </div>
 
-        <Card className="glass p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input value={q} onChange={e => setQ(e.target.value)}
-              placeholder="Search by name, account no, mobile, address..."
-              className="pl-10 h-11 bg-background/50 border-none shadow-inner" />
+        <Card className="glass p-2 rounded-2xl flex flex-col md:flex-row gap-4 items-center shadow-md">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
+            <TabsList className="h-12 w-full md:w-[300px] grid grid-cols-2 bg-muted/50 p-1 rounded-xl">
+              <TabsTrigger value="receivables" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold tracking-wide">
+                Receivables
+              </TabsTrigger>
+              <TabsTrigger value="payables" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold tracking-wide">
+                Payables
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input 
+              value={q} 
+              onChange={e => setQ(e.target.value)}
+              placeholder="Search accounts by name, no, mobile or address..."
+              className="pl-12 h-12 bg-transparent border-none shadow-none text-base focus-visible:ring-0" 
+            />
           </div>
         </Card>
 
-        <Tabs defaultValue="receivables" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2 h-11 glass p-1">
-            <TabsTrigger value="receivables" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <ArrowDownLeft className="w-3.5 h-3.5 mr-1.5 text-destructive" />
-              {t("Receivables")} ({filteredReceivables.length})
-            </TabsTrigger>
-            <TabsTrigger value="payables" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <ArrowUpRight className="w-3.5 h-3.5 mr-1.5 text-success" />
-              {t("Payables")} ({filteredPayables.length})
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="receivables" className="mt-4">
-            <ScreenTable list={filteredReceivables} type="receivable" navigate={navigate} sendWhatsApp={sendWhatsApp} />
-          </TabsContent>
-          <TabsContent value="payables" className="mt-4">
-            <ScreenTable list={filteredPayables} type="payable" navigate={navigate} sendWhatsApp={sendWhatsApp} />
-          </TabsContent>
-        </Tabs>
+        {activeTab === "receivables" && (
+          <ScreenTable list={filteredReceivables} type="receivable" navigate={navigate} sendWhatsApp={sendWhatsApp} />
+        )}
+        {activeTab === "payables" && (
+          <ScreenTable list={filteredPayables} type="payable" navigate={navigate} sendWhatsApp={sendWhatsApp} />
+        )}
+
       </div>
     </>
   );
