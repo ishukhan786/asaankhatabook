@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Building2, Plus, Trash2, MapPin, Hash, Briefcase, Loader } from "lucide-react";
+import { Building2, Plus, Trash2, MapPin, Hash, Briefcase, Loader, Search, Edit2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 type BranchRow = {
   id: string;
@@ -22,6 +24,13 @@ export default function Branches() {
   const [rows, setRows] = useState<BranchRow[] | null>(null);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Edit State
+  const [editingBranch, setEditingBranch] = useState<BranchRow | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editBusy, setEditBusy] = useState(false);
+
   const nextBranchNumber = (rows ?? []).reduce((max, branch) => {
     const match = String(branch.code ?? "").match(/^BRN-(\d+)$/);
     return match ? Math.max(max, Number(match[1])) : max;
@@ -29,6 +38,7 @@ export default function Branches() {
   const branchCodePreview = `BRN-${String(nextBranchNumber).padStart(2, "0")}`;
 
   const reload = () => supabase.from("branches").select("*").order("name").then(({ data }) => setRows(data ?? []));
+  
   useEffect(() => {
     reload();
     const sub = supabase.channel('branches_channel')
@@ -41,6 +51,16 @@ export default function Branches() {
       supabase.removeChannel(sub);
     };
   }, []);
+
+  const filteredRows = useMemo(() => {
+    if (!rows) return null;
+    if (!searchQuery) return rows;
+    const lowerQuery = searchQuery.toLowerCase();
+    return rows.filter(b => 
+      b.name.toLowerCase().includes(lowerQuery) || 
+      (b.code && b.code.toLowerCase().includes(lowerQuery))
+    );
+  }, [rows, searchQuery]);
 
   if (loading) return <div className="p-8 max-w-4xl mx-auto space-y-4"><Skeleton className="h-12 w-1/3" /><Skeleton className="h-40 w-full" /></div>;
   if (role !== "admin") return <Navigate to="/" replace />;
@@ -67,7 +87,6 @@ export default function Branches() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Are you sure? This will fail if there are accounts linked to this branch.")) return;
     const { error } = await supabase.from("branches").delete().eq("id", id);
     if (error) {
       toast.error("Cannot delete: Branch has active accounts or transactions.");
@@ -75,6 +94,30 @@ export default function Branches() {
     }
     toast.success("Branch removed");
     reload();
+  };
+
+  const updateBranch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBranch) return;
+    if (editName.trim().length < 2) { toast.error("Branch name must be at least 2 characters"); return; }
+    
+    setEditBusy(true);
+    const { error } = await supabase.from("branches").update({ name: editName.trim() }).eq("id", editingBranch.id);
+    setEditBusy(false);
+    
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    
+    toast.success("Branch updated successfully");
+    setEditingBranch(null);
+    reload();
+  };
+
+  const openEditDialog = (branch: BranchRow) => {
+    setEditingBranch(branch);
+    setEditName(branch.name);
   };
 
   return (
@@ -136,61 +179,136 @@ export default function Branches() {
         </Card>
 
         {/* Branches List */}
-        <div className="lg:col-span-2 space-y-4">
-          {!rows ? (
+        <div className="lg:col-span-2 space-y-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input 
+              placeholder="Search branches by name or code..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 glass border-primary/20 focus-visible:ring-primary h-12 rounded-xl"
+            />
+          </div>
+
+          {!filteredRows ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
             </div>
-          ) : rows.length === 0 ? (
+          ) : filteredRows.length === 0 ? (
             <div className="glass p-12 text-center rounded-3xl">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <Building2 className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="font-display font-bold text-lg">No Branches Defined</h3>
-              <p className="text-muted-foreground text-sm max-w-xs mx-auto mt-1">Start by adding your first business location using the form on the left.</p>
+              <h3 className="font-display font-bold text-lg">No Branches Found</h3>
+              <p className="text-muted-foreground text-sm max-w-xs mx-auto mt-1">
+                {searchQuery ? "Try adjusting your search query." : "Start by adding your first business location using the form on the left."}
+              </p>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
-              {rows.map((b, i) => (
+              {filteredRows.map((b, i) => (
                 <motion.div 
                   key={b.id} 
                   initial={{ opacity: 0, scale: 0.95 }} 
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.05 }}
                 >
-                  <Link to={`/branches/${b.id}`}>
-                    <Card className="glass p-5 group hover:shadow-lg transition-all relative overflow-hidden border-l-4 border-l-transparent hover:border-l-primary">
-                      <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors" />
-                      <div className="flex justify-between items-start relative">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase font-mono tracking-tighter">
-                              {b.code}
-                            </span>
-                          </div>
-                          <h3 className="font-display font-bold text-xl">{b.name}</h3>
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
-                            <Briefcase className="w-3 h-3" />
-                            <span>Active Branch - Click to view</span>
-                          </div>
+                  <Card className="glass p-5 group hover:shadow-lg transition-all relative overflow-hidden border-l-4 border-l-transparent hover:border-l-primary flex flex-col h-full">
+                    <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors" />
+                    
+                    <div className="flex justify-between items-start relative mb-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase font-mono tracking-tighter">
+                            {b.code}
+                          </span>
                         </div>
+                        <h3 className="font-display font-bold text-xl">{b.name}</h3>
+                      </div>
+                      
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={(e) => { e.preventDefault(); remove(b.id); }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive/10"
+                          onClick={(e) => { e.preventDefault(); openEditDialog(b); }}
+                          className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4" />
                         </Button>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the branch <strong>{b.name}</strong>.
+                                It will fail if there are active accounts linked to this branch.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => remove(b.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Delete Branch
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
-                    </Card>
-                  </Link>
+                    </div>
+                    
+                    <div className="mt-auto">
+                      <Link to={`/branches/${b.id}`} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
+                        <Briefcase className="w-3 h-3" />
+                        <span>Active Branch - Click to view</span>
+                      </Link>
+                    </div>
+                  </Card>
                 </motion.div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      <Dialog open={!!editingBranch} onOpenChange={(open) => !open && setEditingBranch(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Branch</DialogTitle>
+            <DialogDescription>
+              Update the name of this branch. The branch code cannot be modified.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={updateBranch} className="space-y-4 py-4">
+             <div className="space-y-2">
+              <Label>Branch Code</Label>
+              <Input value={editingBranch?.code || ""} disabled className="font-mono bg-muted/50" />
+            </div>
+            <div className="space-y-2">
+              <Label>Branch Name</Label>
+              <Input 
+                value={editName} 
+                onChange={(e) => setEditName(e.target.value)} 
+                placeholder="Branch name" 
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditingBranch(null)}>Cancel</Button>
+              <Button type="submit" disabled={editBusy} className="gradient-primary">
+                {editBusy ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
