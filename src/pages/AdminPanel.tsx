@@ -19,9 +19,7 @@ import {
   Trash2, 
   Search, 
   RefreshCw, 
-  CheckCircle2, 
-  ArrowUpRight, 
-  ArrowDownLeft 
+  CheckCircle2 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatMoney, balanceLabel } from "@/lib/format";
@@ -55,10 +53,6 @@ export default function AdminPanel() {
     users: number;
     pkr: number;
     aed: number;
-    pkrCredit: number;
-    pkrDebit: number;
-    aedCredit: number;
-    aedDebit: number;
   }>(null);
   const [recentTx, setRecentTx] = useState<RecentTransaction[]>([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -67,32 +61,21 @@ export default function AdminPanel() {
   const fetchData = useCallback(async () => {
     if (role !== "admin") return;
     try {
-      const [{ count: branches }, { count: accounts }, { count: txns }, { data: roles }, { data: tx }, { data: rTx }] = await Promise.all([
+      const [{ count: branches }, { count: accounts }, { count: txns }, { data: roles }, { data: rTx }] = await Promise.all([
         supabase.from("branches").select("*", { count: "exact", head: true }),
         supabase.from("accounts").select("*", { count: "exact", head: true }),
         supabase.from("transactions").select("*", { count: "exact", head: true }),
         supabase.from("user_roles").select("role"),
-        supabase.from("transactions").select("debit, credit, accounts(currency)"),
         supabase.from("transactions").select("*, accounts(name, currency)").order("created_at", { ascending: false }).limit(5),
       ]);
 
-      let pkrCredit = 0, pkrDebit = 0;
-      let aedCredit = 0, aedDebit = 0;
-
+      // Calculate net balances from transactions
+      const { data: tx } = await supabase.from("transactions").select("debit, credit, accounts(currency)");
+      let pkr = 0, aed = 0;
       ((tx ?? []) as Array<{ credit?: number | string; debit?: number | string; accounts?: { currency?: string } }>).forEach((t) => {
-        const credit = Number(t.credit ?? 0);
-        const debit = Number(t.debit ?? 0);
-        if (t.accounts?.currency === "PKR") {
-          pkrCredit += credit;
-          pkrDebit += debit;
-        } else {
-          aedCredit += credit;
-          aedDebit += debit;
-        }
+        const net = Number(t.credit ?? 0) - Number(t.debit ?? 0);
+        if (t.accounts?.currency === "PKR") pkr += net; else aed += net;
       });
-
-      const pkr = pkrCredit - pkrDebit;
-      const aed = aedCredit - aedDebit;
 
       setS({
         branches: branches ?? 0,
@@ -102,10 +85,6 @@ export default function AdminPanel() {
         users: ((roles ?? []) as Array<{ role?: string }>).filter((r) => r.role === "branch_user").length,
         pkr,
         aed,
-        pkrCredit,
-        pkrDebit,
-        aedCredit,
-        aedDebit,
       });
       setRecentTx(rTx ?? []);
     } catch (error) {
@@ -204,8 +183,6 @@ export default function AdminPanel() {
       l: "Net PKR Balance", 
       v: formatMoney(s.pkr, "PKR"), 
       rawVal: s.pkr,
-      credit: s.pkrCredit,
-      debit: s.pkrDebit,
       color: s.pkr >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400", 
       icon: Wallet,
       desc: "Net cash reserves in PKR (Pakistan)",
@@ -215,8 +192,6 @@ export default function AdminPanel() {
       l: "Net AED Balance", 
       v: formatMoney(s.aed, "AED"), 
       rawVal: s.aed,
-      credit: s.aedCredit,
-      debit: s.aedDebit,
       color: s.aed >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400", 
       icon: Wallet,
       desc: "Net cash reserves in AED (Dubai)",
@@ -309,7 +284,7 @@ export default function AdminPanel() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {!s ? (
-            [...Array(2)].map((_, i) => <Skeleton key={i} className="h-44 rounded-2xl" />)
+            [...Array(2)].map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
           ) : (
             financialStats.map((x, i) => (
               <motion.div 
@@ -319,7 +294,7 @@ export default function AdminPanel() {
                 transition={{ delay: i * 0.05 }}
               >
                 <Card className={`glass p-6 border-t-4 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:translate-y-[-2px] group relative overflow-hidden bg-gradient-to-br ${x.grad}`}>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/20">
+                  <div className="flex items-center justify-between pb-4 border-b border-border/20">
                     <div className="min-w-0">
                       <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-extrabold block">
                         {x.l}
@@ -343,33 +318,10 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 items-center">
-                    {/* Net Balance (Spans full or main col) */}
-                    <div className="sm:col-span-1 min-w-0">
-                      <div className="text-[10px] text-muted-foreground font-bold uppercase mb-1">Net Balance</div>
-                      <div className={`font-display text-2xl lg:text-3xl font-extrabold tracking-tight break-words whitespace-normal leading-none ${x.color}`}>
-                        {x.v}
-                      </div>
-                    </div>
-
-                    {/* Credit Breakdown */}
-                    <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3 flex flex-col justify-center min-w-0">
-                      <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1 mb-1">
-                        <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Total Credit (Cr)
-                      </span>
-                      <span className="text-emerald-500 font-mono text-sm lg:text-base font-bold break-words whitespace-normal">
-                        {formatMoney(x.credit, x.l.includes("PKR") ? "PKR" : "AED")}
-                      </span>
-                    </div>
-
-                    {/* Debit Breakdown */}
-                    <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-3 flex flex-col justify-center min-w-0">
-                      <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1 mb-1">
-                        <ArrowDownLeft className="w-3.5 h-3.5 text-rose-500 shrink-0" /> Total Debit (Dr)
-                      </span>
-                      <span className="text-rose-500 font-mono text-sm lg:text-base font-bold break-words whitespace-normal">
-                        {formatMoney(x.debit, x.l.includes("PKR") ? "PKR" : "AED")}
-                      </span>
+                  <div className="pt-4">
+                    <div className="text-[10px] text-muted-foreground font-bold uppercase mb-1">Net Balance</div>
+                    <div className={`font-display text-2xl lg:text-3xl font-extrabold tracking-tight break-words whitespace-normal leading-none ${x.color}`}>
+                      {x.v}
                     </div>
                   </div>
                 </Card>
