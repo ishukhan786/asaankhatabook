@@ -146,16 +146,26 @@ export default function Accounts() {
         eyebrow="Ledger"
         title="Accounts"
         actions={
-          canWriteTransactions ? <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> New Account</Button></Link> : undefined
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            <div className="relative w-full sm:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                value={q} 
+                onChange={(e) => setQ(e.target.value)} 
+                placeholder="Search by name, account no, mobile..." 
+                className="pl-10 bg-background/40 backdrop-blur-sm border-white/10" 
+              />
+            </div>
+            {canWriteTransactions && (
+              <Link to="/accounts/new" className="shrink-0">
+                <Button className="gradient-primary text-primary-foreground shadow-soft">
+                  <Plus className="w-4 h-4 mr-1" /> New Account
+                </Button>
+              </Link>
+            )}
+          </div>
         }
       />
-
-      <Card className="glass p-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, account no, mobile..." className="pl-10" />
-        </div>
-      </Card>
 
       {!rows ? (
         <TableSkeleton columns={6} rows={5} />
