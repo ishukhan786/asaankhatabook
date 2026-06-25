@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, TrendingUp, Building2 } from "lucide-react";
+import { Wallet, Users, ArrowDownLeft, ArrowUpRight, Plus, Receipt, TrendingUp, Building2, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { logger } from "@/lib/logger";
@@ -37,10 +37,17 @@ type TransactionWithAccount = Tables<"transactions"> & {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { profile, role } = useAuth();
+  const { profile, role, canWriteTransactions } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<TransactionWithAccount[]>([]);
   const [Recharts, setRecharts] = useState<RechartsModule | null>(null);
+  const [timeframe, setTimeframe] = useState<"today" | "7days" | "15days" | "30days" | "custom">("15days");
+  const [customFrom, setCustomFrom] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 15);
+    return d.toISOString().split("T")[0];
+  });
+  const [customTo, setCustomTo] = useState<string>(() => new Date().toISOString().split("T")[0]);
 
   // Load recharts immediately on mount (charts are always visible on dashboard)
   useEffect(() => {
@@ -50,30 +57,82 @@ export default function Dashboard() {
     }).catch(() => {});
     return () => { mounted = false; };
   }, []);
+
   const load = useCallback(async () => {
     try {
-      const [recentTxRes, summaryRes, branchRes, trendRes] = await Promise.all([
-        supabase.from("transactions").select("*, accounts(name, account_no, currency)").order("created_at", { ascending: false }).limit(5),
+      let fromStr = "";
+      let toStr = new Date().toISOString().split("T")[0];
+
+      const today = new Date();
+      if (timeframe === "today") {
+        fromStr = today.toISOString().split("T")[0];
+        toStr = fromStr;
+      } else if (timeframe === "7days") {
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        fromStr = d.toISOString().split("T")[0];
+      } else if (timeframe === "15days") {
+        const d = new Date();
+        d.setDate(d.getDate() - 15);
+        fromStr = d.toISOString().split("T")[0];
+      } else if (timeframe === "30days") {
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        fromStr = d.toISOString().split("T")[0];
+      } else if (timeframe === "custom") {
+        fromStr = customFrom;
+        toStr = customTo;
+      }
+
+      const [recentTxRes, summaryRes, branchRes, txPeriodRes, expPeriodRes] = await Promise.all([
+        supabase.from("transactions").select("*, accounts(name, account_no, currency)").gte("txn_date", fromStr).lte("txn_date", toStr).order("created_at", { ascending: false }).limit(5),
         supabase.rpc("dashboard_summary").maybeSingle(),
         supabase.rpc("dashboard_branch_distribution"),
-        supabase.rpc("dashboard_trend", { p_days: 15 }),
+        supabase.from("transactions").select("txn_date, debit, credit, accounts(currency)").gte("txn_date", fromStr).lte("txn_date", toStr),
+        supabase.from("expenses").select("amount, currency").gte("expense_date", fromStr).lte("expense_date", toStr),
       ]);
 
-      if (recentTxRes.error) console.error("recentTx error:", recentTxRes.error);
-      if (summaryRes.error) console.error("summary error:", summaryRes.error);
-      if (branchRes.error) console.error("branch error:", branchRes.error);
-      if (trendRes.error) console.error("trend error:", trendRes.error);
+      if (recentTxRes.error) logger.error("recentTx error:", recentTxRes.error);
+      if (summaryRes.error) logger.error("summary error:", summaryRes.error);
+      if (branchRes.error) logger.error("branch error:", branchRes.error);
+      if (txPeriodRes.error) logger.error("txPeriod error:", txPeriodRes.error);
+      if (expPeriodRes.error) logger.error("expPeriod error:", expPeriodRes.error);
 
       const recentTx = recentTxRes.data;
       const summaryRow = summaryRes.data;
       const branchResult = branchRes;
-      const trendRows = trendRes.data;
+      const txPeriod = txPeriodRes.data ?? [];
+      const expPeriod = expPeriodRes.data ?? [];
 
       const netPKR = Number(summaryRow?.net_pkr ?? 0), netAED = Number(summaryRow?.net_aed ?? 0);
-      const todayPKR = { debit: Number(summaryRow?.today_debit_pkr ?? 0), credit: Number(summaryRow?.today_credit_pkr ?? 0) };
-      const todayAED = { debit: Number(summaryRow?.today_debit_aed ?? 0), credit: Number(summaryRow?.today_credit_aed ?? 0) };
-      const totalExpensePKR = Number(summaryRow?.total_expense_pkr ?? 0), totalExpenseAED = Number(summaryRow?.total_expense_aed ?? 0);
       const totalReceivable = Number(summaryRow?.total_receivable ?? 0), totalPayable = Number(summaryRow?.total_payable ?? 0);
+
+      const periodPKR = { debit: 0, credit: 0 };
+      const periodAED = { debit: 0, credit: 0 };
+      txPeriod.forEach((tx: any) => {
+        const currency = tx.accounts?.currency;
+        const debit = Number(tx.debit || 0);
+        const credit = Number(tx.credit || 0);
+        if (currency === "PKR") {
+          periodPKR.debit += debit;
+          periodPKR.credit += credit;
+        } else if (currency === "AED") {
+          periodAED.debit += debit;
+          periodAED.credit += credit;
+        }
+      });
+
+      let periodExpensePKR = 0;
+      let periodExpenseAED = 0;
+      expPeriod.forEach((e: any) => {
+        const amount = Number(e.amount || 0);
+        if (e.currency === "PKR") {
+          periodExpensePKR += amount;
+        } else if (e.currency === "AED") {
+          periodExpenseAED += amount;
+        }
+      });
+
       type BranchRPC = { branch_name?: string; pkr?: number | string; aed?: number | string; accounts_count?: number | string };
       let branchData = (branchResult.data ?? []).map((b: BranchRPC) => ({
         name: String(b.branch_name ?? ""),
@@ -100,30 +159,57 @@ export default function Dashboard() {
         }));
       }
 
-      const trendData = (trendRows ?? []).map((tRow: { txn_date?: string; pkr?: number | string; aed?: number | string }) => {
-        const parsedDate = tRow.txn_date ? new Date(tRow.txn_date) : new Date();
+      const trendMap = new Map<string, { pkr: number; aed: number }>();
+      const start = new Date(fromStr);
+      const end = new Date(toStr);
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split("T")[0];
+        trendMap.set(dateStr, { pkr: 0, aed: 0 });
+      }
+
+      txPeriod.forEach((tx: any) => {
+        const dateStr = tx.txn_date;
+        if (trendMap.has(dateStr)) {
+          const current = trendMap.get(dateStr)!;
+          const currency = tx.accounts?.currency;
+          const net = Number(tx.credit || 0) - Number(tx.debit || 0);
+          if (currency === "PKR") {
+            current.pkr += net;
+          } else if (currency === "AED") {
+            current.aed += net;
+          }
+        }
+      });
+
+      const trendData = Array.from(trendMap.entries()).map(([dateStr, val]) => {
+        const parsedDate = new Date(dateStr);
         return {
           date: parsedDate.toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-PK", { day: "2-digit", month: "short" }),
-          pkr: Number(tRow.pkr ?? 0),
-          aed: Number(tRow.aed ?? 0),
+          pkr: val.pkr,
+          aed: val.aed,
         };
       });
 
       setStats({
         accounts: Number(summaryRow?.accounts_count ?? 0),
         branches: Number(summaryRow?.branches_count ?? 0),
-        netPKR, netAED, todayPKR, todayAED,
-        totalExpensePKR, totalExpenseAED,
+        netPKR,
+        netAED,
+        todayPKR: periodPKR,
+        todayAED: periodAED,
+        totalExpensePKR: periodExpensePKR,
+        totalExpenseAED: periodExpenseAED,
         byBranch: branchData,
         trend: trendData,
         totalReceivable,
+        totalPayload: 0, // unused placeholder
         totalPayable
-      });
+      } as any);
       setRecent((recentTx ?? []) as Tables<"transactions">[]);
     } catch (err) {
       logger.error("Dashboard load error:", err);
     }
-  }, [i18n.language]);
+  }, [i18n.language, timeframe, customFrom, customTo]);
 
   const scheduleLoad = useRealtimeRefresh(load, 700);
 
@@ -168,7 +254,7 @@ export default function Dashboard() {
       icon: Wallet,
       gradient: "from-accent to-accent-glow",
       sub: balanceLabel(stats.netPKR),
-      hint: `Today: Dr ${formatMoney(stats.todayPKR.debit, "PKR")} | Cr ${formatMoney(stats.todayPKR.credit, "PKR")}`,
+      hint: `Period: Dr ${formatMoney(stats.todayPKR.debit, "PKR")} | Cr ${formatMoney(stats.todayPKR.credit, "PKR")}`,
       positive: stats.netPKR >= 0
     },
     {
@@ -177,7 +263,7 @@ export default function Dashboard() {
       icon: TrendingUp,
       gradient: "from-emerald-600 to-teal-500",
       sub: balanceLabel(stats.netAED),
-      hint: `Today: Dr ${formatMoney(stats.todayAED.debit, "AED")} | Cr ${formatMoney(stats.todayAED.credit, "AED")}`,
+      hint: `Period: Dr ${formatMoney(stats.todayAED.debit, "AED")} | Cr ${formatMoney(stats.todayAED.credit, "AED")}`,
       positive: stats.netAED >= 0
     },
     {
@@ -186,7 +272,7 @@ export default function Dashboard() {
       sub: stats.totalExpenseAED > 0 ? `AED: ${formatMoney(stats.totalExpenseAED, "AED")}` : "0 AED",
       icon: Receipt,
       gradient: "from-rose-500 to-orange-500",
-      hint: t("HintExpenses"),
+      hint: `Period Expenses: PKR ${formatMoney(stats.totalExpensePKR, "PKR")}`,
       positive: false
     },
     {
@@ -213,40 +299,104 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 md:p-8 space-y-8 max-w-[1600px] mx-auto">
-      {/* Hero */}
+      {/* Hero — Liquid Glass Panel */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div className="text-sm text-muted-foreground">{role === "admin" ? t("AdminPanel") : t("Dashboard")}</div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-              {t("Welcome", { name: profile?.full_name?.split(" ")[0] ?? "there" })}
-            </h1>
-            <p className="text-muted-foreground mt-1">Here's what's happening across your ledger today.</p>
-          </div>
-           <div className="flex gap-2 flex-wrap items-center">
-            {role === "admin" && (
-              <Link to="/branches"><Button variant="secondary" className="glass"><Building2 className="w-4 h-4 mr-1" /> {t("Branches")}</Button></Link>
-            )}
-            <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> {t("NewAccount")}</Button></Link>
-            <Link to="/transactions/new"><Button variant="outline" className="border-2"><Receipt className="w-4 h-4 mr-1" /> {t("NewTransaction")}</Button></Link>
+        <div className="glass-hero rounded-2xl px-5 py-3 mb-2 relative overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-primary/70 mb-0.5">{role === "admin" ? t("AdminPanel") : t("Dashboard")}</div>
+              <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-gradient">
+                {t("Welcome", { name: profile?.full_name?.split(" ")[0] ?? "there" })}
+              </h1>
+              <p className="text-muted-foreground text-xs">Here's what's happening across your ledger today.</p>
+            </div>
+             <div className="flex gap-2 flex-wrap items-center">
+              {role === "admin" && (
+                <Link to="/branches"><Button variant="secondary" className="glass"><Building2 className="w-4 h-4 mr-1" /> {t("Branches")}</Button></Link>
+              )}
+              {canWriteTransactions && (
+                <>
+                  <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> {t("NewAccount")}</Button></Link>
+                  <Link to="/transactions/new"><Button variant="outline" className="border-2 glass"><Receipt className="w-4 h-4 mr-1" /> {t("NewTransaction")}</Button></Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Stat cards */}
+      {/* Timeframe Selector Panel */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="glass-card rounded-xl p-3 flex flex-wrap items-center justify-between gap-4 border border-white/10"
+      >
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-primary" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Filter Timeframe:</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {(["today", "7days", "15days", "30days", "custom"] as const).map((tf) => (
+            <Button
+              key={tf}
+              variant={timeframe === tf ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setTimeframe(tf)}
+              className={timeframe === tf ? "gradient-primary text-primary-foreground shadow-soft text-xs" : "glass text-xs hover:bg-muted/30"}
+            >
+              {tf === "today" ? "Today" : tf === "7days" ? "7 Days" : tf === "15days" ? "15 Days" : tf === "30days" ? "30 Days" : "Custom Range"}
+            </Button>
+          ))}
+        </div>
+
+        {timeframe === "custom" && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            className="flex items-center gap-2"
+          >
+            <input
+              type="date"
+              value={customFrom}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              className="bg-background/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+            />
+            <span className="text-xs text-muted-foreground">to</span>
+            <input
+              type="date"
+              value={customTo}
+              onChange={(e) => setCustomTo(e.target.value)}
+              className="bg-background/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+            />
+          </motion.div>
+        )}
+      </motion.div>
+
+      {/* Stat cards — Liquid Glass */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {cards.map((c, i) => (
-          <motion.div key={c.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className={c.url ? "cursor-pointer" : ""}>
-            <Card 
-              className="glass p-5 relative overflow-hidden group hover:shadow-lift transition-all h-full"
+          <motion.div
+            key={c.label}
+            initial={{ opacity: 0, y: 20, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: i * 0.07, type: "spring", stiffness: 260, damping: 22 }}
+            className={c.url ? "cursor-pointer" : ""}
+          >
+            <Card
+              className="glass-card rounded-2xl p-5 relative overflow-hidden h-full"
               onClick={() => c.url && navigate(c.url)}
             >
-              <div className={`absolute -top-10 -right-10 w-36 h-36 rounded-full bg-gradient-to-br ${c.gradient} opacity-15 blur-2xl group-hover:opacity-25 transition-opacity`} />
-              <div className="relative flex flex-col gap-2">
+              {/* Ambient gradient orb */}
+              <div className={`absolute -top-8 -right-8 w-32 h-32 rounded-full bg-gradient-to-br ${c.gradient} opacity-20 blur-2xl transition-opacity duration-500 group-hover:opacity-35`} />
+              {/* Bottom edge glow */}
+              <div className={`absolute bottom-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent`} />
+
+              <div className="relative flex flex-col gap-2 z-10">
                 {/* Icon + Label Row */}
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${c.gradient} flex items-center justify-center shadow-soft flex-shrink-0`}>
-                    <c.icon className="w-4 h-4 text-white" />
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.gradient} flex items-center justify-center shadow-soft flex-shrink-0 ring-1 ring-white/30`}>
+                    <c.icon className="w-5 h-5 text-white drop-shadow" />
                   </div>
                   <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{c.label}</div>
                 </div>
@@ -258,7 +408,7 @@ export default function Dashboard() {
                 </div>
                 {/* Hint */}
                 {c.hint && (
-                  <div className="text-[11px] text-muted-foreground leading-snug border-t border-border/40 pt-2 mt-1">
+                  <div className="text-[11px] text-muted-foreground leading-snug border-t border-white/20 pt-2 mt-1">
                     {c.hint}
                   </div>
                 )}
@@ -270,10 +420,12 @@ export default function Dashboard() {
 
       {/* Charts Section */}
       <div className={`grid grid-cols-1 ${role === "admin" ? "lg:grid-cols-2" : ""} gap-4`}>
-        <Card className="glass p-6">
+        <Card className="glass rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+                <TrendingUp className="w-3.5 h-3.5 text-white" />
+              </div>
               <h2 className="font-display font-semibold">Balance Trend (Last 15 Days)</h2>
             </div>
             <div className="flex gap-4 text-[10px] uppercase tracking-wider font-bold">
@@ -321,9 +473,11 @@ export default function Dashboard() {
         </Card>
 
         {role === "admin" && (
-          <Card className="glass p-6">
+          <Card className="glass rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-6">
-              <Building2 className="w-4 h-4 text-primary" />
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+                <Building2 className="w-3.5 h-3.5 text-white" />
+              </div>
               <h2 className="font-display font-semibold">Branch Distribution (PKR Balance)</h2>
             </div>
             <div className="h-[300px] w-full">
@@ -352,13 +506,15 @@ export default function Dashboard() {
       {/* Branch breakdown + recent */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {role === "admin" && (
-          <Card className="glass p-6 lg:col-span-1">
+          <Card className="glass rounded-2xl p-6 lg:col-span-1">
           <div className="flex items-center justify-between gap-2 mb-4">
             <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-primary" />
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+                <Building2 className="w-3.5 h-3.5 text-white" />
+              </div>
               <h2 className="font-display font-semibold">Branch Summary</h2>
             </div>
-            <div className="text-[11px] text-muted-foreground">{stats.byBranch.length} branches</div>
+            <div className="text-[11px] text-muted-foreground px-2 py-0.5 rounded-full glass">{stats.byBranch.length} branches</div>
           </div>
             {stats.byBranch.length === 0 ? (
               <div className="text-sm text-muted-foreground py-8 text-center">
@@ -367,7 +523,7 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-3">
                 {stats.byBranch.map((b) => (
-                  <div key={b.name} className="p-3.5 rounded-xl bg-muted/40 border border-border/40">
+                  <div key={b.name} className="p-3.5 rounded-xl glass border-0">
                     <div className="flex items-center justify-between">
                       <div className="font-medium truncate pr-2">{b.name}</div>
                       <div className="text-xs text-muted-foreground whitespace-nowrap">{b.accounts} accts</div>
@@ -393,10 +549,12 @@ export default function Dashboard() {
           </Card>
         )}
 
-        <Card className={`glass p-6 ${role === "admin" ? "lg:col-span-2" : "lg:col-span-3"}`}>
+        <Card className={`glass rounded-2xl p-6 ${role === "admin" ? "lg:col-span-2" : "lg:col-span-3"}`}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-primary" />
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+                <Receipt className="w-3.5 h-3.5 text-white" />
+              </div>
               <h2 className="font-display font-semibold">{t("RecentTransactions")}</h2>
             </div>
             <Link to="/transactions" className="text-xs text-primary hover:underline">View all →</Link>

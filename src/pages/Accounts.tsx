@@ -28,6 +28,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/EmptyState";
+import { TableSkeleton } from "@/components/TableSkeleton";
+
 
 export type AccountSummary = {
   id: string;
@@ -42,7 +46,7 @@ export type AccountSummary = {
 
 export default function Accounts() {
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { role, canWriteTransactions } = useAuth();
   const [rows, setRows] = useState<AccountSummary[] | null>(null);
   const [branches, setBranches] = useState<Array<{ id: string; name: string }>>([]);
   const [q, setQ] = useState("");
@@ -138,13 +142,13 @@ export default function Accounts() {
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">Ledger</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold">Accounts</h1>
-        </div>
-        <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> New Account</Button></Link>
-      </div>
+      <PageHeader
+        eyebrow="Ledger"
+        title="Accounts"
+        actions={
+          canWriteTransactions ? <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> New Account</Button></Link> : undefined
+        }
+      />
 
       <Card className="glass p-4">
         <div className="relative">
@@ -154,14 +158,14 @@ export default function Accounts() {
       </Card>
 
       {!rows ? (
-        <div className="grid gap-2">{[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16" />)}</div>
+        <TableSkeleton columns={6} rows={5} />
       ) : filtered.length === 0 ? (
-        <Card className="glass p-12 text-center">
-          <Users className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
-          <div className="font-display font-semibold">No accounts yet</div>
-          <div className="text-sm text-muted-foreground mb-4">Create your first account to start tracking transactions.</div>
-          <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground"><Plus className="w-4 h-4 mr-1" /> Create account</Button></Link>
-        </Card>
+        <EmptyState 
+          icon={Users}
+          title="No accounts yet"
+          description="Create your first account to start tracking transactions."
+          action={canWriteTransactions ? <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground"><Plus className="w-4 h-4 mr-1" /> Create account</Button></Link> : undefined}
+        />
       ) : (
         <Card className="glass overflow-hidden hidden md:block">
           <div className="overflow-x-auto">

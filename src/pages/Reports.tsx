@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
 import { logger } from "@/lib/logger";
+import { PageHeader } from "@/components/PageHeader";
 
 export default function Reports() {
   const { profile } = useAuth();
@@ -224,18 +225,10 @@ export default function Reports() {
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 animate-fade-in">
-      {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/40">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-primary/80 mb-1">Financial Insights</div>
-          <h1 className="font-display text-3xl md:text-4xl font-extrabold flex items-center gap-3 text-foreground tracking-tight">
-            <span className="p-2 rounded-xl bg-primary/10 text-primary">
-              <FileBarChart className="w-8 h-8" />
-            </span>
-            Reports & Ledger
-          </h1>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Financial Insights"
+        title={<span className="flex items-center gap-3"><span className="p-2 rounded-xl bg-primary/10 text-primary"><FileBarChart className="w-7 h-7" /></span>Reports &amp; Ledger</span>}
+      />
 
       <Tabs defaultValue="ledger" className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-2 p-1 bg-muted/20 border border-border/30 rounded-xl">

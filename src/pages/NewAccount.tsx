@@ -10,6 +10,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ArrowLeft, Loader } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { z } from "zod";
 
 const schema = z.object({
@@ -135,11 +136,11 @@ export default function NewAccount() {
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-6">
       <Link to="/accounts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Back</Link>
-      <div>
-        <div className="text-xs uppercase tracking-wider text-muted-foreground">Create</div>
-        <h1 className="font-display text-3xl md:text-4xl font-bold">New Account</h1>
-        <p className="text-muted-foreground text-sm mt-1">A unique readonly account code will be generated automatically when you save.</p>
-      </div>
+      <PageHeader
+        eyebrow="Create"
+        title="New Account"
+        description="A unique readonly account code will be generated automatically when you save."
+      />
 
       <Card className="glass p-6">
         <form onSubmit={submit} className="space-y-5">

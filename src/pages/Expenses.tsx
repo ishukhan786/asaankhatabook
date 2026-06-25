@@ -24,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { PageHeader } from "@/components/PageHeader";
 
 const CATEGORIES = ["Rent", "Salaries", "Electricity Bill", "Internet Bill", "Tea / Food", "Stationery", "Maintenance", "Others"];
 
@@ -139,17 +140,15 @@ export default function Expenses() {
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-col md:flex-row">
-        <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">Accounts</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold flex items-center gap-2">
-            <Receipt className="w-7 h-7 text-primary" /> Business Expenses
-          </h1>
-        </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }} className="gradient-primary text-primary-foreground shadow-soft">
-          <Plus className="w-4 h-4 mr-1" /> Record Expense
-        </Button>
-      </div>
+      <PageHeader
+        eyebrow="Accounts"
+        title={<span className="flex items-center gap-2"><Receipt className="w-7 h-7 text-primary" /> Business Expenses</span>}
+        actions={
+          <Button onClick={() => { setEditing(null); setOpen(true); }} className="gradient-primary text-primary-foreground shadow-soft">
+            <Plus className="w-4 h-4 mr-1" /> Record Expense
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="glass p-4 md:col-span-2 grid md:grid-cols-3 gap-3">

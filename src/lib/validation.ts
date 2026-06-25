@@ -20,8 +20,8 @@ export const validateDebitCredit = (
   const debitNum = Number(debit || 0);
   const creditNum = Number(credit || 0);
 
-  if (debitNum <= 0 && creditNum <= 0) {
-    return { message: "Enter debit or credit amount" };
+  if (debitNum < 0.01 && creditNum < 0.01) {
+    return { message: "Enter a valid debit or credit amount (minimum 0.01)" };
   }
 
   if (debitNum > 0 && creditNum > 0) {

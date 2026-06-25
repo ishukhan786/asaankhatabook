@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Pencil, Trash2, Loader } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader, Receipt, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,26 +27,31 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/EmptyState";
+import { TableSkeleton } from "@/components/TableSkeleton";
+import { exportToCSV } from "@/lib/export";
+
+export type TxnRow = {
+  id: string;
+  txn_code?: string | null;
+  txn_date?: string | null;
+  details?: string | null;
+  debit?: number | string | null;
+  credit?: number | string | null;
+  account_id?: string | null;
+  created_by?: string | null;
+  accounts?: { name?: string | null; account_no?: string | null; currency?: string | null } | null;
+};
 
 export default function Transactions() {
-  type TxnRow = {
-    id: string;
-    txn_code?: string | null;
-    txn_date?: string | null;
-    details?: string | null;
-    debit?: number | string | null;
-    credit?: number | string | null;
-    account_id?: string | null;
-    created_by?: string | null;
-    accounts?: { name?: string | null; account_no?: string | null; currency?: string | null } | null;
-  };
 
   const [rows, setRows] = useState<TxnRow[] | null>(null);
   const [q, setQ] = useState("");
   const debouncedQ = useDebounce(q, 300);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const { role, profile } = useAuth();
+  const { role, profile, canWriteTransactions } = useAuth();
   const [busy, setBusy] = useState(false);
 
   // Edit form with react-hook-form
@@ -155,15 +160,39 @@ export default function Transactions() {
     }
   };
 
+  const handleExport = () => {
+    if (!rows || rows.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    const data = rows.map(r => ({
+      Date: formatDate(r.txn_date) || "",
+      Code: r.txn_code || "",
+      Account: r.accounts?.name || "",
+      "Account No": r.accounts?.account_no || "",
+      Details: r.details || "",
+      Debit: r.debit || 0,
+      Credit: r.credit || 0,
+    }));
+    exportToCSV(data, `Transactions_Export_${new Date().toISOString().split('T')[0]}`);
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">Activity</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold">Transactions</h1>
-        </div>
-        <Link to="/transactions/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> New Transaction</Button></Link>
-      </div>
+      <PageHeader
+        eyebrow="Activity"
+        title="Transactions"
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" className="glass" onClick={handleExport} disabled={!rows || rows.length === 0}>
+              <Download className="w-4 h-4 mr-1" /> Export CSV
+            </Button>
+            {canWriteTransactions && (
+              <Link to="/transactions/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> New Transaction</Button></Link>
+            )}
+          </div>
+        }
+      />
 
       <Card className="glass p-4 grid md:grid-cols-3 gap-3">
         <div>
@@ -178,7 +207,7 @@ export default function Transactions() {
       </Card>
 
       {!rows ? (
-        <div className="grid gap-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
+        <TableSkeleton columns={7} rows={8} />
       ) : (
         <Card className="glass overflow-hidden">
           <div className="overflow-x-auto">
@@ -196,7 +225,15 @@ export default function Transactions() {
               </thead>
               <tbody>
                 {(rows ?? []).length === 0 ? (
-                  <tr><td colSpan={role === "admin" ? 7 : 6} className="text-center py-12 text-muted-foreground text-sm">No transactions match.</td></tr>
+                  <tr>
+                    <td colSpan={role === "admin" ? 7 : 6} className="p-0">
+                      <EmptyState 
+                        icon={Receipt} 
+                        title="No transactions found" 
+                        description="Try adjusting your search or date filters, or create a new transaction." 
+                      />
+                    </td>
+                  </tr>
                 ) : (rows ?? []).map((t: TxnRow) => (
                   <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30">
                     <td className="px-4 py-2.5 num whitespace-nowrap">{formatDate(t.txn_date)}</td>

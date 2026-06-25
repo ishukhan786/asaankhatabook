@@ -15,7 +15,7 @@ import {
   Wallet,
   Sparkles,
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Sidebar,
@@ -40,6 +40,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type NavItem = {
   title: string;
@@ -62,6 +63,7 @@ export function AppSidebar() {
   const { t, i18n } = useTranslation();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { role, signOut, profile, loading } = useAuth();
 
   const isActive = (url: string, exact?: boolean) => (exact || url === "/" ? pathname === url : pathname.startsWith(url));
@@ -79,7 +81,7 @@ export function AppSidebar() {
       label: "Financial Management",
       items: [
         { title: t("PayablesReceivables"), url: "/payables-receivables", icon: Wallet, badge: "Live" },
-        { title: t("Expenses"), url: "/expenses", icon: Wallet },
+        { title: t("Expenses"), url: "/expenses", icon: Receipt },
         { title: t("Reports"), url: "/reports", icon: FileBarChart },
       ],
     },
@@ -110,13 +112,26 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
       side={i18n.language === "ur" ? "right" : "left"}
-      className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-2xl dark:bg-gradient-to-b dark:from-[#09111c] dark:to-[#04080c]"
+      className="border-r border-sidebar-border text-sidebar-foreground shadow-2xl overflow-hidden"
+      style={{
+        background: "var(--sidebar-glass-bg)",
+        backdropFilter: "blur(28px) saturate(180%)",
+        WebkitBackdropFilter: "blur(28px) saturate(180%)",
+        borderRight: "1px solid var(--sidebar-glass-border)",
+        boxShadow: "var(--sidebar-glass-shadow)",
+      }}
     >
-      {/* Decorative ambient background glows */}
-      <div className="absolute top-[-10%] left-[-20%] w-[150%] h-[50%] bg-primary/5 rounded-[100%] blur-[80px] pointer-events-none overflow-hidden" />
-      <div className="absolute bottom-[-10%] right-[-20%] w-[150%] h-[50%] bg-primary/5 dark:bg-blue-500/5 rounded-[100%] blur-[100px] pointer-events-none overflow-hidden" />
+      {/* Liquid glass shimmer overlay */}
+      <div className="pointer-events-none absolute inset-0 z-0" style={{
+        background: "var(--sidebar-glass-overlay)",
+        opacity: 0.6
+      }} />
+      {/* Top iridescent border line */}
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-px z-10" style={{
+        background: "linear-gradient(90deg, transparent 0%, hsl(184 80% 60% / 0.5) 30%, hsl(0 0% 100% / 0.7) 50%, hsl(38 95% 60% / 0.5) 70%, transparent 100%)"
+      }} />
 
-      <SidebarHeader className="bg-transparent px-4 py-6 z-10">
+      <SidebarHeader className="bg-transparent px-4 py-5 z-10 relative">
         <motion.div
           layout
           className={cn("flex items-center", collapsed ? "justify-center" : "gap-4")}
@@ -141,14 +156,23 @@ export function AppSidebar() {
         </motion.div>
       </SidebarHeader>
 
-      <SidebarContent className="premium-sidebar-scroll bg-transparent px-3 py-2 z-10">
+      <SidebarContent className="premium-sidebar-scroll bg-transparent px-3 py-2 z-10 relative">
         {!collapsed && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="relative mb-6 mx-1">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-slate-400" />
+          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="relative mb-5 mx-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               aria-label="Search navigation"
               placeholder="Quick search..."
-              className="h-11 rounded-2xl border-sidebar-border bg-sidebar-accent/60 pl-10 text-sm text-sidebar-foreground placeholder:text-muted-foreground shadow-inner outline-none transition-all duration-300 focus-visible:bg-sidebar-accent focus-visible:ring-1 focus-visible:ring-sidebar-ring/50 focus-visible:border-sidebar-ring/50 hover:bg-sidebar-accent dark:border-white/5 dark:bg-white/[0.03] dark:text-white dark:placeholder:text-slate-400 dark:focus-visible:bg-white/[0.05] dark:hover:bg-white/[0.05]"
+              onClick={() => window.dispatchEvent(new Event("open-search"))}
+              className="h-10 rounded-xl pl-10 text-sm placeholder:text-muted-foreground outline-none transition-all duration-300 cursor-pointer"
+              style={{
+                background: "var(--glass-bg)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid var(--glass-border)",
+                boxShadow: "0 1px 0 hsl(0 0% 100% / 0.6) inset, 0 2px 8px -2px hsl(184 80% 22% / 0.1)",
+              }}
+              readOnly
             />
           </motion.div>
         )}
@@ -168,46 +192,67 @@ export function AppSidebar() {
 
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild tooltip={item.title} className="h-12 rounded-2xl p-0 hover:bg-transparent">
+                      <SidebarMenuButton asChild tooltip={item.title} className="h-11 rounded-xl p-0 hover:bg-transparent">
                         <NavLink
                           to={item.url}
                           aria-current={active ? "page" : undefined}
                           className={cn(
-                            "group relative flex h-12 w-full items-center overflow-hidden rounded-2xl border border-transparent text-sm font-medium outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/60",
+                            "group relative flex h-11 w-full items-center overflow-hidden rounded-xl border text-sm font-medium outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/60",
                             collapsed ? "justify-center px-0" : "gap-3 px-3",
-                            active
-                              ? "bg-gradient-to-r from-primary/15 via-primary/5 to-transparent border-sidebar-border text-sidebar-foreground shadow-[inset_2px_0_0_0_hsl(var(--primary))] dark:border-white/5 dark:text-white"
-                              : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white",
                           )}
+                          style={active ? {
+                            background: "var(--glass-bg-hover)",
+                            backdropFilter: "blur(16px)",
+                            WebkitBackdropFilter: "blur(16px)",
+                            borderColor: "var(--glass-border)",
+                            boxShadow: "inset 2px 0 0 hsl(var(--primary)), 0 0 0 1px hsl(0 0% 100% / 0.5) inset, 0 4px 12px -4px hsl(184 80% 22% / 0.15)",
+                          } : {
+                            borderColor: "transparent",
+                          }}
                         >
                           {active && (
                             <motion.div
                               layoutId="sidebar-active-glow"
-                              className="absolute inset-0 bg-primary/5 pointer-events-none"
+                              className="absolute inset-0 pointer-events-none"
+                              style={{ background: "linear-gradient(105deg, hsl(184 80% 60% / 0.08) 0%, hsl(0 0% 100% / 0.12) 50%, transparent 100%)" }}
                               transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                           )}
+                          {/* Hover glass overlay */}
+                          <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+                            style={{
+                              background: "var(--glass-bg)",
+                              backdropFilter: "blur(12px)",
+                              borderColor: "var(--glass-border)",
+                            }}
+                          />
                           <motion.span
                             className={cn(
-                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors duration-300 relative z-10",
-                              active ? "text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : "text-muted-foreground group-hover:text-sidebar-accent-foreground dark:text-slate-400 dark:group-hover:text-white",
+                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-300 relative z-10",
+                              active ? "text-primary" : "text-muted-foreground group-hover:text-sidebar-accent-foreground",
                             )}
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                           >
-                            <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+                            <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.5 : 2} />
                           </motion.span>
                           {!collapsed && (
                             <>
-                              <span className={cn("min-w-0 flex-1 truncate transition-colors relative z-10", active ? "font-bold tracking-wide" : "font-medium")}>
+                              <span className={cn("min-w-0 flex-1 truncate transition-colors relative z-10", active ? "font-bold tracking-wide text-sidebar-foreground" : "font-medium text-muted-foreground group-hover:text-sidebar-foreground")}>
                                 {item.title}
                               </span>
                               {item.badge && (
-                                <span className="relative z-10 rounded-full bg-gradient-to-r from-primary/30 to-blue-500/30 border border-primary/20 px-2.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.2)]">
+                                <span className="relative z-10 rounded-full px-2 py-0.5 text-[10px] font-bold"
+                                  style={{
+                                    background: "var(--glass-bg)",
+                                    border: "1px solid var(--glass-border)",
+                                    color: "hsl(var(--primary))",
+                                  }}
+                                >
                                   {item.badge}
                                 </span>
                               )}
-                              {item.dot && <span className="relative z-10 h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.8)]" />}
+                              {item.dot && <span className="relative z-10 h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.8)]" />}
                             </>
                           )}
                         </NavLink>
@@ -221,16 +266,25 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="bg-gradient-to-t from-sidebar to-transparent pt-6 pb-4 px-3 z-10 dark:from-[#04080c]">
+      <SidebarFooter className="pt-3 pb-4 px-3 z-10 relative" style={{ background: "transparent" }}>
+        {/* Footer top border */}
+        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: "var(--glass-border)" }} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
-                "group flex w-full items-center rounded-2xl border border-sidebar-border bg-sidebar-accent/50 backdrop-blur-md text-left outline-none transition-all hover:bg-sidebar-accent hover:shadow-lg focus-visible:ring-2 focus-visible:ring-sidebar-ring/60 dark:border-white/5 dark:bg-white/[0.02] dark:hover:bg-white/[0.06] dark:hover:border-white/10",
-                collapsed ? "justify-center p-2" : "gap-3 p-3",
+                "group flex w-full items-center rounded-xl text-left outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50",
+                collapsed ? "justify-center p-2" : "gap-3 p-2.5",
               )}
+              style={{
+                background: "var(--glass-bg)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                border: "1px solid var(--glass-border)",
+                boxShadow: "0 1px 0 hsl(0 0% 100% / 0.7) inset, 0 4px 12px -4px hsl(184 80% 22% / 0.12)",
+              }}
               aria-label="Open user menu"
             >
               <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sidebar-border bg-sidebar dark:border-white/10 dark:bg-[#09111c]">
@@ -257,14 +311,14 @@ export function AppSidebar() {
               )}
             </motion.button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="right" align="end" className="w-56 border-sidebar-border bg-popover text-popover-foreground backdrop-blur-xl shadow-2xl rounded-xl dark:border-white/10 dark:bg-[#09111c]/95 dark:text-slate-200">
+          <DropdownMenuContent side="right" align="end" className="w-56 backdrop-blur-2xl shadow-2xl rounded-xl" style={{ background: "var(--glass-bg-hover)", border: "1px solid var(--glass-border)", boxShadow: "var(--glass-glow-hover)" }}>
             <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground dark:text-slate-400">My Account</DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-border dark:bg-white/10" />
-            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground cursor-pointer rounded-lg m-1 transition-colors dark:focus:bg-white/10 dark:focus:text-white">
+            <DropdownMenuItem onClick={() => toast.info("Notifications system is coming soon!")} className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground cursor-pointer rounded-lg m-1 transition-colors dark:focus:bg-white/10 dark:focus:text-white">
               <Bell className="mr-2 h-4 w-4" />
               Notifications
             </DropdownMenuItem>
-            <DropdownMenuItem className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground cursor-pointer rounded-lg m-1 transition-colors dark:focus:bg-white/10 dark:focus:text-white">
+            <DropdownMenuItem onClick={() => navigate("/settings")} className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground cursor-pointer rounded-lg m-1 transition-colors dark:focus:bg-white/10 dark:focus:text-white">
               <SettingsIcon className="mr-2 h-4 w-4" />
               Settings
             </DropdownMenuItem>

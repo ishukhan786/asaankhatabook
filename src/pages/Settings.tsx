@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHeader } from "@/components/PageHeader";
 
 interface ClerkWindow extends Window {
   Clerk?: { session?: { getToken: () => Promise<string | null> } };
@@ -206,13 +207,11 @@ export default function Settings() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div>
-        <div className="text-xs uppercase tracking-wider text-muted-foreground">Preferences</div>
-        <h1 className="font-display text-3xl md:text-4xl font-bold flex items-center gap-2">
-          <SettingsIcon className="w-7 h-7 text-primary" /> Settings
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm md:text-base">Manage your identity, business details, app preferences, and security.</p>
-      </div>
+      <PageHeader
+        eyebrow="Preferences"
+        title={<span className="flex items-center gap-2"><SettingsIcon className="w-7 h-7 text-primary" /> Settings</span>}
+        description="Manage your identity, business details, app preferences, and security."
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="glass p-4 border-l-4 border-l-primary flex items-center gap-4">

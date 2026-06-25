@@ -6,8 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Building2, Wallet, Users, Receipt, TrendingUp, MapPin, Hash, Plus } from "lucide-react";
+import { logger } from "@/lib/logger";
 import { formatMoney } from "@/lib/format";
 import { motion } from "framer-motion";
+import { EmptyState } from "@/components/EmptyState";
+import { TableSkeleton } from "@/components/TableSkeleton";
 
 export type Branch = {
   id?: string;
@@ -15,28 +18,29 @@ export type Branch = {
   name?: string;
 };
 
-export type AccountRow = {
-  id?: string;
-  name?: string;
-  account_no?: string;
-  currency?: string;
-  transactions?: Array<{ debit?: number | string; credit?: number | string }>;
+export type AccountSummaryRpc = {
+  account_id: string;
+  account_name: string;
+  account_no: string;
+  currency: string;
+  balance: number;
 };
 
 export default function BranchDetail() {
   const { id } = useParams();
   const [branch, setBranch] = useState<Branch | null>(null);
-  const [accounts, setAccounts] = useState<AccountRow[] | null>(null);
+  const [accounts, setAccounts] = useState<AccountSummaryRpc[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadBranch = useCallback(async () => {
     if (!id) return;
-    const [{ data: b }, { data: a }] = await Promise.all([
+    const [{ data: b }, { data: a, error: rpcError }] = await Promise.all([
       supabase.from("branches").select("*").eq("id", id).maybeSingle(),
-      supabase.from("accounts").select("*, transactions(debit, credit)").eq("branch_id", id),
+      supabase.rpc("get_branch_accounts_summary", { branch_uuid: id }),
     ]);
+    if (rpcError) logger.error("RPC error:", rpcError);
     setBranch(b as Branch | null);
-    setAccounts((a ?? []) as AccountRow[]);
+    setAccounts((a ?? []) as AccountSummaryRpc[]);
     setLoading(false);
   }, [id]);
 
@@ -147,6 +151,10 @@ export default function BranchDetail() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
+          {!branch || loading ? (
+            <TableSkeleton columns={4} rows={3} />
+          ) : (
+            <>
             <thead className="bg-muted/40">
               <tr className="text-xs text-muted-foreground uppercase tracking-wider">
                 <th className="text-left font-bold px-6 py-4">Account</th>
@@ -157,13 +165,21 @@ export default function BranchDetail() {
             </thead>
             <tbody className="divide-y divide-border/30">
               {accounts?.length === 0 ? (
-                <tr><td colSpan={4} className="text-center py-12 text-muted-foreground">No accounts registered in this branch.</td></tr>
+                <tr>
+                  <td colSpan={4} className="p-0 border-b-0">
+                    <EmptyState 
+                      icon={Wallet} 
+                      title="No accounts registered" 
+                      description="This branch currently has no accounts. Create one to start tracking." 
+                    />
+                  </td>
+                </tr>
               ) : accounts?.map((acc) => {
-                const balance = acc.transactions?.reduce((sum: number, tx) => sum + (Number(tx.credit ?? 0) - Number(tx.debit ?? 0)), 0) || 0;
+                const balance = Number(acc.balance) || 0;
                 return (
-                  <tr key={acc.id} className="hover:bg-muted/30 transition-colors group">
+                  <tr key={acc.account_id} className="hover:bg-muted/30 transition-colors group">
                     <td className="px-6 py-4">
-                      <div className="font-bold text-base">{acc.name}</div>
+                      <div className="font-bold text-base">{acc.account_name}</div>
                       <div className="text-xs font-mono text-muted-foreground uppercase">{acc.account_no}</div>
                     </td>
                     <td className="px-6 py-4">
@@ -173,7 +189,7 @@ export default function BranchDetail() {
                       {formatMoney(balance, acc.currency)}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link to={`/accounts/${acc.id}`}>
+                      <Link to={`/accounts/${acc.account_id}`}>
                         <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
                           View Ledger <ArrowLeft className="w-3 h-3 ml-1 rotate-180" />
                         </Button>
@@ -183,6 +199,8 @@ export default function BranchDetail() {
                 );
               })}
             </tbody>
+            </>
+          )}
           </table>
         </div>
       </Card>

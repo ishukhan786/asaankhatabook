@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { logger } from "@/lib/logger";
+import { PageHeader } from "@/components/PageHeader";
 
 interface AccountBalance {
   id: string;
@@ -517,35 +518,35 @@ export default function PayablesReceivables() {
       {/* Screen UI */}
       <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-700">
 
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-widest text-primary/80 mb-1">{t("Reports")} • {branchHeaderLabel}</div>
-            <h1 className="font-display text-4xl md:text-5xl font-black tracking-tight">{t("PayablesReceivables")}</h1>
-            <p className="text-muted-foreground mt-2">Monitor all outstanding balances grouped by receivables and payables.</p>
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            {role === "admin" && (
-              <div className="w-64">
-                <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                  <SelectTrigger className="h-12 glass border-2 font-medium rounded-xl shadow-sm hover:border-primary/50 transition-colors">
-                    <Building2 className="w-4 h-4 mr-2 text-primary" />
-                    <SelectValue placeholder="Select Branch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all" className="font-bold">🌍 All Branches</SelectItem>
-                    {branches.map(b => (
-                      <SelectItem key={b.id} value={b.id}>📍 {b.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            <Button onClick={() => window.print()} variant="outline" className="h-12 px-6 gap-2 border-2 hover:bg-primary hover:text-primary-foreground transition-all rounded-xl shadow-sm font-semibold">
-              <Printer className="w-4 h-4" />
-              Print Report
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          eyebrow={`${t("Reports")} • ${branchHeaderLabel}`}
+          title={t("PayablesReceivables")}
+          description="Monitor all outstanding balances grouped by receivables and payables."
+          actions={
+            <div className="flex items-center gap-3 flex-wrap">
+              {role === "admin" && (
+                <div className="w-64">
+                  <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                    <SelectTrigger className="h-12 glass border-2 font-medium rounded-xl shadow-sm hover:border-primary/50 transition-colors">
+                      <Building2 className="w-4 h-4 mr-2 text-primary" />
+                      <SelectValue placeholder="Select Branch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="font-bold">🌍 All Branches</SelectItem>
+                      {branches.map(b => (
+                        <SelectItem key={b.id} value={b.id}>📍 {b.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <Button onClick={() => window.print()} variant="outline" className="h-12 px-6 gap-2 border-2 hover:bg-primary hover:text-primary-foreground transition-all rounded-xl shadow-sm font-semibold">
+                <Printer className="w-4 h-4" />
+                Print Report
+              </Button>
+            </div>
+          }
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Receivables Card */}

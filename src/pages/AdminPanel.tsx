@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { formatMoney, balanceLabel } from "@/lib/format";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/PageHeader";
 
 type RecentTransaction = {
   id?: string;
@@ -232,50 +233,27 @@ export default function AdminPanel() {
 
   return (
     <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-8 animate-in fade-in duration-500">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-border/10">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <div className="text-xs uppercase tracking-wider text-primary font-bold flex items-center gap-2 mb-1.5">
-            <Shield className="w-4 h-4 animate-pulse text-primary" /> 
-            <span>System Administrator</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-ping ml-1" />
-            <span className="text-[10px] text-muted-foreground font-normal lowercase tracking-normal">live syncing active</span>
-          </div>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Admin Control Center
-          </h1>
-          <p className="text-muted-foreground mt-2 max-w-md text-sm leading-relaxed">
-            Full operational control over branches, user accounts, and company-wide financial metrics.
-          </p>
-        </motion.div>
-        <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleManualRefresh} 
-            disabled={isRefreshing} 
-            className="glass transition-all hover:bg-background/80"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleExport} 
-            disabled={isExporting} 
-            className="glass transition-all hover:bg-background/80"
-          >
-            <Download className="w-4 h-4 mr-2" /> 
-            {isExporting ? "Exporting..." : "Backup Data"}
-          </Button>
-          <Link to="/transactions">
-            <Button size="sm" variant="secondary" className="glass transition-all hover:brightness-110">
-              <Search className="w-4 h-4 mr-2" /> Global Search
+      <PageHeader
+        eyebrow="System Administrator"
+        title={<span className="flex items-center gap-2"><Shield className="w-7 h-7 text-primary" /> Admin Control Center</span>}
+        description="Full operational control over branches, user accounts, and company-wide financial metrics."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={handleManualRefresh} disabled={isRefreshing} className="glass transition-all hover:bg-background/80">
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+              Refresh
             </Button>
-          </Link>
-        </div>
-      </div>
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting} className="glass transition-all hover:bg-background/80">
+              <Download className="w-4 h-4 mr-2" /> {isExporting ? "Exporting..." : "Backup Data"}
+            </Button>
+            <Link to="/transactions">
+              <Button size="sm" variant="secondary" className="glass transition-all hover:brightness-110">
+                <Search className="w-4 h-4 mr-2" /> Global Search
+              </Button>
+            </Link>
+          </div>
+        }
+      />
 
       {/* Financial Treasury - 2 columns grid for massive space and readability */}
       <div className="space-y-4">

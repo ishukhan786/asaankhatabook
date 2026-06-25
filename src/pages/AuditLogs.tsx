@@ -10,6 +10,7 @@ import { formatDate } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/PageHeader";
 import type { Json } from "@/integrations/supabase/types";
 
 export type AuditLog = {
@@ -155,25 +156,23 @@ export default function AuditLogs() {
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">Security</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold flex items-center gap-2">
-            <ShieldAlert className="w-7 h-7 text-primary" /> Audit Logs
-          </h1>
-          <p className="text-muted-foreground mt-1">Track all database activities and user actions.</p>
-        </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => fetchLogs(true)} 
-          disabled={refreshing}
-          className="w-full md:w-auto flex items-center gap-2 shadow-sm hover:shadow transition-all"
-        >
-          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          Refresh Logs
-        </Button>
-      </div>
+      <PageHeader
+        eyebrow="Security"
+        title={<span className="flex items-center gap-2"><ShieldAlert className="w-7 h-7 text-primary" /> Audit Logs</span>}
+        description="Track all database activities and user actions."
+        actions={
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => fetchLogs(true)} 
+            disabled={refreshing}
+            className="w-full md:w-auto flex items-center gap-2 shadow-sm hover:shadow transition-all"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+            Refresh Logs
+          </Button>
+        }
+      />
 
       <Card className="glass p-4">
         <div className="relative">

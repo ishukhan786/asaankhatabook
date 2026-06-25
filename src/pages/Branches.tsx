@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PageHeader } from "@/components/PageHeader";
 
 type BranchRow = {
   id: string;
@@ -122,16 +123,11 @@ export default function Branches() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="text-xs uppercase tracking-widest text-primary font-bold mb-1">Administrative Tools</div>
-        <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight flex items-center gap-3">
-          <div className="p-2 rounded-2xl bg-primary/10 text-primary">
-            <Building2 className="w-8 h-8" />
-          </div>
-          Network <span className="text-gradient">Branches</span>
-        </h1>
-        <p className="text-muted-foreground mt-2">Manage your business locations with auto-generated unique branch codes.</p>
-      </motion.div>
+      <PageHeader
+        eyebrow="Administrative Tools"
+        title={<span className="flex items-center gap-3"><span className="p-2 rounded-2xl bg-primary/10 text-primary"><Building2 className="w-7 h-7" /></span>Network <span className="text-gradient">Branches</span></span>}
+        description="Manage your business locations with auto-generated unique branch codes."
+      />
 
       <div className="grid lg:grid-cols-3 gap-8 items-start">
         {/* Creation Form */}

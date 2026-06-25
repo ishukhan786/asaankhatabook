@@ -1,4 +1,5 @@
-import { Outlet, Navigate } from "react-router-dom";
+import { Outlet, Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
@@ -8,10 +9,35 @@ import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/clerk-react";
+import { GlobalSearch } from "./GlobalSearch";
+
 export default function AppLayout() {
   const { theme, setTheme } = useTheme();
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
 
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((open) => !open);
+      }
+      if (e.key === "n" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        navigate("/transactions/new");
+      }
+    };
+    
+    const onOpenSearch = () => setSearchOpen(true);
+
+    document.addEventListener("keydown", down);
+    window.addEventListener("open-search", onOpenSearch);
+    return () => {
+      document.removeEventListener("keydown", down);
+      window.removeEventListener("open-search", onOpenSearch);
+    };
+  }, [navigate]);
 
   if (loading) {
     return (
@@ -33,7 +59,7 @@ export default function AppLayout() {
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <header 
-            className="h-14 flex items-center gap-3 border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-30 pl-4 pr-[140px] select-none"
+            className="h-14 flex items-center gap-3 border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-30 pl-4 pr-4 md:pr-[140px] select-none"
             style={{ WebkitAppRegion: 'drag' } as CSSProperties}
           >
             <SidebarTrigger style={{ WebkitAppRegion: 'no-drag' } as CSSProperties} />
@@ -61,6 +87,7 @@ export default function AppLayout() {
           </main>
         </div>
       </div>
+      <GlobalSearch open={searchOpen} setOpen={setSearchOpen} />
     </SidebarProvider>
   );
 }

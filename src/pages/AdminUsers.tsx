@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { UserCog, Plus, Trash2, KeyRound, Pencil, Loader } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { PageHeader } from "@/components/PageHeader";
 
 interface AdminUser {
   id: string;
@@ -234,69 +235,66 @@ export default function AdminUsers() {
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
-      <div className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">Admin</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold flex items-center gap-2">
-            <UserCog className="w-7 h-7 text-primary" /> User Management
-          </h1>
-        </div>
-
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="gradient-primary text-primary-foreground"><Plus className="w-4 h-4 mr-1" /> New User</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Create user</DialogTitle></DialogHeader>
-            <form onSubmit={submitCreate} className="space-y-3">
-              <div className="space-y-1.5"><Label>Full name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
-              <div className="space-y-1.5"><Label>Username</Label><Input type="text" required value={username} onChange={(e) => setUsername(e.target.value)} /></div>
-              <div className="space-y-1.5"><Label>Password</Label><Input type="text" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-              <div className="space-y-1.5">
-                <Label>Role</Label>
-                <Select value={newRole} onValueChange={(v: string) => setNewRole(v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Super Admin</SelectItem>
-                    <SelectItem value="branch_manager">Branch Manager</SelectItem>
-                    <SelectItem value="accountant">Accountant</SelectItem>
-                    <SelectItem value="cashier">Cashier</SelectItem>
-                    <SelectItem value="viewer">Viewer</SelectItem>
-                    <SelectItem value="branch_user">Legacy Branch User</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {newRole !== "admin" && (
+      <PageHeader
+        eyebrow="Admin"
+        title={<span className="flex items-center gap-2"><UserCog className="w-7 h-7 text-primary" /> User Management</span>}
+        actions={
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="gradient-primary text-primary-foreground"><Plus className="w-4 h-4 mr-1" /> New User</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Create user</DialogTitle></DialogHeader>
+              <form onSubmit={submitCreate} className="space-y-3">
+                <div className="space-y-1.5"><Label>Full name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Username</Label><Input type="text" required value={username} onChange={(e) => setUsername(e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Password</Label><Input type="text" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
                 <div className="space-y-1.5">
-                  <Label>Branch</Label>
-                  <Select value={branchId} onValueChange={setBranchId}>
-                    <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
+                  <Label>Role</Label>
+                  <Select value={newRole} onValueChange={(v: string) => setNewRole(v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {branches.length === 0 ? (
-                        <div className="p-2 text-sm text-muted-foreground text-center">No branches found. Please add branches first.</div>
-                      ) : (
-                        branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name} ({b.code})</SelectItem>)
-                      )}
+                      <SelectItem value="admin">Super Admin</SelectItem>
+                      <SelectItem value="branch_manager">Branch Manager</SelectItem>
+                      <SelectItem value="accountant">Accountant</SelectItem>
+                      <SelectItem value="cashier">Cashier</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                      <SelectItem value="branch_user">Legacy Branch User</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              )}
-              <DialogFooter>
-                <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
-                  {busy ? (
-                    <>
-                      <Loader className="w-4 h-4 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    "Create"
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+                {newRole !== "admin" && (
+                  <div className="space-y-1.5">
+                    <Label>Branch</Label>
+                    <Select value={branchId} onValueChange={setBranchId}>
+                      <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
+                      <SelectContent>
+                        {branches.length === 0 ? (
+                          <div className="p-2 text-sm text-muted-foreground text-center">No branches found. Please add branches first.</div>
+                        ) : (
+                          branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name} ({b.code})</SelectItem>)
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground">
+                    {busy ? (
+                      <>
+                        <Loader className="w-4 h-4 mr-2 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        }
+      />
 
       <Card className="glass overflow-hidden">
         {loadError && (

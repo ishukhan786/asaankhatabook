@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
 
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<Role | null>(null);
   const [loadingExtras, setLoadingExtras] = useState(false);
 
-  const loadExtras = async (uid: string, clerkUser?: ClerkUser) => {
+  const loadExtras = useCallback(async (uid: string, clerkUser?: ClerkUser) => {
     setLoadingExtras(true);
 
     // Auto-upsert profile so it always exists for logged-in Clerk users
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     setRole(finalRole);
     setLoadingExtras(false);
-  };
+  }, []);
 
   const refresh = async () => {
     if (user) await loadExtras(user.id);
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       setRole(null);
     }
-  }, [user, userLoaded]);
+  }, [user, userLoaded, loadExtras]);
 
   const signOut = async () => {
     await clerkSignOut();

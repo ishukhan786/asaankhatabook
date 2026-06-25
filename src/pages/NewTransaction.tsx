@@ -10,6 +10,7 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft, MessageSquare, Loader } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
+import { PageHeader } from "@/components/PageHeader";
 import { z } from "zod";
 
 const schema = z.object({
@@ -96,11 +97,11 @@ export default function NewTransaction() {
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-6">
       <Link to="/transactions" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Back</Link>
-      <div>
-        <div className="text-xs uppercase tracking-wider text-muted-foreground">Record</div>
-        <h1 className="font-display text-3xl md:text-4xl font-bold">New Transaction</h1>
-        <p className="text-muted-foreground text-sm mt-1">Transaction code is generated automatically and stays locked after save.</p>
-      </div>
+      <PageHeader
+        eyebrow="Record"
+        title="New Transaction"
+        description="Transaction code is generated automatically and stays locked after save."
+      />
 
       <Card className="glass p-6">
         <form onSubmit={submit} className="space-y-5">
