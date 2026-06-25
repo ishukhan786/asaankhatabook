@@ -286,43 +286,43 @@ export default function AccountDetail() {
         )}
       </div>
 
-      <Card className="glass p-6 relative overflow-hidden">
+      <Card className="glass p-4 relative overflow-hidden">
         <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full gradient-primary opacity-10 blur-3xl" />
-        <div className="relative flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div className="font-mono text-xs text-muted-foreground">{account.account_no}</div>
-            <h1 className="font-display text-3xl md:text-4xl font-bold mt-1">{account.name}</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 mt-6">
+            <h1 className="font-display text-2xl md:text-3xl font-bold mt-0.5">{account.name}</h1>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3">
               {account.mobile && (
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    <Phone className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <Phone className="w-3.5 h-3.5" />
                   </div>
                   <div>
                     <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Mobile Number</div>
-                    <div className="font-medium text-foreground">{account.mobile}</div>
+                    <div className="font-medium text-foreground text-sm">{account.mobile}</div>
                   </div>
                 </div>
               )}
               {account.branches?.name && (
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    <Building2 className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <Building2 className="w-3.5 h-3.5" />
                   </div>
                   <div>
                     <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Branch / Office</div>
-                    <div className="font-medium text-foreground">{account.branches.name}</div>
+                    <div className="font-medium text-foreground text-sm">{account.branches.name}</div>
                   </div>
                 </div>
               )}
               {account.address && (
-                <div className="flex items-start gap-3 sm:col-span-2">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
-                    <MapPin className="w-4 h-4" />
+                <div className="flex items-start gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
+                    <MapPin className="w-3.5 h-3.5" />
                   </div>
                   <div>
                     <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Physical Address</div>
-                    <div className="font-medium text-foreground leading-relaxed">{account.address}</div>
+                    <div className="font-medium text-foreground text-sm">{account.address}</div>
                   </div>
                 </div>
               )}
