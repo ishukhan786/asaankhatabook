@@ -44,6 +44,8 @@ export type TxnRow = {
   accounts?: { name?: string | null; account_no?: string | null; currency?: string | null } | null;
 };
 
+const normalizeSearchTerm = (value: string) => value.trim().replace(/[,%]/g, " ");
+
 export default function Transactions() {
 
   const [rows, setRows] = useState<TxnRow[] | null>(null);
@@ -112,8 +114,22 @@ export default function Transactions() {
     if (from) query = query.gte("txn_date", from);
     if (to) query = query.lte("txn_date", to);
     if (debouncedQ) {
-      const term = debouncedQ.trim();
-      query = query.or(`txn_code.ilike.%${term}%,details.ilike.%${term}%,accounts.name.ilike.%${term}%,accounts.account_no.ilike.%${term}%`);
+      const term = normalizeSearchTerm(debouncedQ);
+      if (term) {
+        const { data: matchingAccounts } = await supabase
+          .from("accounts")
+          .select("id")
+          .or(`name.ilike.%${term}%,account_no.ilike.%${term}%`);
+
+        const accountIds = (matchingAccounts ?? []).map((account) => account.id);
+        const filters = [
+          `txn_code.ilike.%${term}%`,
+          `details.ilike.%${term}%`,
+          ...(accountIds.length > 0 ? [`account_id.in.(${accountIds.join(",")})`] : []),
+        ];
+
+        query = query.or(filters.join(","));
+      }
     }
 
     const { data } = await query;
