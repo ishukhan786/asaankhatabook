@@ -44,7 +44,10 @@ export type TxnRow = {
   accounts?: { name?: string | null; account_no?: string | null; currency?: string | null } | null;
 };
 
-const normalizeSearchTerm = (value: string) => value.trim().replace(/[,%]/g, " ");
+const normalizeSearchTerm = (value: string) => value.trim().replace(/[,%()]/g, " ");
+
+const escapePostgrestPattern = (value: string) =>
+  value.replace(/\\/g, "\\\\").replace(/\*/g, "\\*");
 
 export default function Transactions() {
 
@@ -96,11 +99,17 @@ export default function Transactions() {
 
   // Pagination state
   const [page, setPage] = useState(0);
+  const pageRef = useRef(0);
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 50;
 
   const load = useCallback(async (reset = false, pageOverride?: number) => {
-    const nextPage = reset ? 0 : (pageOverride ?? page);
+    if (reset) {
+      pageRef.current = 0;
+      setPage(0);
+    }
+
+    const nextPage = reset ? 0 : (pageOverride ?? pageRef.current);
     const start = nextPage * PAGE_SIZE;
     const end = start + PAGE_SIZE - 1;
 
@@ -116,15 +125,23 @@ export default function Transactions() {
     if (debouncedQ) {
       const term = normalizeSearchTerm(debouncedQ);
       if (term) {
-        const { data: matchingAccounts } = await supabase
+        const pattern = escapePostgrestPattern(term);
+        const { data: matchingAccounts, error: accountsError } = await supabase
           .from("accounts")
           .select("id")
-          .or(`name.ilike.%${term}%,account_no.ilike.%${term}%`);
+          .or(`name.ilike.*${pattern}*,account_no.ilike.*${pattern}*`);
+
+        if (accountsError) {
+          handleSupabaseError(accountsError, { operation: "searchAccountsForTransactions", table: "accounts", userId: profile?.id });
+          if (reset) setRows([]);
+          setBusy(false);
+          return;
+        }
 
         const accountIds = (matchingAccounts ?? []).map((account) => account.id);
         const filters = [
-          `txn_code.ilike.%${term}%`,
-          `details.ilike.%${term}%`,
+          `txn_code.ilike.*${pattern}*`,
+          `details.ilike.*${pattern}*`,
           ...(accountIds.length > 0 ? [`account_id.in.(${accountIds.join(",")})`] : []),
         ];
 
@@ -132,15 +149,23 @@ export default function Transactions() {
       }
     }
 
-    const { data } = await query;
+    const { data, error } = await query;
+
+    if (error) {
+      handleSupabaseError(error, { operation: "loadTransactions", table: "transactions", userId: profile?.id });
+      if (reset) setRows([]);
+      setBusy(false);
+      return;
+    }
 
     if (data) {
       setRows(reset ? data : (prev) => [...(prev ?? []), ...data]);
       setHasMore(data.length === PAGE_SIZE);
+      pageRef.current = nextPage + 1;
       setPage(nextPage + 1);
     }
     setBusy(false);
-  }, [from, to, debouncedQ, page]);
+  }, [from, to, debouncedQ, profile?.id]);
 
   // Keep a ref to the latest `load` so subscription handlers call the current implementation
   const loadRef = useRef<typeof load | null>(null);
