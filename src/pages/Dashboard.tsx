@@ -42,6 +42,24 @@ export default function Dashboard() {
   const [recent, setRecent] = useState<TransactionWithAccount[]>([]);
   const [Recharts, setRecharts] = useState<RechartsModule | null>(null);
   const [timeframe, setTimeframe] = useState<"today" | "7days" | "15days" | "30days" | "custom">("15days");
+  const [trendCurrency, setTrendCurrency] = useState<"PKR" | "AED">("PKR");
+  const [branchCurrency, setBranchCurrency] = useState<"PKR" | "AED">("PKR");
+
+  const formatCompactNumber = (value: number) => {
+    if (value === 0) return "0";
+    const absVal = Math.abs(value);
+    const sign = value < 0 ? "-" : "";
+    if (absVal >= 1.0e7) {
+      return sign + (absVal / 1.0e7).toFixed(1).replace(/\.0$/, "") + "Cr";
+    }
+    if (absVal >= 1.0e5) {
+      return sign + (absVal / 1.0e5).toFixed(1).replace(/\.0$/, "") + "L";
+    }
+    if (absVal >= 1.0e3) {
+      return sign + (absVal / 1.0e3).toFixed(1).replace(/\.0$/, "") + "k";
+    }
+    return value.toString();
+  };
   const [customFrom, setCustomFrom] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() - 15);
@@ -420,42 +438,119 @@ export default function Dashboard() {
 
       {/* Charts Section */}
       <div className={`grid grid-cols-1 ${role === "admin" ? "lg:grid-cols-2" : ""} gap-4`}>
-        <Card className="glass rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-                <TrendingUp className="w-3.5 h-3.5 text-white" />
+        {/* Balance Trend Card */}
+        <Card className="glass rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+                  <TrendingUp className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div>
+                  <h2 className="font-display font-semibold text-sm md:text-base">Balance Trend</h2>
+                  <p className="text-[10px] text-muted-foreground">Showing period net daily changes</p>
+                </div>
               </div>
-              <h2 className="font-display font-semibold">Balance Trend (Last 15 Days)</h2>
+              
+              {/* Currency Selector Toggle */}
+              <div className="flex items-center gap-1 bg-background/50 border border-white/10 rounded-lg p-0.5">
+                {(["PKR", "AED"] as const).map((curr) => (
+                  <button
+                    key={curr}
+                    onClick={() => setTrendCurrency(curr)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                      trendCurrency === curr
+                        ? curr === "PKR"
+                          ? "bg-primary text-primary-foreground shadow"
+                          : "bg-emerald-500 text-white shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {curr}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-4 text-[10px] uppercase tracking-wider font-bold">
-              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-primary" /> PKR</div>
-              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /> AED</div>
-            </div>
+
+            {/* Quick Period Summary Statistics */}
+            {stats && (
+              <div className="grid grid-cols-3 gap-2 p-3 bg-white/5 dark:bg-black/20 border border-white/5 rounded-xl mb-6">
+                <div>
+                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Net Activity</div>
+                  <div className={`text-xs md:text-sm font-bold num ${
+                    stats.trend.map((d) => (trendCurrency === "PKR" ? d.pkr : d.aed)).reduce((s, v) => s + v, 0) >= 0
+                      ? "text-success"
+                      : "text-destructive"
+                  }`}>
+                    {formatMoney(stats.trend.map((d) => (trendCurrency === "PKR" ? d.pkr : d.aed)).reduce((s, v) => s + v, 0), trendCurrency)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Peak Inflow</div>
+                  <div className="text-xs md:text-sm font-bold num text-success">
+                    {formatMoney(Math.max(...stats.trend.map((d) => (trendCurrency === "PKR" ? d.pkr : d.aed)), 0), trendCurrency)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Peak Outflow</div>
+                  <div className="text-xs md:text-sm font-bold num text-destructive">
+                    {formatMoney(Math.min(...stats.trend.map((d) => (trendCurrency === "PKR" ? d.pkr : d.aed)), 0), trendCurrency)}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="h-[300px] w-full">
+
+          <div className="h-[260px] w-full mt-auto">
             {Recharts ? (
               <Recharts.ResponsiveContainer width="100%" height="100%">
-                <Recharts.AreaChart data={stats.trend}>
+                <Recharts.AreaChart data={stats.trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorPkr" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
                     </linearGradient>
                     <linearGradient id="colorAed" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
                     </linearGradient>
                   </defs>
-                  <Recharts.CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.4} />
-                  <Recharts.XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
-                  <Recharts.YAxis hide />
-                  <Recharts.Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }}
-                    itemStyle={{ fontWeight: 'bold' }}
+                  <Recharts.CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.08)" />
+                  <Recharts.XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />
+                  <Recharts.YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tickFormatter={(v) => formatCompactNumber(v)} 
+                    tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} 
                   />
-                  <Recharts.Area type="monotone" dataKey="pkr" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorPkr)" />
-                  <Recharts.Area type="monotone" dataKey="aed" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorAed)" />
+                  <Recharts.Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const dateVal = payload[0].payload.date;
+                        const pkrVal = payload[0].payload.pkr;
+                        const aedVal = payload[0].payload.aed;
+                        const isPkr = trendCurrency === "PKR";
+                        const activeVal = isPkr ? pkrVal : aedVal;
+                        return (
+                          <div className="glass-card border border-white/10 rounded-xl p-3 shadow-xl text-xs space-y-1.5 bg-background/95 backdrop-blur-md">
+                            <p className="text-muted-foreground font-semibold text-[10px]">{dateVal}</p>
+                            <p className={`font-bold num ${activeVal >= 0 ? "text-success" : "text-destructive"}`}>
+                              {activeVal >= 0 ? "+" : ""}{formatMoney(activeVal, trendCurrency)}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Recharts.Area 
+                    type="monotone" 
+                    dataKey={trendCurrency === "PKR" ? "pkr" : "aed"} 
+                    stroke={trendCurrency === "PKR" ? "hsl(var(--primary))" : "#10b981"} 
+                    strokeWidth={2.5} 
+                    fillOpacity={1} 
+                    fill={trendCurrency === "PKR" ? "url(#colorPkr)" : "url(#colorAed)"} 
+                  />
                 </Recharts.AreaChart>
               </Recharts.ResponsiveContainer>
             ) : (
@@ -472,23 +567,78 @@ export default function Dashboard() {
           </div>
         </Card>
 
+        {/* Branch Distribution Card */}
         {role === "admin" && (
-          <Card className="glass rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-                <Building2 className="w-3.5 h-3.5 text-white" />
+          <Card className="glass rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+                    <Building2 className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-display font-semibold text-sm md:text-base">Branch Distribution</h2>
+                    <p className="text-[10px] text-muted-foreground">Comparative branch balance overview</p>
+                  </div>
+                </div>
+                
+                {/* Currency Selector Toggle */}
+                <div className="flex items-center gap-1 bg-background/50 border border-white/10 rounded-lg p-0.5">
+                  {(["PKR", "AED"] as const).map((curr) => (
+                    <button
+                      key={curr}
+                      onClick={() => setBranchCurrency(curr)}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                        branchCurrency === curr
+                          ? curr === "PKR"
+                            ? "bg-primary text-primary-foreground shadow"
+                            : "bg-emerald-500 text-white shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {curr}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <h2 className="font-display font-semibold">Branch Distribution (PKR Balance)</h2>
             </div>
-            <div className="h-[300px] w-full">
+
+            <div className="h-[260px] w-full mt-auto">
               {Recharts ? (
                 <Recharts.ResponsiveContainer width="100%" height="100%">
-                  <Recharts.BarChart data={stats.byBranch}>
-                    <Recharts.CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" opacity={0.4} />
-                    <Recharts.XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
-                    <Recharts.YAxis hide />
-                    <Recharts.Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }} />
-                    <Recharts.Bar dataKey="pkr" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                  <Recharts.BarChart data={stats.byBranch} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <Recharts.CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.08)" />
+                    <Recharts.XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />
+                    <Recharts.YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tickFormatter={(v) => formatCompactNumber(v)} 
+                      tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} 
+                    />
+                    <Recharts.Tooltip 
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const nameVal = payload[0].payload.name;
+                          const val = payload[0].value as number;
+                          const count = payload[0].payload.accounts;
+                          return (
+                            <div className="glass-card border border-white/10 rounded-xl p-3 shadow-xl text-xs space-y-1 bg-background/95 backdrop-blur-md">
+                              <p className="font-semibold text-foreground">{nameVal}</p>
+                              <p className={`font-bold num ${val >= 0 ? "text-success" : "text-destructive"}`}>
+                                {formatMoney(val, branchCurrency)}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">{count} accounts</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Recharts.Bar 
+                      dataKey={branchCurrency === "PKR" ? "pkr" : "aed"} 
+                      fill={branchCurrency === "PKR" ? "hsl(var(--primary))" : "#10b981"} 
+                      radius={[6, 6, 0, 0]} 
+                    />
                   </Recharts.BarChart>
                 </Recharts.ResponsiveContainer>
               ) : (
