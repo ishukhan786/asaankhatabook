@@ -68,7 +68,7 @@ export default function Dashboard() {
   const [customTo, setCustomTo] = useState(new Date().toISOString().split("T")[0]);
   const [alerts, setAlerts] = useState<any[]>([]);
 
-  // We use `useCallback` to prevent infinite loops in the `useEffect` intervalways visible on dashboard)
+  // Load recharts on mount (charts are always visible on dashboard)
   useEffect(() => {
     let mounted = true;
     import("recharts").then((mod) => {
@@ -127,7 +127,11 @@ export default function Dashboard() {
 
       const lowBalanceAlerts: any[] = [];
       if (alertsRes.data && totalsRes.data) {
-        const balances = new Map((totalsRes.data as any[]).map(t => [t.account_id, Number(t.net_balance)]));
+        // report_account_totals returns { account_id, debit, credit }
+        const balances = new Map((totalsRes.data as any[]).map(t => [
+          t.account_id,
+          Number(t.credit ?? 0) - Number(t.debit ?? 0)
+        ]));
         alertsRes.data.forEach(acc => {
           const bal = balances.get(acc.id) ?? 0;
           if (bal < Number(acc.alert_threshold)) {
