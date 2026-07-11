@@ -54,8 +54,13 @@ export default function Reports() {
           p_to: to || null,
         }),
     ]).then(([a, totals]) => {
+      if (a.error) throw a.error;
+      if (totals.error) throw totals.error;
       setAccounts(a.data ?? []);
       setTxns((totals.data as AccountTotals[]) ?? []);
+    }).catch((err) => {
+      logger.error("Reports load error:", err);
+      toast.error("Failed to load report data");
     });
   }, [from, to]);
 

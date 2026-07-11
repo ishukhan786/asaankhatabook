@@ -41,6 +41,7 @@ export type AccountSummary = {
   currency?: string | null;
   branch_id?: string | null;
   branches?: { id?: string; name?: string } | null;
+  alert_threshold?: number | null;
   created_at?: string;
 };
 
@@ -57,18 +58,37 @@ export default function Accounts() {
   const [eName, setEName] = useState("");
   const [eMobile, setEMobile] = useState("");
   const [eBranch, setEBranch] = useState("");
+  const [eThreshold, setEThreshold] = useState("");
   const [busy, setBusy] = useState(false);
 
   // Deletion state
   const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
 
-  const reload = async () => {
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 50;
+
+  const reload = async (reset = false) => {
     try {
+      setBusy(true);
+      const nextPage = reset ? 0 : (rows ? page : 0);
+      const start = nextPage * PAGE_SIZE;
+      const end = start + PAGE_SIZE - 1;
+
+      let query = supabase
+        .from("accounts")
+        .select("id, account_no, name, mobile, currency, branch_id, alert_threshold, created_at")
+        .order("created_at", { ascending: false })
+        .range(start, end);
+
+      if (debouncedQ) {
+        const term = debouncedQ.trim().replace(/\\/g, "\\\\").replace(/\*/g, "\\*");
+        query = query.or(`name.ilike.*${term}*,account_no.ilike.*${term}*,mobile.ilike.*${term}*`);
+      }
+
       const [{ data: accs, error: accountsError }, { data: brs, error: branchesError }] = await Promise.all([
-        supabase
-          .from("accounts")
-          .select("id, account_no, name, mobile, currency, branch_id, created_at")
-          .order("created_at", { ascending: false }),
+        query,
         supabase.from("branches").select("id, name"),
       ]);
 
@@ -76,11 +96,14 @@ export default function Accounts() {
       if (branchesError) throw branchesError;
 
       const branchById = new Map((brs ?? []).map((branch) => [branch.id, branch]));
-      setRows((accs ?? []).map((account) => ({
+      const mapped = (accs ?? []).map((account) => ({
         ...account,
         branches: branchById.get(account.branch_id) ?? null,
-      })));
-      setBranches(brs ?? []);
+      }));
+
+      setRows(reset ? mapped : (prev) => [...(prev ?? []), ...mapped]);
+      setHasMore((accs?.length ?? 0) === PAGE_SIZE);
+      if (!reset) setPage(nextPage + 1);
     } catch (err: unknown) {
         logger.error("Accounts load error:", err);
       const msg = err instanceof Error ? err.message : String(err);
@@ -88,12 +111,17 @@ export default function Accounts() {
       setRows([]);
       setBranches([]);
     }
+    setBusy(false);
   };
 
   useEffect(() => {
-    reload();
+    setPage(0);
+    reload(true);
+  }, [debouncedQ]);
+
+  useEffect(() => {
     const sub = supabase.channel('accounts-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, () => reload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts' }, () => reload(true))
       .subscribe();
     return () => { supabase.removeChannel(sub); };
   }, []);
@@ -103,6 +131,7 @@ export default function Accounts() {
     setEName(a.name ?? "");
     setEMobile(a.mobile ?? "");
     setEBranch(a.branch_id ?? "");
+    setEThreshold(a.alert_threshold ? String(a.alert_threshold) : "");
   };
 
   const submitEdit = async (e: React.FormEvent) => {
@@ -113,11 +142,12 @@ export default function Accounts() {
         name: eName.trim(),
         mobile: eMobile.trim() || null,
         branch_id: eBranch,
+        alert_threshold: eThreshold ? Number(eThreshold) : null,
       }).eq("id", editing.id);
       if (error) throw error;
       toast.success("Account updated");
       setEditing(null);
-      reload();
+      reload(true);
     } catch (err: unknown) { const msg = err instanceof Error ? err.message : String(err); toast.error(msg); }
     setBusy(false);
   };
@@ -129,16 +159,13 @@ export default function Accounts() {
       if (error) throw error;
       toast.success("Account deleted");
       setDeleting(null);
-      reload();
+      reload(true);
     } catch (err: unknown) {
       toast.error("Could not delete. Make sure there are no transactions linked to this account.");
     }
   };
 
-  const filtered = useMemo(() => (rows ?? []).filter((r) => {
-    const s = debouncedQ.toLowerCase();
-    return !s || r.name.toLowerCase().includes(s) || r.account_no.toLowerCase().includes(s) || (r.mobile ?? "").toLowerCase().includes(s);
-  }), [rows, debouncedQ]);
+  const filtered = rows ?? [];
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
@@ -235,6 +262,10 @@ export default function Accounts() {
           <form onSubmit={submitEdit} className="space-y-4">
             <div className="space-y-1.5"><Label>Account Name</Label><Input value={eName} onChange={(e) => setEName(e.target.value)} required /></div>
             <div className="space-y-1.5"><Label>Mobile</Label><Input value={eMobile} onChange={(e) => setEMobile(e.target.value)} placeholder="03xx..." /></div>
+            <div className="space-y-1.5">
+              <Label>Alert Threshold (Low Balance)</Label>
+              <Input type="number" min="0" step="1" value={eThreshold} onChange={(e) => setEThreshold(e.target.value)} placeholder="e.g. 5000 (Optional)" />
+            </div>
             <div className="space-y-1.5">
               <Label>Branch</Label>
               <Select value={eBranch} onValueChange={setEBranch}>

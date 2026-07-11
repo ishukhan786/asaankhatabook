@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "next-themes";
@@ -26,6 +25,7 @@ const AdminPanel = lazyWithRetry(() => import("./pages/AdminPanel"), "admin-pane
 const AdminUsers = lazyWithRetry(() => import("./pages/AdminUsers"), "admin-users");
 const AuditLogs = lazyWithRetry(() => import("./pages/AuditLogs"), "audit-logs");
 const PayablesReceivables = lazyWithRetry(() => import("./pages/PayablesReceivables"), "payables-receivables");
+const RecurringTransactions = lazyWithRetry(() => import("./pages/RecurringTransactions"), "recurring-transactions");
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "not-found");
 
 const queryClient = new QueryClient({
@@ -52,7 +52,6 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <TooltipProvider>
-          <Toaster />
           <Sonner />
           <HashRouter>
             <AuthProvider>
@@ -75,6 +74,7 @@ const App = () => {
                     <Route path="/admin/users" element={<AdminUsers />} />
                     <Route path="/admin/audit" element={<AuditLogs />} />
                     <Route path="/payables-receivables" element={<PayablesReceivables />} />
+                    <Route path="/recurring-transactions" element={<RecurringTransactions />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>

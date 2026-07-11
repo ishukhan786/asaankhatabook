@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,15 +60,21 @@ export default function Expenses() {
     expense_date: new Date().toISOString().slice(0, 10),
   });
 
-  const load = async () => {
-    const { data, error } = await supabase.from("expenses").select("*, branches(name)").order("expense_date", { ascending: false });
+  const load = useCallback(async () => {
+    let query = supabase.from("expenses").select("*, branches(name)").order("expense_date", { ascending: false });
+    
+    if (role !== "admin" && profile?.branch_id) {
+      query = query.eq("branch_id", profile.branch_id);
+    }
+
+    const { data, error } = await query;
     if (error) {
       toast.error(error.message);
       setRows([]);
       return;
     }
     setRows(data ?? []);
-  };
+  }, [role, profile?.branch_id]);
 
   useEffect(() => {
     load();
@@ -76,7 +82,7 @@ export default function Expenses() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(sub); };
-  }, []);
+  }, [load]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,31 +156,41 @@ export default function Expenses() {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="glass p-4 md:col-span-2 grid md:grid-cols-3 gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search..." className="pl-10" />
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="text-xs" />
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="text-xs" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="glass-card px-4 py-3 border-l-2 border-l-destructive/40">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Total Expenses</div>
+              <div className="font-display text-lg font-bold text-destructive num tracking-tight truncate mt-0.5">{formatMoney(total["PKR"] || 0, "PKR")}</div>
+            </div>
+            <div className="p-1.5 rounded-md bg-destructive/10 text-destructive shrink-0"><Receipt className="w-4 h-4" /></div>
           </div>
         </Card>
-        <Card className="glass p-4 bg-primary/5 border-primary/20 flex flex-col justify-center">
-          <div className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Total in view</div>
-          <div className="text-xl font-display font-black text-primary">
-            {Object.entries(total).map(([cur, val]: [string, number]) => (
-              <div key={cur}>{formatMoney(val, cur)}</div>
-            ))}
-            {Object.keys(total).length === 0 && "PKR 0.00"}
+        <Card className="glass-card px-4 py-3 border-l-2 border-l-destructive/40">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Total Expenses</div>
+              <div className="font-display text-lg font-bold text-destructive num tracking-tight truncate mt-0.5">{formatMoney(total["AED"] || 0, "AED")}</div>
+            </div>
+            <div className="p-1.5 rounded-md bg-destructive/10 text-destructive shrink-0"><Receipt className="w-4 h-4" /></div>
           </div>
         </Card>
       </div>
+
+      <Card className="glass p-4 grid md:grid-cols-3 gap-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search..." className="pl-10" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-muted-foreground" />
+          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="text-xs" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-muted-foreground" />
+          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="text-xs" />
+        </div>
+      </Card>
 
       {!rows ? (
         <div className="grid gap-4"><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>

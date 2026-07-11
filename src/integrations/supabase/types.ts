@@ -19,6 +19,7 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           account_no: string
           address: string | null
+          alert_threshold: number | null
           branch_id: string
           created_at: string
           created_by: string | null
@@ -31,6 +32,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           account_no: string
           address?: string | null
+          alert_threshold?: number | null
           branch_id: string
           created_at?: string
           created_by?: string | null
@@ -43,6 +45,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           account_no?: string
           address?: string | null
+          alert_threshold?: number | null
           branch_id?: string
           created_at?: string
           created_by?: string | null
@@ -201,6 +204,63 @@ export type Database = {
             referencedRelation: "branches"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      recurring_transactions: {
+        Row: {
+          id: string
+          account_id: string
+          amount: number
+          type: "debit" | "credit"
+          details: string | null
+          frequency: "daily" | "weekly" | "monthly"
+          next_run_date: string
+          active: boolean
+          branch_id: string | null
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          account_id: string
+          amount: number
+          type: "debit" | "credit"
+          details?: string | null
+          frequency: "daily" | "weekly" | "monthly"
+          next_run_date: string
+          active?: boolean
+          branch_id?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          account_id?: string
+          amount?: number
+          type?: "debit" | "credit"
+          details?: string | null
+          frequency?: "daily" | "weekly" | "monthly"
+          next_run_date?: string
+          active?: boolean
+          branch_id?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transactions_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          }
         ]
       }
       transactions: {

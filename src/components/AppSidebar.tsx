@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LogOut,
   Receipt,
+  RefreshCw,
   Search,
   Settings as SettingsIcon,
   Shield,
@@ -83,6 +84,7 @@ export function AppSidebar() {
       items: [
         { title: t("PayablesReceivables"), url: "/payables-receivables", icon: Wallet, badge: "Live" },
         { title: t("Expenses"), url: "/expenses", icon: Receipt },
+        { title: "Recurring", url: "/recurring-transactions", icon: RefreshCw },
         { title: t("Reports"), url: "/reports", icon: FileBarChart },
       ],
     },
@@ -160,6 +162,9 @@ export function AppSidebar() {
               }}
               readOnly
             />
+            <kbd className="pointer-events-none absolute right-2.5 top-[50%] -translate-y-[50%] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              <span className="text-xs">Ctrl</span>K
+            </kbd>
           </motion.div>
         )}
 

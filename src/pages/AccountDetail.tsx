@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil, MessageSquare, Receipt, Loader, ArrowUpRight, ArrowDownRight, Globe2 } from "lucide-react";
+import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, Pencil, MessageSquare, Receipt, Loader, ArrowUpRight, ArrowDownRight, Globe2, Mail } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -59,6 +59,10 @@ export default function AccountDetail() {
   const [to, setTo] = useState("");
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
+  // Email Statement state
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [emailBusy, setEmailBusy] = useState(false);
 
   // Edit Transaction state
   const [editingTx, setEditingTx] = useState<TxnType | null>(null);
@@ -261,6 +265,33 @@ export default function AccountDetail() {
     }
   };
 
+  const handleEmailStatement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailTo.trim()) { toast.error("Please enter a recipient email"); return; }
+    setEmailBusy(true);
+    try {
+      // Build statement rows for mock email
+      const stmtRows = rows.map(r => ({
+        date: formatDate(String(r.txn_date ?? "")),
+        code: r.txn_code,
+        details: r.details,
+        debit: Number(r.debit) || 0,
+        credit: Number(r.credit) || 0,
+        balance: r.balance,
+      }));
+      logger.info("Email statement payload:", { to: emailTo, account: account.name, rows: stmtRows.length });
+      // In production, call your backend/edge function here:
+      // await fetch('/api/email-statement', { method: 'POST', body: JSON.stringify({ to: emailTo, account, rows: stmtRows }) });
+      await new Promise(r => setTimeout(r, 1200)); // Simulate send
+      toast.success(`Statement emailed to ${emailTo}`);
+      setEmailOpen(false);
+      setEmailTo("");
+    } catch (err) {
+      toast.error("Failed to send statement");
+    }
+    setEmailBusy(false);
+  };
+
   return (
     <div className="p-2 md:p-4 max-w-[1600px] mx-auto space-y-3 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
@@ -296,26 +327,28 @@ export default function AccountDetail() {
               <Badge variant="outline" className="font-mono text-[9px] bg-background/50 border-primary/20 text-primary px-1.5 py-0">{account.account_no}</Badge>
               <h1 className="font-display text-xl font-bold tracking-tight text-foreground leading-tight">{account.name}</h1>
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              {account.mobile && (
-                <div className="flex items-center gap-1.5">
-                  <Phone className="w-3 h-3 text-primary" />
-                  <span className="text-xs text-muted-foreground">{account.mobile}</span>
-                </div>
-              )}
-              {account.branches?.name && (
-                <div className="flex items-center gap-1.5">
-                  <Building2 className="w-3 h-3 text-primary" />
-                  <span className="text-xs text-muted-foreground">{account.branches.name}</span>
-                </div>
-              )}
-              {account.address && (
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="w-3 h-3 text-primary" />
-                  <span className="text-xs text-muted-foreground">{account.address}</span>
-                </div>
-              )}
-            </div>
+            {(account.mobile || account.branches?.name || account.address) && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                {account.mobile && (
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="w-3 h-3 text-primary" />
+                    <span className="text-xs text-muted-foreground">{account.mobile}</span>
+                  </div>
+                )}
+                {account.branches?.name && (
+                  <div className="flex items-center gap-1.5">
+                    <Building2 className="w-3 h-3 text-primary" />
+                    <span className="text-xs text-muted-foreground">{account.branches.name}</span>
+                  </div>
+                )}
+                {account.address && (
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3 text-primary" />
+                    <span className="text-xs text-muted-foreground">{account.address}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           {/* Right Balance */}
           <div className="flex items-center gap-3 bg-background/50 border border-border/50 rounded-lg px-3 py-2 shrink-0">
@@ -327,7 +360,13 @@ export default function AccountDetail() {
             </div>
             <div className="flex flex-col gap-1 pl-3 border-l border-border/50">
               <Button onClick={() => setQuickOpen(true)} size="sm" className="h-7 text-[11px] px-2 gradient-primary text-primary-foreground"><Plus className="w-3 h-3 mr-0.5" /> Add</Button>
-              <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" disabled={exporting} onClick={handleExportStatement}><FileDown className="w-3 h-3 mr-0.5" /> PDF</Button>
+              <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" disabled={exporting} onClick={handleExportStatement}>
+                {exporting ? <Loader className="w-3 h-3 mr-0.5 animate-spin" /> : <FileDown className="w-3 h-3 mr-0.5" />}
+                {exporting ? "Wait..." : "PDF"}
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => setEmailOpen(true)}>
+                <Mail className="w-3 h-3 mr-0.5" /> Email
+              </Button>
             </div>
           </div>
         </div>
@@ -569,6 +608,40 @@ export default function AccountDetail() {
             <DialogFooter className="pt-4">
               <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground shadow-lg h-11 text-base">
                 {busy ? "Saving..." : "Save Transaction"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Statement Dialog */}
+      <Dialog open={emailOpen} onOpenChange={setEmailOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-primary" />
+              Email Statement — {account.name}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEmailStatement} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Recipient Email</Label>
+              <Input
+                type="email"
+                value={emailTo}
+                onChange={e => setEmailTo(e.target.value)}
+                placeholder="customer@example.com"
+                required
+              />
+            </div>
+            <div className="p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground space-y-1">
+              <p>Statement will include <strong>{rows.length} transactions</strong> {from || to ? `filtered from ${from || "start"} to ${to || "today"}` : "(all time)"}.</p>
+              <p className="text-amber-500 dark:text-amber-400">⚠ Email sending is currently in demo mode. Integrate a backend email service (e.g. Resend) to send real emails.</p>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setEmailOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={emailBusy} className="gradient-primary text-primary-foreground">
+                {emailBusy ? <><Loader className="w-4 h-4 mr-2 animate-spin" />Sending...</> : <><Mail className="w-4 h-4 mr-2" />Send Statement</>}
               </Button>
             </DialogFooter>
           </form>
