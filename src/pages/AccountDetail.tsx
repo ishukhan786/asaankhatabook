@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil, MessageSquare, Receipt, Loader } from "lucide-react";
+import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, AlertCircle, Pencil, MessageSquare, Receipt, Loader, ArrowUpRight, ArrowDownRight, Globe2 } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -262,7 +262,7 @@ export default function AccountDetail() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500">
+    <div className="p-2 md:p-4 max-w-[1600px] mx-auto space-y-3 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <Link to="/accounts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Accounts</Link>
         {role === "admin" && (
@@ -286,112 +286,138 @@ export default function AccountDetail() {
         )}
       </div>
 
-      <Card className="glass p-4 relative overflow-hidden">
-        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full gradient-primary opacity-10 blur-3xl" />
-        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div className="font-mono text-xs text-muted-foreground">{account.account_no}</div>
-            <h1 className="font-display text-2xl md:text-3xl font-bold mt-0.5">{account.name}</h1>
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3">
+      {/* Hero Banner */}
+      <Card className="glass-hero px-3 py-2.5 relative overflow-hidden border-border/40">
+        <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-primary/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Left Details */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className="font-mono text-[9px] bg-background/50 border-primary/20 text-primary px-1.5 py-0">{account.account_no}</Badge>
+              <h1 className="font-display text-xl font-bold tracking-tight text-foreground leading-tight">{account.name}</h1>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
               {account.mobile && (
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    <Phone className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Mobile Number</div>
-                    <div className="font-medium text-foreground text-sm">{account.mobile}</div>
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <Phone className="w-3 h-3 text-primary" />
+                  <span className="text-xs text-muted-foreground">{account.mobile}</span>
                 </div>
               )}
               {account.branches?.name && (
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    <Building2 className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Branch / Office</div>
-                    <div className="font-medium text-foreground text-sm">{account.branches.name}</div>
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <Building2 className="w-3 h-3 text-primary" />
+                  <span className="text-xs text-muted-foreground">{account.branches.name}</span>
                 </div>
               )}
               {account.address && (
-                <div className="flex items-start gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
-                    <MapPin className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Physical Address</div>
-                    <div className="font-medium text-foreground text-sm">{account.address}</div>
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3 text-primary" />
+                  <span className="text-xs text-muted-foreground">{account.address}</span>
                 </div>
               )}
             </div>
           </div>
-          <div className="flex flex-col items-end gap-2 text-right">
-            <Badge variant="secondary" className="font-mono text-xs">{account.currency}</Badge>
-            <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Net Balance</div>
-              <div className={`font-display font-bold text-2xl num ${running >= 0 ? "text-success" : "text-destructive"}`}>
-                {formatMoney(running, account.currency)} <span className="text-sm">{balanceLabel(running)}</span>
+          {/* Right Balance */}
+          <div className="flex items-center gap-3 bg-background/50 border border-border/50 rounded-lg px-3 py-2 shrink-0">
+            <div className="text-right">
+              <div className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Net Balance · <span className="font-mono">{account.currency}</span></div>
+              <div className={`font-display font-bold text-xl num ${running >= 0 ? "text-success" : "text-destructive"}`}>
+                {formatMoney(running, account.currency)} <span className="text-[10px] font-medium opacity-70">{balanceLabel(running)}</span>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={() => setQuickOpen(true)} size="sm" className="gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-105 transition-transform"><Plus className="w-3.5 h-3.5 mr-1" /> Add Transaction</Button>
-              <Button size="sm" variant="outline" className="glass" disabled={exporting} onClick={handleExportStatement}><FileDown className="w-3.5 h-3.5 mr-1" /> {exporting ? "Exporting..." : "PDF"}</Button>
+            <div className="flex flex-col gap-1 pl-3 border-l border-border/50">
+              <Button onClick={() => setQuickOpen(true)} size="sm" className="h-7 text-[11px] px-2 gradient-primary text-primary-foreground"><Plus className="w-3 h-3 mr-0.5" /> Add</Button>
+              <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" disabled={exporting} onClick={handleExportStatement}><FileDown className="w-3 h-3 mr-0.5" /> PDF</Button>
             </div>
           </div>
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="glass p-4 border-l-4 border-l-primary/30"><div className="text-xs text-muted-foreground uppercase tracking-wider">Transactions</div><div className="font-display text-2xl font-bold mt-1 num">{rows.length}</div></Card>
-        <Card className="glass p-4 border-l-4 border-l-destructive/30"><div className="text-xs text-muted-foreground uppercase tracking-wider">Total Debit</div><div className="font-display text-2xl font-bold text-destructive mt-1 num">{formatMoney(totalDebit, account.currency)}</div></Card>
-        <Card className="glass p-4 border-l-4 border-l-success/30"><div className="text-xs text-muted-foreground uppercase tracking-wider">Total Credit</div><div className="font-display text-2xl font-bold text-success mt-1 num">{formatMoney(totalCredit, account.currency)}</div></Card>
-        <Card className="glass p-4 border-l-4 border-l-muted-foreground/30"><div className="text-xs text-muted-foreground uppercase tracking-wider">Currency</div><div className="font-display text-2xl font-bold mt-1">{account.currency}</div></Card>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-4 gap-2">
+        <Card className="glass-card px-3 py-2 border-l-2 border-l-primary/40">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Transactions</div>
+              <div className="font-display text-lg font-bold num tracking-tight text-foreground">{rows.length}</div>
+            </div>
+            <Receipt className="w-3.5 h-3.5 text-primary opacity-60" />
+          </div>
+        </Card>
+        <Card className="glass-card px-3 py-2 border-l-2 border-l-destructive/40">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Total Debit</div>
+              <div className="font-display text-sm font-bold text-destructive num tracking-tight truncate">{formatMoney(totalDebit, account.currency)}</div>
+            </div>
+            <ArrowUpRight className="w-3.5 h-3.5 text-destructive opacity-60 shrink-0" />
+          </div>
+        </Card>
+        <Card className="glass-card px-3 py-2 border-l-2 border-l-success/40">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Total Credit</div>
+              <div className="font-display text-sm font-bold text-success num tracking-tight truncate">{formatMoney(totalCredit, account.currency)}</div>
+            </div>
+            <ArrowDownRight className="w-3.5 h-3.5 text-success opacity-60 shrink-0" />
+          </div>
+        </Card>
+        <Card className="glass-card px-3 py-2 border-l-2 border-l-blue-500/40">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Currency</div>
+              <div className="font-display text-lg font-bold tracking-tight text-foreground">{account.currency}</div>
+            </div>
+            <Globe2 className="w-3.5 h-3.5 text-blue-500 opacity-60" />
+          </div>
+        </Card>
       </div>
 
-      <Card className="glass p-4 grid md:grid-cols-2 gap-3">
-        <div><Label className="text-xs text-muted-foreground">From</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
-        <div><Label className="text-xs text-muted-foreground">To</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+      <Card className="glass px-3 py-2 flex flex-row items-center gap-3">
+        <div className="flex items-center gap-2 flex-1">
+          <Label className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider whitespace-nowrap">From</Label>
+          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-7 text-xs" />
+        </div>
+        <div className="flex items-center gap-2 flex-1">
+          <Label className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider whitespace-nowrap">To</Label>
+          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-7 text-xs" />
+        </div>
       </Card>
 
-      <Card className="glass overflow-hidden shadow-xl border-none">
-        <div className="p-5 border-b border-border/50 flex items-center justify-between bg-muted/20">
-          <h2 className="font-display font-semibold text-lg flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-primary rounded-full" />
+      <Card className="glass overflow-hidden border-none">
+        <div className="px-4 py-2.5 border-b border-border/50 flex items-center justify-between bg-muted/20">
+          <h2 className="font-display font-semibold text-sm flex items-center gap-1.5">
+            <span className="w-1 h-4 bg-primary rounded-full" />
             Transaction History
           </h2>
-          <div className="text-xs text-muted-foreground font-medium">
-            Showing {rows.length} records
-          </div>
+          <div className="text-[10px] text-muted-foreground font-medium">{rows.length} records</div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b border-border/50">
-              <tr className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-                <th className="text-left px-6 py-4">Date</th>
-                <th className="text-left px-6 py-4">Details</th>
-                <th className="text-right px-6 py-4">Debit</th>
-                <th className="text-right px-6 py-4">Credit</th>
-                <th className="text-right px-6 py-4">Balance</th>
-                {role === "admin" && <th className="px-6 py-4"></th>}
+              <tr className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
+                <th className="text-left px-4 py-2">Date</th>
+                <th className="text-left px-4 py-2">Details</th>
+                <th className="text-right px-4 py-2">Debit</th>
+                <th className="text-right px-4 py-2">Credit</th>
+                <th className="text-right px-4 py-2">Balance</th>
+                {role === "admin" && <th className="px-4 py-2"></th>}
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
-                <tr><td colSpan={role === "admin" ? 7 : 6} className="text-center py-12 text-muted-foreground text-sm">No transactions yet.</td></tr>
+                <tr><td colSpan={role === "admin" ? 7 : 6} className="text-center py-6 text-muted-foreground text-sm">No transactions yet.</td></tr>
               ) : rows.map((t) => (
                 <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30 group">
-                  <td className="px-6 py-4 num text-muted-foreground whitespace-nowrap">{formatDate(t.txn_date)}</td>
-                  <td className="px-6 py-4 font-medium">{t.details}</td>
-                  <td className="px-6 py-4 text-right num text-destructive font-medium">{Number(t.debit) > 0 ? formatMoney(Number(t.debit)) : "-"}</td>
-                  <td className="px-6 py-4 text-right num text-success font-medium">{Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "-"}</td>
-                  <td className={`px-6 py-4 text-right num font-bold ${t.balance >= 0 ? "text-success" : "text-destructive"}`}>
-                    {formatMoney(t.balance)} <span className="text-[10px] opacity-60 ml-0.5">{balanceLabel(t.balance)}</span>
+                  <td className="px-4 py-1.5 num text-muted-foreground whitespace-nowrap text-xs">{formatDate(t.txn_date)}</td>
+                  <td className="px-4 py-1.5 font-medium text-xs">{t.details}</td>
+                  <td className="px-4 py-1.5 text-right num text-destructive font-medium text-xs">{Number(t.debit) > 0 ? formatMoney(Number(t.debit)) : "-"}</td>
+                  <td className="px-4 py-1.5 text-right num text-success font-medium text-xs">{Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "-"}</td>
+                  <td className={`px-4 py-1 text-right num font-bold text-xs ${t.balance >= 0 ? "text-success" : "text-destructive"}`}>
+                    {formatMoney(t.balance)} <span className="text-[9px] opacity-60 ml-0.5">{balanceLabel(t.balance)}</span>
                   </td>
                   {(role === "admin" || t.created_by === profile?.id) && (
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 py-1.5 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-success" onClick={() => sendWhatsApp(t)} aria-label="Send WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)} aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
