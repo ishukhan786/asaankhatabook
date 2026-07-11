@@ -26,27 +26,27 @@ TO authenticated USING (true);
 CREATE POLICY "Enable insert for authenticated users"
 ON recurring_transactions FOR INSERT
 TO authenticated WITH CHECK (
-  auth.uid() = created_by 
+  auth.uid()::text = created_by 
   OR 
-  branch_id IN (SELECT branch_id FROM profiles WHERE id = auth.uid())
+  branch_id IN (SELECT branch_id FROM profiles WHERE id = auth.uid()::text)
   OR 
-  (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+  (SELECT role FROM user_roles WHERE user_id = auth.uid()::text) = 'admin'
 );
 
 CREATE POLICY "Enable update for users based on branch"
 ON recurring_transactions FOR UPDATE
 TO authenticated USING (
-  branch_id IN (SELECT branch_id FROM profiles WHERE id = auth.uid()) 
+  branch_id IN (SELECT branch_id FROM profiles WHERE id = auth.uid()::text) 
   OR 
-  (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+  (SELECT role FROM user_roles WHERE user_id = auth.uid()::text) = 'admin'
 );
 
 CREATE POLICY "Enable delete for users based on branch"
 ON recurring_transactions FOR DELETE
 TO authenticated USING (
-  branch_id IN (SELECT branch_id FROM profiles WHERE id = auth.uid()) 
+  branch_id IN (SELECT branch_id FROM profiles WHERE id = auth.uid()::text) 
   OR 
-  (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
+  (SELECT role FROM user_roles WHERE user_id = auth.uid()::text) = 'admin'
 );
 
 -- Add recurring_transactions to realtime
