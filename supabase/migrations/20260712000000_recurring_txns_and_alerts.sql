@@ -12,7 +12,7 @@ CREATE TABLE recurring_transactions (
     next_run_date date NOT NULL,
     active boolean DEFAULT true,
     branch_id uuid REFERENCES branches(id) ON DELETE CASCADE,
-    created_by uuid REFERENCES profiles(id) ON DELETE SET NULL,
+    created_by text,
     created_at timestamptz DEFAULT now()
 );
 
