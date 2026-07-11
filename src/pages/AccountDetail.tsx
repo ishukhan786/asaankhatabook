@@ -280,14 +280,20 @@ export default function AccountDetail() {
         balance: r.balance,
       }));
       logger.info("Email statement payload:", { to: emailTo, account: account.name, rows: stmtRows.length });
-      // In production, call your backend/edge function here:
-      // await fetch('/api/email-statement', { method: 'POST', body: JSON.stringify({ to: emailTo, account, rows: stmtRows }) });
-      await new Promise(r => setTimeout(r, 1200)); // Simulate send
+      
+      const { data, error } = await supabase.functions.invoke('send-statement', {
+        body: { to: emailTo, account_name: account.name, rows: stmtRows },
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Failed to send statement");
+
       toast.success(`Statement emailed to ${emailTo}`);
       setEmailOpen(false);
       setEmailTo("");
-    } catch (err) {
-      toast.error("Failed to send statement");
+    } catch (err: any) {
+      logger.error("Email statement failed:", err);
+      toast.error(err.message || "Failed to send statement");
     }
     setEmailBusy(false);
   };
