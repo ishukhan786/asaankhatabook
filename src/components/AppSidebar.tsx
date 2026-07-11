@@ -41,6 +41,7 @@ import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { AsaanKhataLogo } from "@/components/Logo";
 
 type NavItem = {
   title: string;
@@ -137,22 +138,7 @@ export function AppSidebar() {
           className={cn("flex items-center", collapsed ? "justify-center" : "gap-4")}
           transition={{ duration: 0.2, ease: "easeOut" }}
         >
-          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-blue-600 shadow-[0_0_25px_-5px_rgba(var(--primary),0.6)] border border-sidebar-border overflow-hidden group">
-            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Wallet className="h-6 w-6 text-white drop-shadow-md z-10" strokeWidth={2} />
-            <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border-[2.5px] border-sidebar bg-emerald-400 z-20 shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
-          </div>
-          {!collapsed && (
-            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="min-w-0">
-              <div className="truncate font-display text-xl font-bold tracking-tight text-sidebar-foreground dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:to-white/70">
-                AsaanKhata
-              </div>
-              <div className="mt-0.5 flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3 text-primary" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80">Ledger Suite</span>
-              </div>
-            </motion.div>
-          )}
+          <AsaanKhataLogo size={42} showText={!collapsed} />
         </motion.div>
       </SidebarHeader>
 

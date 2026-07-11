@@ -127,7 +127,7 @@ export async function exportStatementPDF(
   // ══════════════════════════════════════════════════════════════════════════
   // HEADER — dark navy with decorative circles + amber accent bar
   // ══════════════════════════════════════════════════════════════════════════
-  const HEADER_H = 48;
+  const HEADER_H = 40;
 
   const drawHeader = () => {
     // Background fill
@@ -139,10 +139,6 @@ export async function exportStatementPDF(
     doc.circle(W - 10, 0, 34, "F");
     doc.setFillColor(20, 35, 75);
     doc.circle(W - 28, 5, 20, "F");
-
-    // Decorative circle — bottom-left
-    doc.setFillColor(18, 30, 65);
-    doc.circle(5, HEADER_H + 2, 18, "F");
 
     // Amber accent left bar
     doc.setFillColor(...rgb(C.accent));
@@ -270,11 +266,10 @@ export async function exportStatementPDF(
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
-    doc.setTextColor(...rgb(C.muted));
+    doc.setTextColor(...rgb(C.teal));
     doc.text("AMOUNT SUMMARY", SUM_X + 6, INFO_Y + 8);
 
     const tiles: [string, string, [number,number,number], [number,number,number]][] = [
-      ["TRANSACTIONS",    String(rows.length),    C.ink,   C.neutral],
       ["TOTAL DEBIT",     money(totalDebit),       C.debit, C.debitSoft],
       ["TOTAL CREDIT",    money(totalCredit),      C.credit,C.creditSoft],
       ["CLOSING BALANCE", signedBalance(net),      net >= 0 ? C.credit : C.debit, net >= 0 ? C.creditSoft : C.debitSoft],

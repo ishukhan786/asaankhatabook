@@ -3,6 +3,7 @@ import { useSignIn, useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, User, Lock, Loader2 } from "lucide-react";
+import { AsaanKhataLogo } from "@/components/Logo";
 
 export default function Auth() {
   const [username, setUsername] = useState("");
@@ -65,11 +66,9 @@ export default function Auth() {
         transition={{ duration: 0.5 }}
       >
         {/* App Name */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-glow shadow-lg mb-4 ring-1 ring-white/20">
-            <Lock className="w-6 h-6 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-display">آسان کھاتہ بک</h1>
+        <div className="flex flex-col items-center text-center mb-6">
+          <AsaanKhataLogo size={56} className="justify-center mb-2" />
+          <h1 className="text-3xl font-bold tracking-tight text-foreground font-display mt-2">آسان کھاتہ بک</h1>
           <p className="text-muted-foreground text-sm mt-1">اپنے اکاؤنٹ میں لاگ ان کریں</p>
         </div>
 
