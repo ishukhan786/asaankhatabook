@@ -9,7 +9,6 @@ import { Navigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Building2, Plus, Trash2, MapPin, Hash, Briefcase, Loader, Search, Edit2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/PageHeader";
@@ -203,11 +202,8 @@ export default function Branches() {
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
               {filteredRows.map((b, i) => (
-                <motion.div 
-                  key={b.id} 
-                  initial={{ opacity: 0, scale: 0.95 }} 
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.05 }}
+                <div 
+                  key={b.id}
                 >
                   <Card className="glass p-5 group hover:shadow-lg transition-all relative overflow-hidden border-l-4 border-l-transparent hover:border-l-primary flex flex-col h-full">
                     <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors" />
@@ -268,7 +264,7 @@ export default function Branches() {
                       </Link>
                     </div>
                   </Card>
-                </motion.div>
+                </div>
               ))}
             </div>
           )}

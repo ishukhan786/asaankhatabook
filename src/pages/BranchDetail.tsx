@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Building2, Wallet, Users, Receipt, TrendingUp, MapPin, Hash, Plus } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { formatMoney } from "@/lib/format";
-import { motion } from "framer-motion";
 import { EmptyState } from "@/components/EmptyState";
 import { TableSkeleton } from "@/components/TableSkeleton";
 
@@ -78,13 +77,13 @@ export default function BranchDetail() {
   }, {}) || {};
 
   return (
-    <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-8   ">
       <Link to="/branches" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors group">
         <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" /> Back to Branches
       </Link>
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+        <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-xl bg-primary/10 text-primary">
               <Building2 className="w-6 h-6" />
@@ -95,7 +94,7 @@ export default function BranchDetail() {
           <p className="text-muted-foreground mt-2 flex items-center gap-1.5">
              <MapPin className="w-3.5 h-3.5" /> Established Business Unit
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           {Object.entries(stats).map(([curr, data]: [string, { count: number; balance: number }]) => (

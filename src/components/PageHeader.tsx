@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
@@ -15,10 +14,7 @@ interface PageHeaderProps {
  */
 export function PageHeader({ eyebrow, title, description, actions, className }: PageHeaderProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+    <div
     >
       <div className={cn("glass-hero rounded-2xl px-5 py-3 mb-2 overflow-hidden", className)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -42,6 +38,6 @@ export function PageHeader({ eyebrow, title, description, actions, className }: 
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

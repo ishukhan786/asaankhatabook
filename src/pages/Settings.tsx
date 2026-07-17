@@ -206,7 +206,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8    ">
       <PageHeader
         eyebrow="Preferences"
         title={<span className="flex items-center gap-2"><SettingsIcon className="w-7 h-7 text-primary" /> Settings</span>}
@@ -269,7 +269,7 @@ export default function Settings() {
                 <form onSubmit={updateProfile} className="space-y-6">
                   <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center md:items-start">
                     <div className="relative group shrink-0">
-                      <div className="w-28 h-28 rounded-full bg-muted flex items-center justify-center border-4 border-background shadow-xl overflow-hidden transition-all duration-300 group-hover:shadow-primary/20">
+                      <div className="w-28 h-28 rounded-full bg-muted flex items-center justify-center border-4 border-background shadow-xl overflow-hidden transition-all  group-hover:shadow-primary/20">
                         {profile?.avatar_url ? (
                           <img 
                             src={`${profile.avatar_url}`} 

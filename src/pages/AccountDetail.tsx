@@ -299,7 +299,7 @@ export default function AccountDetail() {
   };
 
   return (
-    <div className="p-2 md:p-4 max-w-[1600px] mx-auto space-y-3 animate-in fade-in duration-500">
+    <div className="p-2 md:p-4 max-w-[1600px] mx-auto space-y-3   ">
       <div className="flex items-center justify-between">
         <Link to="/accounts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Accounts</Link>
         {role === "admin" && (

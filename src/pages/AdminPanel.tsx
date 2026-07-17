@@ -21,7 +21,6 @@ import {
   RefreshCw, 
   CheckCircle2 
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { formatMoney, balanceLabel } from "@/lib/format";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
@@ -232,7 +231,7 @@ export default function AdminPanel() {
   ] : [];
 
   return (
-    <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-8   ">
       <PageHeader
         eyebrow="System Administrator"
         title={<span className="flex items-center gap-2"><Shield className="w-7 h-7 text-primary" /> Admin Control Center</span>}
@@ -265,13 +264,10 @@ export default function AdminPanel() {
             [...Array(2)].map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
           ) : (
             financialStats.map((x, i) => (
-              <motion.div 
-                key={x.l} 
-                initial={{ opacity: 0, y: 15 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                transition={{ delay: i * 0.05 }}
+              <div 
+                key={x.l}
               >
-                <Card className={`glass p-6 border-t-4 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:translate-y-[-2px] group relative overflow-hidden bg-gradient-to-br ${x.grad}`}>
+                <Card className={`glass p-6 border-t-4 transition-all  hover:shadow-xl hover:shadow-primary/5 hover:translate-y-[-2px] group relative overflow-hidden bg-gradient-to-br ${x.grad}`}>
                   <div className="flex items-center justify-between pb-4 border-b border-border/20">
                     <div className="min-w-0">
                       <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-extrabold block">
@@ -303,7 +299,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
                 </Card>
-              </motion.div>
+              </div>
             ))
           )}
         </div>
@@ -319,13 +315,10 @@ export default function AdminPanel() {
             [...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)
           ) : (
             overviewStats.map((x, i) => (
-              <motion.div 
-                key={x.l} 
-                initial={{ opacity: 0, y: 15 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                transition={{ delay: i * 0.05 }}
+              <div 
+                key={x.l}
               >
-                <Card className={`glass p-5 border-t-4 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:translate-y-[-2px] group h-full flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${x.grad}`}>
+                <Card className={`glass p-5 border-t-4 transition-all  hover:shadow-lg hover:shadow-primary/5 hover:translate-y-[-2px] group h-full flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${x.grad}`}>
                   <div className="flex items-start justify-between mb-3 gap-2">
                     <div className="flex flex-col min-w-0">
                       <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-extrabold truncate">
@@ -346,7 +339,7 @@ export default function AdminPanel() {
                     </span>
                   </div>
                 </Card>
-              </motion.div>
+              </div>
             ))
           )}
         </div>
@@ -360,7 +353,7 @@ export default function AdminPanel() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {tiles.map((t, i) => (
-              <motion.div key={t.title} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }}>
+              <div key={t.title}>
                 <Link to={t.to}>
                   <Card className="glass p-6 group hover:shadow-lift transition-all relative overflow-hidden h-full border-l-4 border-l-transparent hover:border-l-primary hover:bg-muted/10">
                     <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br ${t.grad} opacity-5 blur-2xl group-hover:opacity-10 transition-opacity`} />
@@ -378,7 +371,7 @@ export default function AdminPanel() {
                     </div>
                   </Card>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -401,11 +394,8 @@ export default function AdminPanel() {
               ) : recentTx.map((tx, i) => {
                 const isCredit = Number(tx.credit ?? 0) > 0;
                 return (
-                  <motion.div 
+                  <div 
                     key={tx.id} 
-                    initial={{ opacity: 0, x: 20 }} 
-                    animate={{ opacity: 1, x: 0 }} 
-                    transition={{ delay: i * 0.1 }} 
                     className="p-4 hover:bg-muted/45 transition-colors"
                   >
                     <div className="flex justify-between items-start mb-1.5 gap-2">
@@ -423,7 +413,7 @@ export default function AdminPanel() {
                       <span className="uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{tx.txn_code}</span>
                       <span>{new Date(tx.created_at || "").toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>

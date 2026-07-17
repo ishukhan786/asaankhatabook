@@ -216,7 +216,7 @@ const ScreenTable = React.memo(({
   const totalAED = list.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
   
   return (
-    <Card className="glass overflow-hidden shadow-lg border-none mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <Card className="glass overflow-hidden shadow-lg border-none mt-4    ">
       <div className="overflow-x-auto">
         <table className="w-full text-sm whitespace-nowrap">
           <thead>
@@ -296,7 +296,7 @@ const ScreenTable = React.memo(({
                   </div>
                 </td>
                 <td className="px-5 py-4 text-right" onClick={e => e.stopPropagation()}>
-                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all  translate-x-2 group-hover:translate-x-0">
                     {a.mobile && (
                       <Button 
                         variant="outline" 
@@ -516,7 +516,7 @@ export default function PayablesReceivables() {
       </div>
 
       {/* Screen UI */}
-      <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-700">
+      <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-8   ">
 
         <PageHeader
           eyebrow={`${t("Reports")} • ${branchHeaderLabel}`}
@@ -551,10 +551,10 @@ export default function PayablesReceivables() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Receivables Card */}
           <Card className="relative overflow-hidden group cursor-pointer" onClick={() => setActiveTab("receivables")}>
-            <div className={`absolute inset-0 bg-gradient-to-br from-destructive/20 via-destructive/5 to-transparent transition-opacity duration-500 ${activeTab === 'receivables' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
-            <div className={`absolute left-0 top-0 bottom-0 w-2 transition-colors duration-500 ${activeTab === 'receivables' ? 'bg-destructive' : 'bg-destructive/20 group-hover:bg-destructive/50'}`} />
+            <div className={`absolute inset-0 bg-gradient-to-br from-destructive/20 via-destructive/5 to-transparent transition-opacity  ${activeTab === 'receivables' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
+            <div className={`absolute left-0 top-0 bottom-0 w-2 transition-colors  ${activeTab === 'receivables' ? 'bg-destructive' : 'bg-destructive/20 group-hover:bg-destructive/50'}`} />
             <div className="p-6 md:p-8 relative z-10 flex flex-col md:flex-row md:items-center gap-6">
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-transform duration-500 group-hover:scale-110 ${activeTab === 'receivables' ? 'bg-destructive text-destructive-foreground' : 'bg-background border-2 border-destructive text-destructive'}`}>
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-transform  group-hover:scale-110 ${activeTab === 'receivables' ? 'bg-destructive text-destructive-foreground' : 'bg-background border-2 border-destructive text-destructive'}`}>
                 <ArrowDownLeft className="w-8 h-8" />
               </div>
               <div className="flex-1">
@@ -578,10 +578,10 @@ export default function PayablesReceivables() {
 
           {/* Payables Card */}
           <Card className="relative overflow-hidden group cursor-pointer" onClick={() => setActiveTab("payables")}>
-            <div className={`absolute inset-0 bg-gradient-to-br from-success/20 via-success/5 to-transparent transition-opacity duration-500 ${activeTab === 'payables' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
-            <div className={`absolute left-0 top-0 bottom-0 w-2 transition-colors duration-500 ${activeTab === 'payables' ? 'bg-success' : 'bg-success/20 group-hover:bg-success/50'}`} />
+            <div className={`absolute inset-0 bg-gradient-to-br from-success/20 via-success/5 to-transparent transition-opacity  ${activeTab === 'payables' ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
+            <div className={`absolute left-0 top-0 bottom-0 w-2 transition-colors  ${activeTab === 'payables' ? 'bg-success' : 'bg-success/20 group-hover:bg-success/50'}`} />
             <div className="p-6 md:p-8 relative z-10 flex flex-col md:flex-row md:items-center gap-6">
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-transform duration-500 group-hover:scale-110 ${activeTab === 'payables' ? 'bg-success text-success-foreground' : 'bg-background border-2 border-success text-success'}`}>
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-transform  group-hover:scale-110 ${activeTab === 'payables' ? 'bg-success text-success-foreground' : 'bg-background border-2 border-success text-success'}`}>
                 <ArrowUpRight className="w-8 h-8" />
               </div>
               <div className="flex-1">

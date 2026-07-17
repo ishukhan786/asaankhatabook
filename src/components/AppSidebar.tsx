@@ -17,7 +17,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   Sidebar,
   SidebarContent,
@@ -135,18 +134,17 @@ export function AppSidebar() {
       }} />
 
       <SidebarHeader className="bg-transparent px-4 py-5 z-10 relative">
-        <motion.div
+        <div
           layout
           className={cn("flex items-center", collapsed ? "justify-center" : "gap-4")}
-          transition={{ duration: 0.2, ease: "easeOut" }}
         >
           <AsaanKhataLogo size={42} showText={!collapsed} />
-        </motion.div>
+        </div>
       </SidebarHeader>
 
       <SidebarContent className="premium-sidebar-scroll bg-transparent px-3 py-2 z-10 relative">
         {!collapsed && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="relative mb-5 mx-1">
+          <div className="relative mb-5 mx-1">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               aria-label="Search navigation"
@@ -165,7 +163,7 @@ export function AppSidebar() {
             <kbd className="pointer-events-none absolute right-2.5 top-[50%] -translate-y-[50%] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
               <span className="text-xs">Ctrl</span>K
             </kbd>
-          </motion.div>
+          </div>
         )}
 
         <div className="space-y-6">
@@ -202,11 +200,10 @@ export function AppSidebar() {
                           }}
                         >
                           {active && (
-                            <motion.div
+                            <div
                               layoutId="sidebar-active-glow"
                               className="absolute inset-0 pointer-events-none"
                               style={{ background: "linear-gradient(105deg, hsl(184 80% 60% / 0.08) 0%, hsl(0 0% 100% / 0.12) 50%, transparent 100%)" }}
-                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                           )}
                           {/* Hover glass overlay */}
@@ -217,16 +214,14 @@ export function AppSidebar() {
                               borderColor: "var(--glass-border)",
                             }}
                           />
-                          <motion.span
+                          <span
                             className={cn(
                               "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-300 relative z-10",
                               active ? "text-primary" : "text-muted-foreground group-hover:text-sidebar-accent-foreground",
                             )}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
                           >
                             <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.5 : 2} />
-                          </motion.span>
+                          </span>
                           {!collapsed && (
                             <>
                               <span className={cn("min-w-0 flex-1 truncate transition-colors relative z-10", active ? "font-bold tracking-wide text-sidebar-foreground" : "font-medium text-muted-foreground group-hover:text-sidebar-foreground")}>
@@ -262,9 +257,7 @@ export function AppSidebar() {
         <div className="absolute top-0 left-3 right-3 h-px" style={{ background: "var(--glass-border)" }} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               className={cn(
                 "group flex w-full items-center rounded-xl text-left outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50",
                 collapsed ? "justify-center p-2" : "gap-3 p-2.5",
@@ -300,7 +293,7 @@ export function AppSidebar() {
                   <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-300 group-data-[state=open]:rotate-180 group-hover:text-sidebar-foreground dark:text-slate-500 dark:group-hover:text-slate-300" />
                 </>
               )}
-            </motion.button>
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="end" className="w-56 backdrop-blur-2xl shadow-2xl rounded-xl" style={{ background: "var(--glass-bg-hover)", border: "1px solid var(--glass-border)", boxShadow: "var(--glass-glow-hover)" }}>
             <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground dark:text-slate-400">My Account</DropdownMenuLabel>

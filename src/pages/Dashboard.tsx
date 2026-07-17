@@ -8,7 +8,6 @@ import { logger } from "@/lib/logger";
 import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Tables } from "@/integrations/supabase/types";
 import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
@@ -336,7 +335,7 @@ export default function Dashboard() {
   return (
     <div className="p-4 md:p-8 space-y-8 max-w-[1600px] mx-auto">
       {/* Hero — Liquid Glass Panel */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <div>
         <div className="glass-hero rounded-2xl px-5 py-3 mb-2 relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
@@ -359,12 +358,12 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {alerts.length > 0 && (
         <div className="space-y-3">
           {alerts.map(a => (
-            <motion.div key={a.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl border border-destructive/20 bg-destructive/10 flex items-center gap-3">
+            <div key={a.id} className="p-4 rounded-xl border border-destructive/20 bg-destructive/10 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center shrink-0">
                 <AlertCircle className="w-4 h-4 text-destructive" />
               </div>
@@ -377,16 +376,13 @@ export default function Dashboard() {
               <Link to={`/accounts/${a.id}`}>
                 <Button size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">View Account</Button>
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}
 
       {/* Timeframe Selector Panel */}
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }} 
-        animate={{ opacity: 1, y: 0 }} 
-        transition={{ duration: 0.4, delay: 0.1 }}
+      <div
         className="glass-card rounded-xl p-3 flex flex-wrap items-center justify-between gap-4 border border-white/10"
       >
         <div className="flex items-center gap-2">
@@ -408,9 +404,7 @@ export default function Dashboard() {
         </div>
 
         {timeframe === "custom" && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} 
-            animate={{ opacity: 1, scale: 1 }} 
+          <div 
             className="flex items-center gap-2"
           >
             <input
@@ -426,18 +420,15 @@ export default function Dashboard() {
               onChange={(e) => setCustomTo(e.target.value)}
               className="bg-background/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
             />
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Stat cards — Liquid Glass */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {cards.map((c, i) => (
-          <motion.div
+          <div
             key={c.label}
-            initial={{ opacity: 0, y: 20, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: i * 0.07, type: "spring", stiffness: 260, damping: 22 }}
             className={c.url ? "cursor-pointer" : ""}
           >
             <Card
@@ -445,7 +436,7 @@ export default function Dashboard() {
               onClick={() => c.url && navigate(c.url)}
             >
               {/* Ambient gradient orb */}
-              <div className={`absolute -top-8 -right-8 w-32 h-32 rounded-full bg-gradient-to-br ${c.gradient} opacity-20 blur-2xl transition-opacity duration-500 group-hover:opacity-35`} />
+              <div className={`absolute -top-8 -right-8 w-32 h-32 rounded-full bg-gradient-to-br ${c.gradient} opacity-20 blur-2xl transition-opacity  group-hover:opacity-35`} />
               {/* Bottom edge glow */}
               <div className={`absolute bottom-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent`} />
 
@@ -471,7 +462,7 @@ export default function Dashboard() {
                 )}
               </div>
             </Card>
-          </motion.div>
+          </div>
         ))}
       </div>
 
@@ -494,6 +485,7 @@ export default function Dashboard() {
           </div>
         </Card>
       ) : (
+        <>
         <div className={`grid grid-cols-1 ${role === "admin" ? "lg:grid-cols-2" : ""} gap-4`}>
           {/* Balance Trend Card */}
           <Card className="glass rounded-2xl p-6 flex flex-col justify-between">
@@ -709,202 +701,6 @@ export default function Dashboard() {
           </Card>
         )}
       </div>
-
-      {/* Branch breakdown + recent */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {role === "admin" && (
-          <Card className="glass rounded-2xl p-6 lg:col-span-1">
-          <div className="flex items-center justify-between gap-2 mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-                <Building2 className="w-3.5 h-3.5 text-white" />
-              </div>
-              <h2 className="font-display font-semibold">Branch Summary</h2>
-            </div>
-            <div className="text-[11px] text-muted-foreground px-2 py-0.5 rounded-full glass">{stats.byBranch.length} branches</div>
-          </div>
-            {stats.byBranch.length === 0 ? (
-              <div className="text-sm text-muted-foreground py-8 text-center">
-                No branches yet. <Link to="/branches" className="text-primary underline">Create one</Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {stats.byBranch.map((b) => (
-                  <div key={b.name} className="p-3.5 rounded-xl glass border-0">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium truncate pr-2">{b.name}</div>
-                      <div className="text-xs text-muted-foreground whitespace-nowrap">{b.accounts} accts</div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mt-2 text-xs num">
-                      <div>
-                        <div className="text-muted-foreground">PKR</div>
-                        <div className={b.pkr >= 0 ? "text-success font-semibold" : "text-destructive font-semibold"}>
-                          {formatMoney(b.pkr, "PKR")} {balanceLabel(b.pkr)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">AED</div>
-                        <div className={b.aed >= 0 ? "text-success font-semibold" : "text-destructive font-semibold"}>
-                          {formatMoney(b.aed, "AED")} {balanceLabel(b.aed)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        )}
-
-        <Card className={`glass rounded-2xl p-6 ${role === "admin" ? "lg:col-span-2" : "lg:col-span-3"}`}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-                <Receipt className="w-3.5 h-3.5 text-white" />
-              </div>
-              <h2 className="font-display font-semibold">{t("RecentTransactions")}</h2>
-            </div>
-            <Link to="/transactions" className="text-xs text-primary hover:underline">View all →</Link>
-          </div>
-          {recent.length === 0 ? (
-            <div className="text-sm text-muted-foreground py-12 text-center">No transactions yet.</div>
-          ) : (
-            <div className="overflow-x-auto -mx-2">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-xs text-muted-foreground uppercase tracking-wider">
-                    <th className="text-start font-medium py-2 px-2">{t("Date") || "Date"}</th>
-                    <th className="text-start font-medium py-2 px-2">{t("Code") || "Code"}</th>
-                    <th className="text-start font-medium py-2 px-2">{t("Account") || "Account"}</th>
-                    <th className="text-left font-medium py-2 px-2 hidden md:table-cell">Details</th>
-                    <th className="text-end font-medium py-2 px-2">{t("Debit") || "Debit"}</th>
-                    <th className="text-end font-medium py-2 px-2">{t("Credit") || "Credit"}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recent.map((t) => (
-                    <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30">
-                      <td className="py-2.5 px-2 text-xs text-muted-foreground">{formatDate(t.txn_date)}</td>
-                      <td className="py-2.5 px-2 font-mono text-xs">{t.txn_code}</td>
-                      <td className="py-2.5 px-2">
-                        <div className="font-medium">{t.accounts?.name}</div>
-                        <div className="text-xs text-muted-foreground font-mono">{t.accounts?.account_no}</div>
-                      </td>
-                      <td className="py-2.5 px-2 hidden md:table-cell text-muted-foreground truncate max-w-xs">{t.details}</td>
-                      <td className="py-2.5 px-2 text-end num text-destructive">{Number(t.debit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowDownLeft className="w-3 h-3" />{formatMoney(Number(t.debit), t.accounts?.currency)}</span> : "-"}</td>
-                      <td className="py-2.5 px-2 text-end num text-success">{Number(t.credit) > 0 ? <span className="inline-flex items-center gap-1"><ArrowUpRight className="w-3 h-3" />{formatMoney(Number(t.credit), t.accounts?.currency)}</span> : "-"}</td>
-                    </tr>
-                  />
-                  <Recharts.Area 
-                    type="monotone" 
-                    dataKey={trendCurrency === "PKR" ? "pkr" : "aed"} 
-                    stroke={trendCurrency === "PKR" ? "hsl(var(--primary))" : "#10b981"} 
-                    strokeWidth={2.5} 
-                    fillOpacity={1} 
-                    fill={trendCurrency === "PKR" ? "url(#colorPkr)" : "url(#colorAed)"} 
-                  />
-                </Recharts.AreaChart>
-              </Recharts.ResponsiveContainer>
-            ) : (
-              <div className="h-full w-full space-y-3 pt-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-40 w-full" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-3 w-16" />
-                  <Skeleton className="h-3 w-16" />
-                  <Skeleton className="h-3 w-16" />
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
-
-        {/* Branch Distribution Card */}
-        {role === "admin" && (
-          <Card className="glass rounded-2xl p-6 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-                    <Building2 className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="font-display font-semibold text-sm md:text-base">Branch Distribution</h2>
-                    <p className="text-[10px] text-muted-foreground">Comparative branch balance overview</p>
-                  </div>
-                </div>
-                
-                {/* Currency Selector Toggle */}
-                <div className="flex items-center gap-1 bg-background/50 border border-white/10 rounded-lg p-0.5">
-                  {(["PKR", "AED"] as const).map((curr) => (
-                    <button
-                      key={curr}
-                      onClick={() => setBranchCurrency(curr)}
-                      className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
-                        branchCurrency === curr
-                          ? curr === "PKR"
-                            ? "bg-primary text-primary-foreground shadow"
-                            : "bg-emerald-500 text-white shadow"
-                        : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {curr}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="h-[260px] w-full mt-auto">
-              {Recharts ? (
-                <Recharts.ResponsiveContainer width="100%" height="100%">
-                  <Recharts.BarChart data={stats.byBranch} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <Recharts.CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.08)" />
-                    <Recharts.XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />
-                    <Recharts.YAxis 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tickFormatter={(v) => formatCompactNumber(v)} 
-                      tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} 
-                    />
-                    <Recharts.Tooltip 
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          const nameVal = payload[0].payload.name;
-                          const val = payload[0].value as number;
-                          const count = payload[0].payload.accounts;
-                          return (
-                            <div className="glass-card border border-white/10 rounded-xl p-3 shadow-xl text-xs space-y-1 bg-background/95 backdrop-blur-md">
-                              <p className="font-semibold text-foreground">{nameVal}</p>
-                              <p className={`font-bold num ${val >= 0 ? "text-success" : "text-destructive"}`}>
-                                {formatMoney(val, branchCurrency)}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground">{count} accounts</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Recharts.Bar 
-                      dataKey={branchCurrency === "PKR" ? "pkr" : "aed"} 
-                      fill={branchCurrency === "PKR" ? "hsl(var(--primary))" : "#10b981"} 
-                      radius={[6, 6, 0, 0]} 
-                    />
-                  </Recharts.BarChart>
-                </Recharts.ResponsiveContainer>
-              ) : (
-                <div className="h-full w-full flex items-end gap-3 px-4 pb-4 pt-8">
-                  {[60, 85, 45, 70, 55, 90, 40].map((h, i) => (
-                    <Skeleton key={i} className="flex-1 rounded-t-md" style={{ height: `${h}%` }} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </Card>
-        )}
-      </div>
-
       {/* Branch breakdown + recent */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {role === "admin" && (
@@ -996,6 +792,7 @@ export default function Dashboard() {
           )}
         </Card>
       </div>
+        </>
       )}
     </div>
   );

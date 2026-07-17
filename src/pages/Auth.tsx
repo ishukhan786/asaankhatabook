@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignIn, useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, User, Lock, Loader2 } from "lucide-react";
 import { AsaanKhataLogo } from "@/components/Logo";
 
@@ -59,11 +58,8 @@ export default function Auth() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/8 via-background to-secondary/10 px-4 py-8 text-foreground">
 
-      <motion.div
+      <div
         className="relative w-full max-w-sm"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
       >
         {/* App Name */}
         <div className="flex flex-col items-center text-center mb-6">
@@ -118,18 +114,15 @@ export default function Auth() {
             </div>
 
             {/* Error */}
-            <AnimatePresence>
+            <>
               {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
+                <div
                   className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2"
                 >
                   {error}
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
+            </>
 
             {/* Submit */}
             <button
@@ -142,7 +135,7 @@ export default function Auth() {
             </button>
           </form>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

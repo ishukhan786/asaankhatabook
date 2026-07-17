@@ -229,7 +229,7 @@ export default function Reports() {
   }, [statementRows, statementTxns, from]);
 
   return (
-    <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 animate-fade-in">
+    <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 ">
       <PageHeader
         eyebrow="Financial Insights"
         title={<span className="flex items-center gap-3"><span className="p-2 rounded-xl bg-primary/10 text-primary"><FileBarChart className="w-7 h-7" /></span>Reports &amp; Ledger</span>}
@@ -256,7 +256,7 @@ export default function Reports() {
                   {formatMoney(ledgerTotals.debit, ledgerTotals.currency)}
                 </h3>
               </div>
-              <div className="p-3 bg-destructive/10 rounded-xl text-destructive group-hover:scale-110 transition-transform duration-300">
+              <div className="p-3 bg-destructive/10 rounded-xl text-destructive group-hover:scale-110 transition-transform ">
                 <ArrowUpRight className="w-6 h-6" />
               </div>
             </Card>
@@ -268,7 +268,7 @@ export default function Reports() {
                   {formatMoney(ledgerTotals.credit, ledgerTotals.currency)}
                 </h3>
               </div>
-              <div className="p-3 bg-success/10 rounded-xl text-success group-hover:scale-110 transition-transform duration-300">
+              <div className="p-3 bg-success/10 rounded-xl text-success group-hover:scale-110 transition-transform ">
                 <ArrowDownLeft className="w-6 h-6" />
               </div>
             </Card>
@@ -283,7 +283,7 @@ export default function Reports() {
                   </span>
                 </h3>
               </div>
-              <div className={`p-3 rounded-xl group-hover:scale-110 transition-transform duration-300 ${ledgerTotals.net >= 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
+              <div className={`p-3 rounded-xl group-hover:scale-110 transition-transform  ${ledgerTotals.net >= 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                 <Scale className="w-6 h-6" />
               </div>
             </Card>
@@ -326,7 +326,7 @@ export default function Reports() {
             <Button 
               onClick={handleExportLedger} 
               disabled={exporting} 
-              className="gradient-primary text-primary-foreground shadow-soft hover:shadow-glow h-11 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 self-stretch lg:self-auto"
+              className="gradient-primary text-primary-foreground shadow-soft hover:shadow-glow h-11 px-6 rounded-xl font-semibold transition-all  flex items-center justify-center gap-2 self-stretch lg:self-auto"
             >
               <FileDown className="w-4 h-4" /> 
               {exporting ? "Exporting..." : "Export Ledger PDF"}
@@ -363,7 +363,7 @@ export default function Reports() {
                       </td>
                     </tr>
                   ) : summary.map((r) => (
-                    <tr key={r.id} className="group hover:bg-primary/[0.03] transition-all duration-200">
+                    <tr key={r.id} className="group hover:bg-primary/[0.03] transition-all ">
                       <td className="px-6 py-4 font-mono text-xs text-muted-foreground tracking-wider">{r.account_no}</td>
                       <td className="px-6 py-4 font-semibold text-foreground">{r.name}</td>
                       <td className="px-6 py-4 hidden md:table-cell text-muted-foreground">
@@ -449,7 +449,7 @@ export default function Reports() {
             <Button 
               disabled={!selectedAccount || statementRows.length === 0 || exporting} 
               onClick={() => handleExportStatement(selectedAccount, statementRows)}
-              className="gradient-primary text-primary-foreground shadow-soft hover:shadow-glow h-11 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 self-stretch lg:self-auto"
+              className="gradient-primary text-primary-foreground shadow-soft hover:shadow-glow h-11 px-6 rounded-xl font-semibold transition-all  flex items-center justify-center gap-2 self-stretch lg:self-auto"
             >
               <FileDown className="w-4 h-4" /> 
               {exporting ? "Exporting..." : "Export Statement PDF"}
@@ -585,7 +585,7 @@ export default function Reports() {
                           </td>
                         </tr>
                       ) : statementRows.map((t) => (
-                        <tr key={t.id} className="hover:bg-primary/[0.02] transition-colors duration-150">
+                        <tr key={t.id} className="hover:bg-primary/[0.02] transition-colors ">
                           <td className="px-6 py-4 num text-muted-foreground whitespace-nowrap">{formatDate(t.txn_date || "")}</td>
                           <td className="px-6 py-4 font-medium text-foreground">{t.details}</td>
                           <td className="px-6 py-4 text-right num text-destructive font-semibold">
