@@ -26,17 +26,16 @@ function pdfText(text: string): string {
 const URDU_FONT_NAME = "NotoNastaliqUrdu";
 
 // Load and embed Urdu font into jsPDF document
+import { URDU_FONT_BASE64, FONT_AVAILABLE } from "./urdu-font-base64";
+
 let urduFontBase64: string | null = null;
 let fontLoaded = false;
 
 async function getUrduFontBase64(): Promise<string | null> {
   if (fontLoaded) return urduFontBase64;
-  try {
-    const mod = await import("./urdu-font-base64");
-    if (mod.FONT_AVAILABLE && mod.URDU_FONT_BASE64) {
-      urduFontBase64 = mod.URDU_FONT_BASE64;
-    }
-  } catch {
+  if (FONT_AVAILABLE && URDU_FONT_BASE64) {
+    urduFontBase64 = URDU_FONT_BASE64;
+  } else {
     urduFontBase64 = null;
   }
   fontLoaded = true;
