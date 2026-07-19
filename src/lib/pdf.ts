@@ -9,18 +9,13 @@ function containsUrdu(text: string): boolean {
   return /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
 }
 
-// Reverse Arabic/Urdu text for RTL rendering in jsPDF
-function reverseUrduText(text: string): string {
-  // jsPDF renders text LTR, so we reverse Urdu words for correct display
-  if (!containsUrdu(text)) return text;
-  // Split by spaces, reverse word order for RTL, keep each word intact
-  return text.split(' ').reverse().join(' ');
-}
-
-// Format text for PDF: if Urdu, return reversed version
-function pdfText(text: string): string {
+// Use jsPDF's built-in processArabic for proper Urdu/Arabic shaping + RTL
+// Falls back to plain text for non-Urdu strings
+function pdfText(doc: jsPDF, text: string): string {
   if (!text) return text;
-  return containsUrdu(text) ? reverseUrduText(text) : text;
+  if (!containsUrdu(text)) return text;
+  // processArabic handles character joining, ligatures, and RTL ordering
+  return (doc as jsPDF & { processArabic: (t: string) => string }).processArabic(text);
 }
 
 // Font name constant
@@ -230,7 +225,7 @@ export async function exportStatementPDF(
     doc.setTextColor(...rgb(C.white));
     if (bizNameIsUrdu && hasUrduFont) {
       // RTL: align right for Urdu text
-      doc.text(pdfText(businessName), W - 12, 18, { align: "right", maxWidth: 100 });
+      doc.text(pdfText(doc, businessName), W - 12, 18, { align: "right", maxWidth: 100 });
     } else {
       doc.text(businessName.toUpperCase(), 12, 18, { maxWidth: 100 });
     }
@@ -243,7 +238,7 @@ export async function exportStatementPDF(
     const tagIsUrdu = containsUrdu(tagText);
     if (tagIsUrdu && hasUrduFont) {
       doc.setFont(URDU_FONT_NAME, "normal");
-      doc.text(pdfText(tagText), W - 12, 25, { align: "right", maxWidth: 110 });
+      doc.text(pdfText(doc, tagText), W - 12, 25, { align: "right", maxWidth: 110 });
     } else {
       doc.setFont("helvetica", "normal");
       doc.text(tagText, 12, 25, { maxWidth: 110 });
@@ -312,7 +307,7 @@ export async function exportStatementPDF(
     }
     doc.setTextColor(...rgb(C.navy));
     if (nameIsUrdu && hasUrduFont) {
-      doc.text(pdfText(String(account.name || "—")), 10 + INFO_W - 6, INFO_Y + 16, { align: "right", maxWidth: INFO_W - 14 });
+      doc.text(pdfText(doc, String(account.name || "—")), 10 + INFO_W - 6, INFO_Y + 16, { align: "right", maxWidth: INFO_W - 14 });
     } else {
       doc.text(String(account.name || "—"), 17, INFO_Y + 16, { maxWidth: INFO_W - 14 });
     }
@@ -353,7 +348,7 @@ export async function exportStatementPDF(
         doc.setFontSize(7.5);
         doc.setTextColor(...rgb(C.ink));
         // Right-align Urdu text within the available width
-        doc.text(pdfText(valStr), 10 + INFO_W - 6, y, { align: "right", maxWidth: INFO_W - 36 });
+        doc.text(pdfText(doc, valStr), 10 + INFO_W - 6, y, { align: "right", maxWidth: INFO_W - 36 });
       } else {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(7.5);
@@ -426,7 +421,7 @@ export async function exportStatementPDF(
     const details = r.details ?? "";
     return [
       formatDate(String(r.txn_date ?? "")),
-      pdfText(details),  // Urdu text reversed for RTL display
+      pdfText(doc, details),  // processArabic for proper Urdu RTL
       Number(r.debit  ?? 0) > 0 ? plainAmount(Number(r.debit))  : "—",
       Number(r.credit ?? 0) > 0 ? plainAmount(Number(r.credit)) : "—",
       signedBalance(bal),
@@ -627,7 +622,7 @@ export async function exportLedgerPDF(rows: LedgerRow[], businessInfo?: Business
     doc.setFont(URDU_FONT_NAME, "normal");
     doc.setFontSize(14);
     doc.setTextColor(...rgb(C.white));
-    doc.text(pdfText(businessName), W - 10, 13, { align: "right" });
+    doc.text(pdfText(doc, businessName), W - 10, 13, { align: "right" });
   } else {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
@@ -692,7 +687,7 @@ export async function exportLedgerPDF(rows: LedgerRow[], businessInfo?: Business
     head: [["Account No", "Name", "Cur", "Debit", "Credit", "Net Balance"]],
     body: rows.map((r) => [
       r.account_no ?? "—",
-      pdfText(r.name ?? "—"),  // Apply Urdu text handling for names
+      pdfText(doc, r.name ?? "—"),  // processArabic for proper Urdu RTL
       r.currency   ?? "—",
       formatMoney(r.debit, r.currency),
       formatMoney(r.credit, r.currency),
