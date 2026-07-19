@@ -2,11 +2,10 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
-// import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  base: process.env.VERCEL ? "/" : "./",
+export default defineConfig(() => ({
+  base: "/",
   server: {
     host: "::",
     port: 5173,
@@ -15,7 +14,7 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react() /*, mode === "development" && componentTagger()*/].filter(Boolean),
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -23,14 +22,11 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
   build: {
-    // Target modern Electron Chromium — no need for legacy transpilation
     target: "es2020",
     sourcemap: false,
-    // Reduce chunk size warnings threshold for Electron (larger bundles are fine)
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Split vendor libraries into separate cached chunks
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) return 'vendor-react';
@@ -45,10 +41,10 @@ export default defineConfig(({ mode }) => ({
           }
         },
       },
-        plugins: [
-          // generate an interactive bundle report at dist/bundle-report.html
-          visualizer({ filename: "dist/bundle-report.html", gzipSize: true, brotliSize: true }),
-        ],
-      },
+      plugins: [
+        visualizer({ filename: "dist/bundle-report.html", gzipSize: true, brotliSize: true }),
+      ],
+    },
   },
 }));
+
