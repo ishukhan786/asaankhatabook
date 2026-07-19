@@ -204,7 +204,9 @@ export default function RecurringTransactions() {
           await supabase.from("recurring_transactions").update({ next_run_date: nextDate }).eq("id", r.id);
           success++;
         }
-      } catch {}
+      } catch (err) {
+        console.error("Error executing recurring transaction:", err);
+      }
     }
     toast.success(`Executed ${success} of ${pending.length} recurring transactions`);
     load();

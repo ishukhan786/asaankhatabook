@@ -1,4 +1,5 @@
 import { formatMoney, balanceLabel, formatDate } from "./format";
+import type { jsPDF } from "jspdf";
 
 // ─── Urdu Font Support ────────────────────────────────────────────────────────
 // Detect Urdu/Arabic characters in text
@@ -42,7 +43,7 @@ async function getUrduFontBase64(): Promise<string | null> {
   return urduFontBase64;
 }
 
-function embedUrduFont(doc: any, fontBase64: string) {
+function embedUrduFont(doc: jsPDF, fontBase64: string) {
   try {
     doc.addFileToVFS(`${URDU_FONT_NAME}.ttf`, fontBase64);
     doc.addFont(`${URDU_FONT_NAME}.ttf`, URDU_FONT_NAME, "normal");
@@ -54,7 +55,7 @@ function embedUrduFont(doc: any, fontBase64: string) {
 
 // Set font based on whether text contains Urdu
 function setFont(
-  doc: any,
+  doc: jsPDF,
   hasUrduFont: boolean,
   style: "normal" | "bold" = "normal"
 ) {
@@ -759,7 +760,7 @@ export async function exportLedgerPDF(rows: LedgerRow[], businessInfo?: Business
 
 // helper used in ledger export (outside class scope)
 function roundRectHelper(
-  doc: any,
+  doc: jsPDF,
   x: number, y: number, w: number, h: number, r: number,
   fill?: [number,number,number],
   stroke?: [number,number,number],
