@@ -1,5 +1,71 @@
 import { formatMoney, balanceLabel, formatDate } from "./format";
 
+// ─── Urdu Font Support ────────────────────────────────────────────────────────
+// Detect Urdu/Arabic characters in text
+function containsUrdu(text: string): boolean {
+  // Arabic Unicode range: \u0600-\u06FF (includes Urdu)
+  // Arabic Presentation Forms: \uFB50-\uFDFF, \uFE70-\uFEFF
+  return /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
+}
+
+// Reverse Arabic/Urdu text for RTL rendering in jsPDF
+function reverseUrduText(text: string): string {
+  // jsPDF renders text LTR, so we reverse Urdu words for correct display
+  if (!containsUrdu(text)) return text;
+  // Split by spaces, reverse word order for RTL, keep each word intact
+  return text.split(' ').reverse().join(' ');
+}
+
+// Format text for PDF: if Urdu, return reversed version
+function pdfText(text: string): string {
+  if (!text) return text;
+  return containsUrdu(text) ? reverseUrduText(text) : text;
+}
+
+// Font name constant
+const URDU_FONT_NAME = "NotoNastaliqUrdu";
+
+// Load and embed Urdu font into jsPDF document
+let urduFontBase64: string | null = null;
+let fontLoaded = false;
+
+async function getUrduFontBase64(): Promise<string | null> {
+  if (fontLoaded) return urduFontBase64;
+  try {
+    const mod = await import("./urdu-font-base64");
+    if (mod.FONT_AVAILABLE && mod.URDU_FONT_BASE64) {
+      urduFontBase64 = mod.URDU_FONT_BASE64;
+    }
+  } catch {
+    urduFontBase64 = null;
+  }
+  fontLoaded = true;
+  return urduFontBase64;
+}
+
+function embedUrduFont(doc: any, fontBase64: string) {
+  try {
+    doc.addFileToVFS(`${URDU_FONT_NAME}.ttf`, fontBase64);
+    doc.addFont(`${URDU_FONT_NAME}.ttf`, URDU_FONT_NAME, "normal");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Set font based on whether text contains Urdu
+function setFont(
+  doc: any,
+  hasUrduFont: boolean,
+  style: "normal" | "bold" = "normal"
+) {
+  if (hasUrduFont) {
+    doc.setFont(URDU_FONT_NAME, "normal"); // Urdu font only has normal style
+  } else {
+    doc.setFont("helvetica", style);
+  }
+}
+
 export type BusinessInfo = {
   business_name?: string | null;
   business_phone?: string | null;
@@ -9,11 +75,12 @@ export type BusinessInfo = {
 const rgb = (color: [number, number, number]) => color;
 
 async function loadPdfLibs() {
-  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+  const [{ default: jsPDF }, { default: autoTable }, fontBase64] = await Promise.all([
     import("jspdf"),
     import("jspdf-autotable"),
+    getUrduFontBase64(),
   ]);
-  return { jsPDF, autoTable };
+  return { jsPDF, autoTable, fontBase64 };
 }
 
 export type AccountForPDF = {
@@ -59,10 +126,13 @@ export async function exportStatementPDF(
   rows: TxnRow[],
   businessInfo?: BusinessInfo | null
 ) {
-  const { jsPDF, autoTable } = await loadPdfLibs();
+  const { jsPDF, autoTable, fontBase64 } = await loadPdfLibs();
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
+
+  // Embed Urdu font if available
+  const hasUrduFont = fontBase64 ? embedUrduFont(doc, fontBase64) : false;
 
   const businessName  = businessInfo?.business_name?.trim() || "AsaanKhata";
   const bizAddress    = businessInfo?.business_address?.trim() || "";
@@ -148,21 +218,36 @@ export async function exportStatementPDF(
     doc.setFillColor(...rgb(C.teal));
     doc.rect(0, HEADER_H - 2.5, W, 2.5, "F");
 
-    // Business name
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(17);
+    // Business name - detect Urdu
+    const bizNameIsUrdu = containsUrdu(businessName);
+    if (bizNameIsUrdu && hasUrduFont) {
+      doc.setFont(URDU_FONT_NAME, "normal");
+      doc.setFontSize(15);
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(17);
+    }
     doc.setTextColor(...rgb(C.white));
-    doc.text(businessName.toUpperCase(), 12, 18, { maxWidth: 100 });
+    if (bizNameIsUrdu && hasUrduFont) {
+      // RTL: align right for Urdu text
+      doc.text(pdfText(businessName), W - 12, 18, { align: "right", maxWidth: 100 });
+    } else {
+      doc.text(businessName.toUpperCase(), 12, 18, { maxWidth: 100 });
+    }
 
-    // Tagline / address
-    doc.setFont("helvetica", "normal");
+    // Tagline / address - detect Urdu
     doc.setFontSize(7.5);
     doc.setTextColor(180, 198, 230);
     const tagParts = [bizAddress, bizPhone ? `Tel: ${bizPhone}` : ""].filter(Boolean);
-    doc.text(
-      tagParts.length ? tagParts.join("   ·   ") : "Professional Ledger & Accounting",
-      12, 25, { maxWidth: 110 }
-    );
+    const tagText = tagParts.length ? tagParts.join("   ·   ") : "Professional Ledger & Accounting";
+    const tagIsUrdu = containsUrdu(tagText);
+    if (tagIsUrdu && hasUrduFont) {
+      doc.setFont(URDU_FONT_NAME, "normal");
+      doc.text(pdfText(tagText), W - 12, 25, { align: "right", maxWidth: 110 });
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.text(tagText, 12, 25, { maxWidth: 110 });
+    }
 
     // "Powered by" badge
     doc.setFont("helvetica", "bold");
@@ -216,11 +301,21 @@ export async function exportStatementPDF(
     doc.setTextColor(...rgb(C.teal));
     doc.text("ACCOUNT HOLDER", 17, INFO_Y + 8);
 
-    // Name
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12.5);
+    // Name - detect Urdu and use appropriate font
+    const nameIsUrdu = containsUrdu(String(account.name || ""));
+    if (nameIsUrdu && hasUrduFont) {
+      doc.setFont(URDU_FONT_NAME, "normal");
+      doc.setFontSize(12.5);
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12.5);
+    }
     doc.setTextColor(...rgb(C.navy));
-    doc.text(String(account.name || "—"), 17, INFO_Y + 16, { maxWidth: INFO_W - 14 });
+    if (nameIsUrdu && hasUrduFont) {
+      doc.text(pdfText(String(account.name || "—")), 10 + INFO_W - 6, INFO_Y + 16, { align: "right", maxWidth: INFO_W - 14 });
+    } else {
+      doc.text(String(account.name || "—"), 17, INFO_Y + 16, { maxWidth: INFO_W - 14 });
+    }
 
     // Divider
     doc.setDrawColor(...rgb(C.line));
@@ -238,7 +333,7 @@ export async function exportStatementPDF(
     meta.forEach(([label, value], i) => {
       const y = INFO_Y + 26 + i * 5;
       
-      // Label text
+      // Label text (always English)
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7);
       doc.setTextColor(...rgb(C.muted));
@@ -250,11 +345,21 @@ export async function exportStatementPDF(
       doc.setTextColor(13, 148, 136);
       doc.text(":", 36, y);
 
-      // Value text
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(...rgb(C.ink));
-      doc.text(String(value), 42, y, { maxWidth: INFO_W - 36 });
+      // Value text - detect Urdu
+      const valStr = String(value);
+      const valIsUrdu = containsUrdu(valStr);
+      if (valIsUrdu && hasUrduFont) {
+        doc.setFont(URDU_FONT_NAME, "normal");
+        doc.setFontSize(7.5);
+        doc.setTextColor(...rgb(C.ink));
+        // Right-align Urdu text within the available width
+        doc.text(pdfText(valStr), 10 + INFO_W - 6, y, { align: "right", maxWidth: INFO_W - 36 });
+      } else {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7.5);
+        doc.setTextColor(...rgb(C.ink));
+        doc.text(valStr, 42, y, { maxWidth: INFO_W - 36 });
+      }
     });
   };
 
@@ -317,9 +422,11 @@ export async function exportStatementPDF(
       r.balance !== undefined && r.balance !== null
         ? r.balance
         : (runningBalance += Number(r.credit ?? 0) - Number(r.debit ?? 0));
+    // Apply pdfText for Urdu/Arabic details so they render correctly
+    const details = r.details ?? "";
     return [
       formatDate(String(r.txn_date ?? "")),
-      r.details ?? "",
+      pdfText(details),  // Urdu text reversed for RTL display
       Number(r.debit  ?? 0) > 0 ? plainAmount(Number(r.debit))  : "—",
       Number(r.credit ?? 0) > 0 ? plainAmount(Number(r.credit)) : "—",
       signedBalance(bal),
@@ -409,6 +516,16 @@ export async function exportStatementPDF(
     didParseCell: (data) => {
       if (data.section !== "body") return;
 
+      // Description column — detect Urdu and set font + alignment
+      if (data.column.index === 1) {
+        const cellText = String(data.cell.raw ?? "");
+        if (containsUrdu(cellText) && hasUrduFont) {
+          data.cell.styles.font = URDU_FONT_NAME;
+          data.cell.styles.fontStyle = "normal";
+          data.cell.styles.halign = "right";
+        }
+      }
+
       // Debit column — red tint bg, text black
       if (data.column.index === 2 && data.cell.raw !== "—") {
         data.cell.styles.textColor = C.ink;
@@ -472,11 +589,14 @@ export type LedgerRow = {
 };
 
 export async function exportLedgerPDF(rows: LedgerRow[], businessInfo?: BusinessInfo | null) {
-  const { jsPDF, autoTable } = await loadPdfLibs();
+  const { jsPDF, autoTable, fontBase64 } = await loadPdfLibs();
   const doc = new jsPDF();
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
   const businessName = businessInfo?.business_name?.trim() || "AsaanKhata";
+
+  // Embed Urdu font if available
+  const hasUrduFont = fontBase64 ? embedUrduFont(doc, fontBase64) : false;
 
   const pkrRows = rows.filter(r => r.currency === "PKR");
   const aedRows = rows.filter(r => r.currency === "AED");
@@ -501,10 +621,19 @@ export async function exportLedgerPDF(rows: LedgerRow[], businessInfo?: Business
   doc.setFillColor(20, 35, 70);
   doc.circle(W, 0, 28, "F");
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.setTextColor(...rgb(C.white));
-  doc.text(businessName.toUpperCase(), 10, 13);
+  // Business name in header - detect Urdu
+  const bizIsUrdu = containsUrdu(businessName);
+  if (bizIsUrdu && hasUrduFont) {
+    doc.setFont(URDU_FONT_NAME, "normal");
+    doc.setFontSize(14);
+    doc.setTextColor(...rgb(C.white));
+    doc.text(pdfText(businessName), W - 10, 13, { align: "right" });
+  } else {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(...rgb(C.white));
+    doc.text(businessName.toUpperCase(), 10, 13);
+  }
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(180, 198, 230);
@@ -563,7 +692,7 @@ export async function exportLedgerPDF(rows: LedgerRow[], businessInfo?: Business
     head: [["Account No", "Name", "Cur", "Debit", "Credit", "Net Balance"]],
     body: rows.map((r) => [
       r.account_no ?? "—",
-      r.name       ?? "—",
+      pdfText(r.name ?? "—"),  // Apply Urdu text handling for names
       r.currency   ?? "—",
       formatMoney(r.debit, r.currency),
       formatMoney(r.credit, r.currency),
@@ -594,6 +723,15 @@ export async function exportLedgerPDF(rows: LedgerRow[], businessInfo?: Business
     alternateRowStyles: { fillColor: [248, 250, 253] },
     didParseCell: (data) => {
       if (data.section !== "body") return;
+      // Name column (index 1) - detect Urdu
+      if (data.column.index === 1) {
+        const nameText = String(data.cell.raw ?? "");
+        if (containsUrdu(nameText) && hasUrduFont) {
+          data.cell.styles.font = URDU_FONT_NAME;
+          data.cell.styles.fontStyle = "normal";
+          data.cell.styles.halign = "right";
+        }
+      }
       if (data.column.index === 5) {
         const net = rows[data.row.index]?.net ?? 0;
         data.cell.styles.textColor = net >= 0 ? C.credit : C.debit;
