@@ -24,7 +24,7 @@ function pdfText(text: string): string {
 }
 
 // Font name constant
-const URDU_FONT_NAME = "NotoNastaliqUrdu";
+const URDU_FONT_NAME = "NotoNaskhArabic";
 
 // Load and embed Urdu font into jsPDF document
 import { URDU_FONT_BASE64, FONT_AVAILABLE } from "./urdu-font-base64";
