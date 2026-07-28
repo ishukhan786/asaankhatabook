@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { logger } from "@/lib/logger";
 import { PageHeader } from "@/components/PageHeader";
+import { debounce } from "@/lib/utils";
 
 interface AccountBalance {
   id: string;
@@ -326,9 +327,10 @@ export default function PayablesReceivables() {
 
   useEffect(() => {
     loadData();
+    const debouncedLoad = debounce(loadData, 500);
     const sub = supabase.channel("payables_receivables_channel")
-      .on("postgres_changes", { event: "*", schema: "public", table: "accounts" }, loadData)
-      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, loadData)
+      .on("postgres_changes", { event: "*", schema: "public", table: "accounts" }, debouncedLoad)
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, debouncedLoad)
       .subscribe();
     return () => { supabase.removeChannel(sub); };
   }, []);
