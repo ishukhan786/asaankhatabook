@@ -132,7 +132,7 @@ export function AppSidebar() {
         background: "linear-gradient(90deg, transparent 0%, hsl(184 80% 60% / 0.5) 30%, hsl(0 0% 100% / 0.7) 50%, hsl(38 95% 60% / 0.5) 70%, transparent 100%)"
       }} />
 
-      <SidebarHeader className="bg-transparent px-4 py-5 z-10 relative">
+      <SidebarHeader className="bg-transparent px-4 py-5 z-10 relative shrink-0">
         <div
           layout
           className={cn("flex items-center", collapsed ? "justify-center" : "gap-4")}
@@ -141,7 +141,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="premium-sidebar-scroll bg-transparent px-3 py-2 z-10 relative">
+      <SidebarContent className="premium-sidebar-scroll bg-transparent px-3 py-2 z-10 relative flex-1 overflow-y-auto min-h-0">
         {!collapsed && (
           <div className="relative mb-5 mx-1">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -251,7 +251,7 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="pt-3 pb-4 px-3 z-10 relative" style={{ background: "transparent" }}>
+      <SidebarFooter className="pt-3 pb-4 px-3 z-10 relative shrink-0" style={{ background: "transparent" }}>
         {/* Footer top border */}
         <div className="absolute top-0 left-3 right-3 h-px" style={{ background: "var(--glass-border)" }} />
         <DropdownMenu>
