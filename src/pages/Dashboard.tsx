@@ -329,7 +329,7 @@ export default function Dashboard() {
     <div className="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto text-slate-800 dark:text-slate-100">
       
       {/* 🌟 TOP NAVIGATION / CONTROL BAR */}
-      <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm sticky top-16 z-20 backdrop-blur-md mb-6" style={{ isolation: 'isolate' }}>
+      <div className="bg-card border border-border/80 rounded-2xl pt-4 px-4 pb-5 shadow-sm sticky top-16 z-20 backdrop-blur-md" style={{ isolation: 'isolate' }}>
         {/* Row 1: Title + Filters */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -405,7 +405,7 @@ export default function Dashboard() {
       </div>
 
       {/* 📍 SECTION 1: FINANCIAL OVERVIEW (TOP ROW) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 !mt-10">
         {/* PKR Balance */}
         <Card className="rounded-2xl p-5 border border-emerald-200/60 dark:border-emerald-900/40 bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/20 dark:to-card shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between">
