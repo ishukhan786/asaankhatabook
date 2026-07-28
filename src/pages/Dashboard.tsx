@@ -146,7 +146,7 @@ export default function Dashboard() {
         supabase.from("expenses").select("amount, currency").gte("expense_date", fromStr).lte("expense_date", toStr),
         supabase.from("accounts").select("id, name, currency, alert_threshold").not("alert_threshold", "is", null),
         supabase.rpc("report_account_totals", { p_from: null, p_to: null }),
-        supabase.from("accounts").select("id, account_no, name, currency, account_type, branch_id"),
+        supabase.from("accounts").select("id, account_no, name, currency, account_type, branch_id, alert_threshold"),
         supabase.from("accounts").select("*", { count: "exact", head: true }),
       ]);
 
