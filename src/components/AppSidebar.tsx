@@ -7,14 +7,11 @@ import {
   LayoutDashboard,
   LogOut,
   Receipt,
-  RefreshCw,
   Search,
   Settings as SettingsIcon,
   Shield,
   UserCog,
   Users,
-  Wallet,
-  Sparkles,
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
