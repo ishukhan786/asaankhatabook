@@ -529,6 +529,7 @@ export default function Dashboard() {
             </div>
           </div>
         </Card>
+      </div>
 
       {/* 📍 SECTION 4: Branch Summary — Compact Row */}
       <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs w-full">
