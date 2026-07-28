@@ -282,7 +282,7 @@ const SectionTable = React.memo(({ list, type, navigate, sendWhatsApp }: {
 SectionTable.displayName = "SectionTable";
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function PayablesReceivables() {
+export default function PayablesReceivables({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { profile, role } = useAuth();
@@ -402,18 +402,46 @@ export default function PayablesReceivables() {
         />
       </div>
 
-      <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
-        <PageHeader
-          eyebrow={`${t("Reports")} • ${branchHeaderLabel}`}
-          title={t("PayablesReceivables")}
-          description="Receivables aur Payables — dono alag sections mein clearly dikhain."
-          actions={
+      <div className={embedded ? "screen-ui space-y-6" : "screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-6"}>
+        {!embedded ? (
+          <PageHeader
+            eyebrow={`${t("Reports")} • ${branchHeaderLabel}`}
+            title={t("PayablesReceivables")}
+            description="Receivables aur Payables — dono alag sections mein clearly dikhain."
+            actions={
+              <div className="flex items-center gap-3 flex-wrap">
+                {role === "admin" && (
+                  <div className="w-56">
+                    <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                      <SelectTrigger className="h-11 glass border-2 font-medium rounded-xl shadow-sm">
+                        <Building2 className="w-4 h-4 mr-2 text-primary" />
+                        <SelectValue placeholder="Select Branch" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all" className="font-bold">🌍 All Branches</SelectItem>
+                        {branches.map(b => <SelectItem key={b.id} value={b.id}>📍 {b.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <Button onClick={() => handlePrint("both")} variant="outline" className="h-11 px-5 gap-2 border-2 hover:bg-primary hover:text-primary-foreground transition-all rounded-xl font-semibold">
+                  <Printer className="w-4 h-4" /> Print Both
+                </Button>
+              </div>
+            }
+          />
+        ) : (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20 border border-border/30 p-4 rounded-2xl">
+            <div>
+              <h3 className="font-bold text-base text-foreground">Payable &amp; Receivable Summary</h3>
+              <p className="text-xs text-muted-foreground">{branchHeaderLabel}</p>
+            </div>
             <div className="flex items-center gap-3 flex-wrap">
               {role === "admin" && (
-                <div className="w-56">
+                <div className="w-48">
                   <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                    <SelectTrigger className="h-11 glass border-2 font-medium rounded-xl shadow-sm">
-                      <Building2 className="w-4 h-4 mr-2 text-primary" />
+                    <SelectTrigger className="h-10 glass border-2 font-medium rounded-xl shadow-sm">
+                      <Building2 className="w-3.5 h-3.5 mr-2 text-primary" />
                       <SelectValue placeholder="Select Branch" />
                     </SelectTrigger>
                     <SelectContent>
@@ -423,12 +451,12 @@ export default function PayablesReceivables() {
                   </Select>
                 </div>
               )}
-              <Button onClick={() => handlePrint("both")} variant="outline" className="h-11 px-5 gap-2 border-2 hover:bg-primary hover:text-primary-foreground transition-all rounded-xl font-semibold">
-                <Printer className="w-4 h-4" /> Print Both
+              <Button onClick={() => handlePrint("both")} variant="outline" className="h-10 px-4 gap-2 border-2 hover:bg-primary hover:text-primary-foreground transition-all rounded-xl font-semibold text-xs">
+                <Printer className="w-3.5 h-3.5" /> Print Both
               </Button>
             </div>
-          }
-        />
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

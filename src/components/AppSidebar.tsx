@@ -76,12 +76,6 @@ export function AppSidebar() {
         { title: t("Dashboard"), url: "/", icon: LayoutDashboard, exact: true },
         { title: t("Accounts"), url: "/accounts", icon: Users },
         { title: t("Transactions"), url: "/transactions", icon: Receipt, dot: true },
-      ],
-    },
-    {
-      label: "Financial Management",
-      items: [
-        { title: t("PayablesReceivables"), url: "/payables-receivables", icon: Wallet, badge: "Live" },
         { title: t("Reports"), url: "/reports", icon: FileBarChart },
       ],
     },

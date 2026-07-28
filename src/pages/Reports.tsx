@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, FileDown, FileBarChart, Users, Receipt, ArrowUpRight, ArrowDownLeft, Scale, Building2, Phone, MapPin } from "lucide-react";
+import { Search, FileDown, FileBarChart, Users, Receipt, ArrowUpRight, ArrowDownLeft, Scale, Building2, Phone, MapPin, Wallet } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { exportLedgerPDF, exportStatementPDF } from "@/lib/pdf";
+import PayablesReceivables from "./PayablesReceivables";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -236,12 +237,15 @@ export default function Reports() {
       />
 
       <Tabs defaultValue="ledger" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2 p-1 bg-muted/20 border border-border/30 rounded-xl">
+        <TabsList className="grid w-full max-w-lg grid-cols-3 p-1 bg-muted/20 border border-border/30 rounded-xl">
           <TabsTrigger value="ledger" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
             <Users className="w-4 h-4" /> Ledger Summary
           </TabsTrigger>
           <TabsTrigger value="statement" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
             <Receipt className="w-4 h-4" /> Account Statement
+          </TabsTrigger>
+          <TabsTrigger value="payables-receivables" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+            <Wallet className="w-4 h-4" /> Payables &amp; Receivables
           </TabsTrigger>
         </TabsList>
 
@@ -610,6 +614,9 @@ export default function Reports() {
               </Card>
             </div>
           )}
+        </TabsContent>
+        <TabsContent value="payables-receivables" className="space-y-6 outline-none">
+          <PayablesReceivables embedded={true} />
         </TabsContent>
       </Tabs>
     </div>
