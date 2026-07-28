@@ -326,66 +326,67 @@ export default function Dashboard() {
     <div className="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto text-slate-800 dark:text-slate-100">
       
       {/* 🌟 TOP NAVIGATION / CONTROL BAR */}
-      <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-16 z-20 backdrop-blur-md" style={{ isolation: 'isolate' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center font-bold">
-            <Building2 className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">AsaanKhata Dashboard</h1>
-            <p className="text-xs text-muted-foreground">Multi-Currency Enterprise Accounting</p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Branch Selector */}
-          <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-1.5 border border-border/60">
-            <Building2 className="w-4 h-4 text-muted-foreground" />
-            <select
-              value={selectedBranch}
-              onChange={(e) => setSelectedBranch(e.target.value)}
-              aria-label="Filter Branch"
-              className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer"
-            >
-              <option value="all">All Branches</option>
-              {branchesList.map((b) => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
+      <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm sticky top-16 z-20 backdrop-blur-md" style={{ isolation: 'isolate' }}>
+        {/* Row 1: Title + Filters */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center font-bold">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">AsaanKhata Dashboard</h1>
+              <p className="text-xs text-muted-foreground">Multi-Currency Enterprise Accounting</p>
+            </div>
           </div>
 
-          {/* Timeframe Filter */}
-          <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 border border-border/60">
-            {(["today", "7days", "15days", "30days"] as const).map((tf) => (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                  timeframe === tf ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                }`}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Branch Selector */}
+            <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-1.5 border border-border/60">
+              <Building2 className="w-4 h-4 text-muted-foreground" />
+              <select
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                aria-label="Filter Branch"
+                className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer"
               >
-                {tf === "today" ? "Today" : tf === "7days" ? "7D" : tf === "15days" ? "15D" : "30D"}
-              </button>
-            ))}
-          </div>
+                <option value="all">All Branches</option>
+                {branchesList.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
 
-          {/* Quick Search */}
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search voucher, account..."
-              className="pl-9 h-9 text-xs w-44 rounded-xl border-border/60"
-            />
+            {/* Timeframe Filter */}
+            <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 border border-border/60">
+              {(["today", "7days", "15days", "30days"] as const).map((tf) => (
+                <button
+                  key={tf}
+                  onClick={() => setTimeframe(tf)}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+                    timeframe === tf ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {tf === "today" ? "Today" : tf === "7days" ? "7D" : tf === "15days" ? "15D" : "30D"}
+                </button>
+              ))}
+            </div>
+
+            {/* Quick Search */}
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search voucher, account..."
+                className="pl-9 h-9 text-xs w-44 rounded-xl border-border/60"
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 🚀 QUICK ACTION BUTTONS */}
-      <div className="flex flex-wrap items-center gap-2.5 pt-2 md:pt-0">
+        {/* Row 2: Quick Action Buttons — separated with top border */}
         {canWriteTransactions && (
-          <>
+          <div className="flex flex-wrap items-center gap-2.5 pt-3 mt-3 border-t border-border/50">
             <Link to="/accounts/new">
               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs font-bold transition-transform active:scale-95">
                 <Plus className="w-4 h-4 mr-1.5" /> + New Customer
@@ -396,7 +397,7 @@ export default function Dashboard() {
                 <Receipt className="w-4 h-4 mr-1.5" /> New Voucher
               </Button>
             </Link>
-          </>
+          </div>
         )}
       </div>
 
