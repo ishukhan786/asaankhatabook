@@ -67,7 +67,7 @@ export default function RecurringTransactions() {
     supabase
       .from("accounts")
       .select("id, name, account_no, currency")
-      .then(r => setAccounts((r.data as any[]) ?? []));
+      .then(r => setAccounts((r.data as { id: string; name: string; account_no: string; currency: string }[]) ?? []));
 
     const sub = supabase.channel("recurring-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "recurring_transactions" }, load)
@@ -141,8 +141,8 @@ export default function RecurringTransactions() {
       }
       setOpen(false);
       load();
-    } catch (err: any) {
-      toast.error(err?.message ?? "Failed to save");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to save");
     }
     setBusy(false);
   };
@@ -178,8 +178,8 @@ export default function RecurringTransactions() {
       await supabase.from("recurring_transactions").update({ next_run_date: nextDate }).eq("id", r.id);
       toast.success(`Executed! Next run: ${nextDate}`);
       load();
-    } catch (err: any) {
-      toast.error(err?.message ?? "Execution failed");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Execution failed");
     }
     setExecuting(null);
   };
@@ -378,7 +378,7 @@ export default function RecurringTransactions() {
               </div>
               <div className="space-y-1.5">
                 <Label>Frequency</Label>
-                <Select value={form.frequency} onValueChange={v => setForm(p => ({ ...p, frequency: v as any }))}>
+                <Select value={form.frequency} onValueChange={v => setForm(p => ({ ...p, frequency: v as RecurringTxn["frequency"] }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="daily">Daily</SelectItem>
