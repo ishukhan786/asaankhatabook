@@ -110,7 +110,7 @@ const PrintDocument = React.memo(({
         <div style={{ padding: "0 36px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
             <thead>
-              <tr style={{ borderTop: \`3px solid \${accent}\`, borderBottom: "2px solid #e5e7eb", background: "#f9fafb" }}>
+              <tr style={{ borderTop: `3px solid ${accent}`, borderBottom: "2px solid #e5e7eb", background: "#f9fafb" }}>
                 {["#", "Account No", "Account Name", "Branch", "Mobile", "Address", "Balance"].map((h, i) => (
                   <th key={h} style={{ padding: "8px 10px", textAlign: i === 6 ? "right" : "left", fontSize: "9px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1px", color: "#374151" }}>{h}</th>
                 ))}
@@ -133,7 +133,7 @@ const PrintDocument = React.memo(({
               ))}
             </tbody>
             <tfoot>
-              <tr style={{ background: accentBg, borderTop: \`2px solid \${accentBorder}\` }}>
+              <tr style={{ background: accentBg, borderTop: `2px solid ${accentBorder}` }}>
                 <td colSpan={6} style={{ padding: "9px 10px", textAlign: "right", fontWeight: "800", fontSize: "9px", color: "#374151", textTransform: "uppercase" }}>Grand Total — {list.length} Account{list.length !== 1 ? "s" : ""}</td>
                 <td style={{ padding: "9px 10px", textAlign: "right", fontWeight: "900", color: accent }}>
                   {totals.map(([cur, amount], idx) => (
@@ -236,7 +236,7 @@ const SectionTable = React.memo(({ list, type, navigate, sendWhatsApp }: {
               </td>
             </tr>
           ) : list.map((a, i) => (
-            <tr key={a.id} className="hover:bg-muted/25 transition-colors cursor-pointer group" onClick={() => navigate(\`/accounts/\${a.id}\`)}>
+            <tr key={a.id} className="hover:bg-muted/25 transition-colors cursor-pointer group" onClick={() => navigate(`/accounts/${a.id}`)}>
               <td className="px-4 py-3 text-xs text-muted-foreground font-semibold">{i + 1}</td>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
@@ -275,7 +275,7 @@ const SectionTable = React.memo(({ list, type, navigate, sendWhatsApp }: {
                       <MessageSquare className="w-3.5 h-3.5" />
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => navigate(\`/accounts/\${a.id}\`)} title="View Details">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => navigate(`/accounts/${a.id}`)} title="View Details">
                     <ExternalLink className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -470,7 +470,7 @@ export default function PayablesReceivables() {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   {recTotals.map(([cur, amount], idx) => (
-                    <span key={cur} className={\`font-black num tracking-tight text-red-600 dark:text-red-400 \${idx === 0 ? "text-3xl" : "text-xl opacity-80"}\`}>
+                    <span key={cur} className={`font-black num tracking-tight text-red-600 dark:text-red-400 ${idx === 0 ? "text-3xl" : "text-xl opacity-80"}`}>
                       {formatMoney(amount, cur)}
                     </span>
                   ))}
@@ -494,7 +494,7 @@ export default function PayablesReceivables() {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   {payTotals.map(([cur, amount], idx) => (
-                    <span key={cur} className={\`font-black num tracking-tight text-emerald-600 dark:text-emerald-400 \${idx === 0 ? "text-3xl" : "text-xl opacity-80"}\`}>
+                    <span key={cur} className={`font-black num tracking-tight text-emerald-600 dark:text-emerald-400 ${idx === 0 ? "text-3xl" : "text-xl opacity-80"}`}>
                       {formatMoney(amount, cur)}
                     </span>
                   ))}
