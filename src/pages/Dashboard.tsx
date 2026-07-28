@@ -329,7 +329,7 @@ export default function Dashboard() {
     <div className="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto text-slate-800 dark:text-slate-100">
       
       {/* 🌟 TOP NAVIGATION / CONTROL BAR */}
-      <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm sticky top-16 z-20 backdrop-blur-md" style={{ isolation: 'isolate' }}>
+      <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm sticky top-16 z-20 backdrop-blur-md mb-6" style={{ isolation: 'isolate' }}>
         {/* Row 1: Title + Filters */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
