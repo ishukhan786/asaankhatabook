@@ -433,7 +433,7 @@ export default function Dashboard() {
         {/* Total Customers */}
         <Card className="rounded-2xl p-5 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Accounts</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Customers</span>
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
               <Users className="w-4 h-4" />
             </div>
