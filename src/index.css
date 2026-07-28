@@ -1,0 +1,583 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * ╔══════════════════════════════════════════════════════════════╗
+ * ║          AsaanKhata — Obsidian Design System v2             ║
+ * ║    Sleek Cyber Glassmorphism · Dark Cyan · Gold Accent      ║
+ * ╚══════════════════════════════════════════════════════════════╝
+ */
+
+@layer base {
+  :root {
+    /* ── Surface Palette (Clean Professional) ───────────────── */
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* ── Deep Indigo Primary ──────────────────────────────── */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 221 83% 60%;
+    --primary-deep: 221 83% 40%;
+
+    /* ── Emerald Success Accent ────────────────────────────── */
+    --accent: 142 71% 45%;
+    --accent-foreground: 0 0% 100%;
+    --accent-glow: 142 71% 55%;
+
+    /* ── Muted & Borders ───────────────────────────────────── */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 47%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.625rem;
+
+    /* ── Gradient Tokens ─────────────────────────────────────── */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 45%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(142 71% 38%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(221 83% 45%) 0%, hsl(221 83% 53%) 100%);
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(210 40% 99%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(210 20% 97%) 100%);
+    --gradient-aurora: none;
+
+    /* ── Clean Card Shadows & Glass ─────────────────────────── */
+    --glass-bg: hsl(0 0% 100%);
+    --glass-bg-hover: hsl(210 40% 98%);
+    --glass-border: hsl(214.3 31.8% 91.4%);
+    --glass-border-inner: transparent;
+
+    --glass-shimmer: none;
+    --glass-refraction: none;
+
+    --glass-glow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --glass-glow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+    /* ── Shadows ─────────────────────────────────────────────── */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-lift: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-glow: none;
+    --shadow-amber: none;
+    --shadow-neon: none;
+
+    /* ── Sidebar — Clean ─────────────────────────────────────── */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 221 83% 53%;
+
+    --sidebar-glass-bg: hsl(0 0% 100%);
+    --sidebar-glass-border: hsl(214.3 31.8% 91.4%);
+    --sidebar-glass-overlay: none;
+    --sidebar-glass-shadow: none;
+  }
+
+  .dark {
+    /* ── Dark Surface ────────────────────────────────────────── */
+    --background: 180 35% 5%;
+    --foreground: 180 20% 94%;
+
+    --card: 180 35% 7%;
+    --card-foreground: 180 20% 94%;
+
+    --popover: 180 35% 7%;
+    --popover-foreground: 180 20% 94%;
+
+    /* ── Brighter Cyan in Dark ─────────────────────────────── */
+    --primary: 180 100% 35%;
+    --primary-foreground: 180 35% 5%;
+    --primary-glow: 180 100% 45%;
+    --primary-deep: 180 100% 27%;
+
+    --accent: 51 100% 55%;
+    --accent-foreground: 180 35% 5%;
+    --accent-glow: 51 100% 65%;
+
+    --secondary: 180 40% 12%;
+    --secondary-foreground: 180 20% 94%;
+
+    --muted: 180 38% 11%;
+    --muted-foreground: 180 16% 58%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 142 80% 10%;
+
+    --destructive: 4 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 180 38% 15%;
+    --input: 180 38% 13%;
+    --ring: 180 100% 35%;
+
+    /* ── Dark Gradients ──────────────────────────────────────── */
+    --gradient-primary: linear-gradient(135deg, hsl(180 100% 35%) 0%, hsl(180 100% 45%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(51 100% 55%) 0%, hsl(45 100% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(180 100% 27%) 0%, hsl(180 100% 35%) 45%, hsl(180 100% 45%) 100%);
+    --gradient-glass: linear-gradient(135deg, hsl(180 45% 12% / 0.75) 0%, hsl(180 40% 9% / 0.55) 50%, hsl(180 45% 11% / 0.68) 100%);
+    --gradient-surface: linear-gradient(160deg, hsl(180 38% 7%) 0%, hsl(180 35% 8%) 50%, hsl(180 30% 8%) 100%);
+    --gradient-aurora: linear-gradient(135deg, hsl(180 100% 35% / 0.08) 0%, hsl(180 100% 45% / 0.05) 50%, hsl(51 100% 55% / 0.04) 100%);
+
+    /* ── Dark Glass ──────────────────────────────────────────── */
+    --glass-bg: hsl(180 45% 9% / 0.58);
+    --glass-bg-hover: hsl(180 45% 12% / 0.78);
+    --glass-border: hsl(180 60% 68% / 0.18);
+    --glass-border-inner: hsl(180 60% 68% / 0.09);
+
+    --glass-shimmer: linear-gradient(105deg,
+      transparent 20%,
+      hsl(180 88% 72% / 0.05) 35%,
+      hsl(0 0% 100% / 0.07) 50%,
+      hsl(51 98% 65% / 0.03) 65%,
+      transparent 80%);
+
+    --glass-refraction: linear-gradient(135deg,
+      hsl(180 45% 16% / 0.82) 0%,
+      hsl(180 50% 14% / 0.52) 25%,
+      hsl(180 45% 14% / 0.36) 50%,
+      hsl(51 40% 12% / 0.40) 75%,
+      hsl(180 45% 16% / 0.72) 100%);
+
+    --glass-glow:
+      0 0 0 1px hsl(180 60% 60% / 0.16),
+      0 0 0 1px hsl(180 60% 60% / 0.06) inset,
+      0 8px 40px -8px hsl(0 0% 0% / 0.42),
+      0 2px 10px -2px hsl(0 0% 0% / 0.24);
+
+    --glass-glow-hover:
+      0 0 0 1px hsl(180 75% 65% / 0.32),
+      0 0 0 1px hsl(180 75% 65% / 0.12) inset,
+      0 20px 56px -8px hsl(0 0% 0% / 0.58),
+      0 6px 20px -4px hsl(0 0% 0% / 0.35),
+      0 0 70px -24px hsl(180 100% 35% / 0.28);
+
+    --shadow-sm:  0 2px 10px -2px hsl(0 0% 0% / 0.28);
+    --shadow-md:  0 8px 28px -8px hsl(0 0% 0% / 0.42);
+    --shadow-lg:  0 20px 56px -12px hsl(0 0% 0% / 0.55);
+    --shadow-lift: 0 24px 64px -12px hsl(0 0% 0% / 0.55), 0 8px 24px -8px hsl(0 0% 0% / 0.32);
+    --shadow-glow: 0 0 48px hsl(180 100% 35% / 0.30);
+    --shadow-neon: 0 0 20px hsl(157 100% 49% / 0.55), 0 0 40px hsl(157 100% 49% / 0.28);
+
+    /* ── Dark Sidebar ────────────────────────────────────────── */
+    --sidebar-background: 180 40% 6%;
+    --sidebar-foreground: 180 20% 88%;
+    --sidebar-primary: 180 100% 35%;
+    --sidebar-primary-foreground: 180 40% 5%;
+    --sidebar-accent: 180 40% 12%;
+    --sidebar-accent-foreground: 180 20% 94%;
+    --sidebar-border: 180 40% 14%;
+    --sidebar-ring: 180 100% 35%;
+
+    --sidebar-glass-bg: hsl(180 45% 6% / 0.88);
+    --sidebar-glass-border: hsl(180 60% 65% / 0.14);
+    --sidebar-glass-overlay: linear-gradient(160deg,
+      hsl(180 50% 10% / 0.64) 0%,
+      hsl(180 45% 8% / 0.38) 40%,
+      hsl(180 40% 9% / 0.22) 70%,
+      hsl(180 50% 7% / 0.52) 100%);
+    --sidebar-glass-shadow: 2px 0 36px -4px hsl(0 0% 0% / 0.55),
+                            1px 0 0 hsl(180 60% 55% / 0.10);
+  }
+}
+
+
+/* ================================================================
+   BASE STYLES
+================================================================ */
+@layer base {
+  * { @apply border-border; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01", "liga";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    background-image: var(--gradient-surface);
+    background-attachment: fixed;
+  }
+
+  /* Allow selection in inputs */
+  input, textarea, [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+
+
+  /* ── Global card glass treatment ────────────────────────── */
+  [data-slot="card"],
+  .rounded-lg.border.bg-card {
+    position: relative;
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(24px) saturate(200%) brightness(1.04);
+    -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(1.04);
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-glow);
+    overflow: hidden;
+    
+  }
+
+  /* Specular top highlight */
+  [data-slot="card"]::before,
+  .rounded-lg.border.bg-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      hsl(0 0% 100% / 0.65) 25%,
+      hsl(0 0% 100% / 0.85) 50%,
+      hsl(0 0% 100% / 0.65) 75%,
+      transparent 100%);
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  [data-slot="card"] > *,
+  .rounded-lg.border.bg-card > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Dialog glass */
+  [role="dialog"] > div,
+  [data-radix-popper-content-wrapper] > div {
+    background: var(--glass-bg-hover) !important;
+    backdrop-filter: blur(40px) saturate(220%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-glow-hover) !important;
+  }
+
+  /* Select dropdown */
+  [data-radix-select-content] {
+    background: var(--glass-bg-hover) !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-glow-hover) !important;
+  }
+
+  /* Dropdown menu */
+  [data-radix-dropdown-menu-content] {
+    background: var(--glass-bg-hover) !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-glow-hover) !important;
+  }
+
+  /* Table headers */
+  thead tr {
+    background: var(--glass-bg) !important;
+  }
+
+  /* Global scrollbar */
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.28);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.48);
+    background-clip: padding-box;
+  }
+  * { scrollbar-width: thin; scrollbar-color: hsl(var(--primary) / 0.28) transparent; }
+}
+
+/* ================================================================
+   COMPONENT LAYER — OBSIDIAN GLASS SYSTEM
+================================================================ */
+@layer components {
+
+  /* ── Base Glass Surface ───────────────────────────────────── */
+  .glass {
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px) saturate(200%) brightness(1.06);
+    -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(1.06);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-glow);
+    
+    overflow: hidden;
+  }
+
+  .glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--glass-refraction);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
+  }
+
+
+
+  .glass > * { position: relative; z-index: 2; }
+
+  .glass:hover {
+    background: var(--glass-bg-hover);
+    box-shadow: var(--glass-glow-hover);
+    border-color: hsl(var(--primary) / 0.28);
+  }
+
+
+
+  /* ── Premium Stat Card Glass ──────────────────────────────── */
+  .glass-card {
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(28px) saturate(220%) brightness(1.08);
+    -webkit-backdrop-filter: blur(28px) saturate(220%) brightness(1.08);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-glow);
+    
+    overflow: hidden;
+  }
+
+  /* Specular + aurora top edge */
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      hsl(var(--primary) / 0.35) 15%,
+      hsl(0 0% 100% / 0.88) 35%,
+      hsl(0 0% 100% / 0.95) 50%,
+      hsl(0 0% 100% / 0.88) 65%,
+      hsl(var(--accent) / 0.35) 85%,
+      transparent 100%);
+    pointer-events: none;
+    z-index: 3;
+    
+  }
+
+
+
+  .glass-card > * { position: relative; z-index: 2; }
+
+  .glass-card:hover {
+    background: var(--glass-bg-hover);
+    box-shadow: var(--glass-glow-hover);
+    border-color: hsl(var(--primary) / 0.30);
+  }
+
+
+
+  /* ── Hero Panel ───────────────────────────────────────────── */
+  .glass-hero {
+    position: relative;
+    background: var(--glass-refraction);
+    backdrop-filter: blur(40px) saturate(240%) brightness(1.08);
+    -webkit-backdrop-filter: blur(40px) saturate(240%) brightness(1.08);
+    border: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border-inner);
+    box-shadow: var(--glass-glow), 0 1px 0 hsl(0 0% 100% / 0.55) inset;
+    overflow: hidden;
+  }
+
+  /* Aurora stripe on top */
+  .glass-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+      hsl(180 100% 35% / 0.60) 0%,
+      hsl(180 100% 45% / 0.80) 30%,
+      hsl(0 0% 100% / 0.90) 50%,
+      hsl(51 100% 55% / 0.80) 70%,
+      hsl(180 100% 35% / 0.60) 100%);
+    z-index: 3;
+  }
+
+  .glass-hero > * { position: relative; z-index: 2; }
+
+  /* ── Glow Orb (ambient bg decoration) ────────────────────── */
+  .glass-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.22;
+    pointer-events: none;
+  }
+
+  /* ── Gradient Utilities ───────────────────────────────────── */
+  .gradient-primary { background: var(--gradient-primary); }
+  .gradient-accent  { background: var(--gradient-accent); }
+  .gradient-hero    { background: var(--gradient-hero); }
+
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-aurora {
+    background: linear-gradient(135deg, hsl(180 100% 35%) 0%, hsl(180 100% 45%) 50%, hsl(51 100% 55%) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ── Numeric Tabular Font ─────────────────────────────────── */
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* ── Neon Ring ────────────────────────────────────────────── */
+  .neon-ring {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.55),
+                0 0 12px hsl(var(--primary) / 0.30),
+                0 0 28px hsl(var(--primary) / 0.15);
+  }
+
+  /* ── Badges ───────────────────────────────────────────────── */
+  .badge-primary {
+    background: hsl(var(--primary) / 0.14);
+    color: hsl(var(--primary));
+    border: 1px solid hsl(var(--primary) / 0.28);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+  }
+
+  .badge-accent {
+    background: hsl(var(--accent) / 0.14);
+    color: hsl(var(--accent));
+    border: 1px solid hsl(var(--accent) / 0.28);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+  }
+
+  .badge-success {
+    background: hsl(var(--success) / 0.14);
+    color: hsl(var(--success));
+    border: 1px solid hsl(var(--success) / 0.28);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+  }
+
+  /* ── Glow Divider ─────────────────────────────────────────── */
+  .glow-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.45), transparent);
+  }
+
+  /* ── Stat Chip ────────────────────────────────────────────── */
+  .stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.18rem 0.6rem;
+    border-radius: 999px;
+    background: hsl(var(--primary) / 0.09);
+    border: 1px solid hsl(var(--primary) / 0.20);
+    color: hsl(var(--primary));
+  }
+
+  /* ── Glass Input ──────────────────────────────────────────── */
+  .input-glass {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+  }
+
+  .input-glass:focus {
+    border-color: hsl(var(--primary) / 0.55) !important;
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12),
+                0 0 0 1px hsl(var(--primary) / 0.35) !important;
+    outline: none;
+  }
+
+  /* ── Sidebar Scrollbar ────────────────────────────────────── */
+  .premium-sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--primary) / 0.25) transparent;
+  }
+  .premium-sidebar-scroll::-webkit-scrollbar { width: 5px; }
+  .premium-sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+  .premium-sidebar-scroll::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.22);
+    border-radius: 999px;
+  }
+  .premium-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.42);
+  }
+}
+
+/* ================================================================
+   KEYFRAME ANIMATIONS
+================================================================ */
+
+
+
+
+
