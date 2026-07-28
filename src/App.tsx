@@ -16,7 +16,6 @@ const NewAccount = lazyWithRetry(() => import("./pages/NewAccount"), "new-accoun
 const AccountDetail = lazyWithRetry(() => import("./pages/AccountDetail"), "account-detail");
 const Transactions = lazyWithRetry(() => import("./pages/Transactions"), "transactions");
 const NewTransaction = lazyWithRetry(() => import("./pages/NewTransaction"), "new-transaction");
-const Expenses = lazyWithRetry(() => import("./pages/Expenses"), "expenses");
 const Reports = lazyWithRetry(() => import("./pages/Reports"), "reports");
 const Settings = lazyWithRetry(() => import("./pages/Settings"), "settings");
 const Branches = lazyWithRetry(() => import("./pages/Branches"), "branches");
@@ -65,7 +64,6 @@ const App = () => {
                     <Route path="/accounts/:id" element={<AccountDetail />} />
                     <Route path="/transactions" element={<Transactions />} />
                     <Route path="/transactions/new" element={<NewTransaction />} />
-                    <Route path="/expenses" element={<Expenses />} />
                     <Route path="/reports" element={<Reports />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/branches" element={<Branches />} />

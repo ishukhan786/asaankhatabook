@@ -82,7 +82,6 @@ export function AppSidebar() {
       label: "Financial Management",
       items: [
         { title: t("PayablesReceivables"), url: "/payables-receivables", icon: Wallet, badge: "Live" },
-        { title: t("Expenses"), url: "/expenses", icon: Receipt },
         { title: "Recurring", url: "/recurring-transactions", icon: RefreshCw },
         { title: t("Reports"), url: "/reports", icon: FileBarChart },
       ],
