@@ -5,7 +5,7 @@ const resources = {
   en: {
     translation: {
       "Dashboard": "Dashboard",
-      "Accounts": "Accounts",
+      "Accounts": "Customers",
       "Transactions": "Voucher History",
       "Expenses": "Expenses",
       "Reports": "Reports",
@@ -15,7 +15,7 @@ const resources = {
       "Receivables": "Receivables",
       "TotalPayable": "Total Payable",
       "TotalReceivable": "Total Receivable",
-      "NewAccount": "New Account",
+      "NewAccount": "New Customer",
       "NewTransaction": "New Voucher",
       "Branches": "Branches",
       "AdminPanel": "Admin Panel",

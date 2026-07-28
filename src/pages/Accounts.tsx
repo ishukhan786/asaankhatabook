@@ -171,7 +171,7 @@ export default function Accounts() {
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
       <PageHeader
         eyebrow="Ledger"
-        title="Accounts"
+        title="Customers"
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <div className="relative w-full sm:w-80">
@@ -186,7 +186,7 @@ export default function Accounts() {
             {canWriteTransactions && (
               <Link to="/accounts/new" className="shrink-0">
                 <Button className="gradient-primary text-primary-foreground shadow-soft">
-                  <Plus className="w-4 h-4 mr-1" /> New Account
+                  <Plus className="w-4 h-4 mr-1" /> New Customer
                 </Button>
               </Link>
             )}
@@ -199,9 +199,9 @@ export default function Accounts() {
       ) : filtered.length === 0 ? (
         <EmptyState 
           icon={Users}
-          title="No accounts yet"
-          description="Create your first account to start tracking transactions."
-          action={canWriteTransactions ? <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground"><Plus className="w-4 h-4 mr-1" /> Create account</Button></Link> : undefined}
+          title="No customers yet"
+          description="Create your first customer to start tracking transactions."
+          action={canWriteTransactions ? <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground"><Plus className="w-4 h-4 mr-1" /> Create customer</Button></Link> : undefined}
         />
       ) : (
         <Card className="glass overflow-hidden hidden md:block">

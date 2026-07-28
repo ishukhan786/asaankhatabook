@@ -138,7 +138,7 @@ export default function NewAccount() {
       <Link to="/accounts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Back</Link>
       <PageHeader
         eyebrow="Create"
-        title="New Account"
+        title="New Customer"
         description="A unique readonly account code will be generated automatically when you save."
       />
 
