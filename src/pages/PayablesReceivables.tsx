@@ -122,7 +122,6 @@ const PrintDocument = React.memo(({
                   <td style={{ padding: "7px 10px", color: "#6b7280", fontSize: "10px" }}>{a.address || "N/A"}</td>
                   <td style={{ padding: "7px 10px", textAlign: "right" }}>
                     <div style={{ fontWeight: "800", fontSize: "12px", color: accent }}>{formatMoney(Math.abs(a.balance), a.currency)}</div>
-                    <div style={{ fontSize: "8px", color: "#9ca3af", textTransform: "uppercase" }}>{a.currency}</div>
                   </td>
                 </tr>
               ))}
@@ -241,7 +240,6 @@ const SectionTable = React.memo(({ list, type, navigate, sendWhatsApp }: {
                 <div className={`font-black text-base num tracking-tight ${isR ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
                   {formatMoney(Math.abs(a.balance), a.currency)}
                 </div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-widest bg-muted/40 inline-block px-1.5 py-0.5 rounded mt-0.5">{a.currency}</div>
               </td>
               <td className="px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
