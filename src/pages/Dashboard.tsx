@@ -145,13 +145,14 @@ export default function Dashboard() {
         txQuery,
         supabase.from("expenses").select("amount, currency").gte("expense_date", fromStr).lte("expense_date", toStr),
         supabase.from("accounts").select("id, name, currency, alert_threshold").not("alert_threshold", "is", null),
-        supabase.rpc("report_account_totals"),
+        supabase.rpc("report_account_totals", { p_from: null, p_to: null }),
         supabase.from("accounts").select("id, account_no, name, currency, account_type, branch_id"),
         supabase.from("accounts").select("*", { count: "exact", head: true }),
       ]);
 
       if (allAccsRes.error) logger.error("allAccsRes error:", allAccsRes.error);
       if (accountsCountRes.error) logger.error("accountsCountRes error:", accountsCountRes.error);
+      if (totalsRes.error) logger.error("totalsRes error:", totalsRes.error);
 
       const recentTx = recentTxRes.data;
       const summaryRow = summaryRes.data;
@@ -184,15 +185,17 @@ export default function Dashboard() {
         if (acc.account_type === "cash" || acc.account_type === "bank") {
           if (cur === "PKR") cashPKR += bal;
           else cashAED += bal;
-        }
-
-        // Receivables vs Payables
-        if (bal > 0) {
-          if (cur === "PKR") recPKR += bal;
-          else recAED += bal;
-        } else if (bal < 0) {
-          if (cur === "PKR") payPKR += Math.abs(bal);
-          else payAED += Math.abs(bal);
+        } else {
+          // Receivables vs Payables
+          // balance < 0 (debit > credit) is Receivable (hum ne lena hai)
+          // balance > 0 (credit > debit) is Payable (hum ne dena hai)
+          if (bal < 0) {
+            if (cur === "PKR") recPKR += Math.abs(bal);
+            else recAED += Math.abs(bal);
+          } else if (bal > 0) {
+            if (cur === "PKR") payPKR += bal;
+            else payAED += bal;
+          }
         }
 
         // Customer ranking
