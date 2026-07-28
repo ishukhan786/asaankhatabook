@@ -52,6 +52,7 @@ type NavItem = {
   dot?: boolean;
   adminOnly?: boolean;
   managerOrAdmin?: boolean;
+  colorClass?: string;
 };
 
 type NavSection = {
@@ -73,20 +74,20 @@ export function AppSidebar() {
     {
       label: "Main Navigation",
       items: [
-        { title: t("Dashboard"), url: "/", icon: LayoutDashboard, exact: true },
-        { title: t("Accounts"), url: "/accounts", icon: Users },
-        { title: t("Transactions"), url: "/transactions", icon: Receipt, dot: true },
-        { title: t("Reports"), url: "/reports", icon: FileBarChart },
+        { title: t("Dashboard"), url: "/", icon: LayoutDashboard, exact: true, colorClass: "text-indigo-500 dark:text-indigo-400" },
+        { title: t("Accounts"), url: "/accounts", icon: Users, colorClass: "text-amber-500 dark:text-amber-400" },
+        { title: t("Transactions"), url: "/transactions", icon: Receipt, dot: true, colorClass: "text-emerald-500 dark:text-emerald-400" },
+        { title: t("Reports"), url: "/reports", icon: FileBarChart, colorClass: "text-purple-500 dark:text-purple-400" },
       ],
     },
     {
       label: "Administration",
       items: [
-        { title: t("AdminPanel"), url: "/admin", icon: Shield, adminOnly: true, exact: true },
-        { title: t("Users"), url: "/admin/users", icon: UserCog, managerOrAdmin: true },
-        { title: t("AuditLogs"), url: "/admin/audit", icon: History, adminOnly: true },
-        { title: t("Branches"), url: "/branches", icon: Building2, adminOnly: true },
-        { title: t("Settings"), url: "/settings", icon: SettingsIcon },
+        { title: t("AdminPanel"), url: "/admin", icon: Shield, adminOnly: true, exact: true, colorClass: "text-rose-500 dark:text-rose-400" },
+        { title: t("Users"), url: "/admin/users", icon: UserCog, managerOrAdmin: true, colorClass: "text-cyan-500 dark:text-cyan-400" },
+        { title: t("AuditLogs"), url: "/admin/audit", icon: History, adminOnly: true, colorClass: "text-slate-500 dark:text-slate-450" },
+        { title: t("Branches"), url: "/branches", icon: Building2, adminOnly: true, colorClass: "text-sky-500 dark:text-sky-400" },
+        { title: t("Settings"), url: "/settings", icon: SettingsIcon, colorClass: "text-pink-500 dark:text-pink-400" },
       ],
     },
   ];
@@ -208,8 +209,11 @@ export function AppSidebar() {
                           />
                           <span
                             className={cn(
-                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-300 relative z-10",
-                              active ? "text-primary" : "text-muted-foreground group-hover:text-sidebar-accent-foreground",
+                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-300 relative z-10",
+                              active 
+                                ? "bg-sidebar-accent/10 border border-sidebar-border/20 shadow-inner scale-110" 
+                                : "opacity-75 group-hover:opacity-100 group-hover:scale-110",
+                              item.colorClass || "text-muted-foreground"
                             )}
                           >
                             <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.5 : 2} />
