@@ -529,107 +529,110 @@ export default function Dashboard() {
             </div>
           </div>
         </Card>
-      </div>
 
-      {/* 📍 SECTION 4: TWO-COLUMN LAYOUT (Branch Summary & Recent Transactions Table) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Branch Summary */}
-        <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs lg:col-span-1 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
-              <h2 className="font-bold text-base flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-primary" /> Branch Summary
-              </h2>
-              <Badge variant="outline" className="text-[11px] font-semibold">{stats.byBranch.length} Branches</Badge>
-            </div>
+      {/* 📍 SECTION 4: Branch Summary — Compact Row */}
+      <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs w-full">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
+          <h2 className="font-bold text-base flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-primary" /> Branch Summary
+          </h2>
+          <Badge variant="outline" className="text-[11px] font-semibold">{stats.byBranch.length} Branches</Badge>
+        </div>
 
-            {stats.byBranch.length === 0 ? (
-              <div className="text-sm text-muted-foreground py-8 text-center">
-                No branches setup yet. <Link to="/branches" className="text-primary underline font-medium">Create one</Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {stats.byBranch.map((b) => (
-                  <div key={b.name} className="p-3.5 rounded-xl border border-border/60 bg-muted/20">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-sm truncate pr-2">{b.name}</span>
-                      <span className="text-xs text-muted-foreground">{b.accounts} accounts</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mt-2 text-xs num">
-                      <div>
-                        <span className="text-muted-foreground text-[10px] uppercase">PKR: </span>
-                        <span className={`font-bold ${b.pkr >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                          {formatMoney(b.pkr, "PKR")}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-[10px] uppercase">AED: </span>
-                        <span className={`font-bold ${b.aed >= 0 ? "text-blue-600" : "text-red-600"}`}>
-                          {formatMoney(b.aed, "AED")}
-                        </span>
-                      </div>
-                    </div>
+        {stats.byBranch.length === 0 ? (
+          <div className="text-sm text-muted-foreground py-4 text-center">
+            No branches setup yet. <Link to="/branches" className="text-primary underline font-medium">Create one</Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {stats.byBranch.map((b) => (
+              <div key={b.name} className="p-3.5 rounded-xl border border-border/60 bg-muted/20">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-sm truncate pr-2">{b.name}</span>
+                  <span className="text-xs text-muted-foreground">{b.accounts} accs</span>
+                </div>
+                <div className="flex gap-3 text-xs num">
+                  <div>
+                    <span className="text-muted-foreground text-[10px] uppercase">PKR: </span>
+                    <span className={`font-bold ${b.pkr >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatMoney(b.pkr, "PKR")}</span>
                   </div>
-                ))}
+                  <div>
+                    <span className="text-muted-foreground text-[10px] uppercase">AED: </span>
+                    <span className={`font-bold ${b.aed >= 0 ? "text-blue-600" : "text-red-600"}`}>{formatMoney(b.aed, "AED")}</span>
+                  </div>
+                </div>
               </div>
-            )}
+            ))}
           </div>
-        </Card>
+        )}
+      </Card>
 
-        {/* Right: Recent Transactions Table */}
-        <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs lg:col-span-2">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
-            <h2 className="font-bold text-base flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-primary" /> Recent Transactions
-            </h2>
-            <Link to="/transactions" className="text-xs text-primary hover:underline font-semibold">View All</Link>
-          </div>
+      {/* 📍 SECTION 4B: RECENT TRANSACTIONS — FULL WIDTH */}
+      <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs w-full">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
+          <h2 className="font-bold text-base flex items-center gap-2">
+            <Receipt className="w-4 h-4 text-primary" /> Recent Transactions
+          </h2>
+          <Link to="/transactions" className="text-xs text-primary hover:underline font-semibold">View All</Link>
+        </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-xs text-muted-foreground uppercase border-b border-border/60">
-                  <th className="text-left font-semibold py-2.5 px-2">Date</th>
-                  <th className="text-left font-semibold py-2.5 px-2">Voucher No</th>
-                  <th className="text-left font-semibold py-2.5 px-2">Account</th>
-                  <th className="text-center font-semibold py-2.5 px-2">Currency</th>
-                  <th className="text-right font-semibold py-2.5 px-2">Amount</th>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-muted-foreground uppercase border-b border-border/60 bg-muted/30">
+                <th className="text-left font-semibold py-3 px-4 rounded-tl-lg">Date</th>
+                <th className="text-left font-semibold py-3 px-4">Voucher No</th>
+                <th className="text-left font-semibold py-3 px-4">Account</th>
+                <th className="text-left font-semibold py-3 px-4">Details / Narration</th>
+                <th className="text-center font-semibold py-3 px-4">Type</th>
+                <th className="text-center font-semibold py-3 px-4">Currency</th>
+                <th className="text-right font-semibold py-3 px-4">Debit</th>
+                <th className="text-right font-semibold py-3 px-4 rounded-tr-lg">Credit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recent.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-10 text-xs text-muted-foreground">
+                    No recent transactions recorded.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {recent.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="text-center py-6 text-xs text-muted-foreground">
-                      No recent transactions recorded.
-                    </td>
-                  </tr>
-                ) : (
-                  recent.map((r) => {
-                    const isCredit = Number(r.credit ?? 0) > 0;
-                    const amount = isCredit ? Number(r.credit) : Number(r.debit);
-                    const cur = r.accounts?.currency || "PKR";
-                    return (
-                      <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                        <td className="py-3 px-2 text-xs num">{formatDate(r.txn_date)}</td>
-                        <td className="py-3 px-2 font-mono text-xs">{r.txn_code || "—"}</td>
-                        <td className="py-3 px-2 font-semibold text-xs">{r.accounts?.name || "—"}</td>
-                        <td className="py-3 px-2 text-center">
-                          <Badge className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cur === "PKR" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400" : "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400"}`}>
-                            {cur}
-                          </Badge>
-                        </td>
-                        <td className={`py-3 px-2 text-right font-bold num text-xs ${isCredit ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-                          {isCredit ? "+" : "-"}{formatMoney(amount, cur)}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      </div>
+              ) : (
+                recent.map((r) => {
+                  const isCredit = Number(r.credit ?? 0) > 0;
+                  const cur = r.accounts?.currency || "PKR";
+                  return (
+                    <tr key={r.id} className="border-b border-border/40 hover:bg-muted/20 transition-colors group">
+                      <td className="py-3 px-4 text-xs num text-muted-foreground whitespace-nowrap">{formatDate(r.txn_date)}</td>
+                      <td className="py-3 px-4 font-mono text-xs font-semibold text-primary">{r.txn_code || "—"}</td>
+                      <td className="py-3 px-4 font-semibold text-xs">{r.accounts?.name || "—"}</td>
+                      <td className="py-3 px-4 text-xs text-muted-foreground max-w-[260px] truncate">
+                        {(r as { details?: string }).details || <span className="italic text-muted-foreground/50">No narration</span>}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isCredit ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"}`}>
+                          {isCredit ? "RECEIPT" : "PAYMENT"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <Badge className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cur === "PKR" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400" : "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400"}`}>
+                          {cur}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-right font-bold num text-xs text-red-600 dark:text-red-400">
+                        {Number(r.debit ?? 0) > 0 ? formatMoney(Number(r.debit), cur) : "—"}
+                      </td>
+                      <td className="py-3 px-4 text-right font-bold num text-xs text-emerald-600 dark:text-emerald-400">
+                        {Number(r.credit ?? 0) > 0 ? formatMoney(Number(r.credit), cur) : "—"}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       {/* 📍 SECTION 5: TWO-COLUMN LAYOUT (Top Customers & Recent Vouchers) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
