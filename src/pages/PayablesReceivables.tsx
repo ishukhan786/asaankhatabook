@@ -95,7 +95,7 @@ const PrintDocument = React.memo(({
           <div style={{ width: "4px", height: "26px", background: accent, borderRadius: "4px" }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: "15px", fontWeight: "800", color: "#111827" }}>
-              {isR ? \`Receivables - Denedari (\${branchHeaderLabel})\` : \`Payables - Lenedari (\${branchHeaderLabel})\`}
+              {isR ? `Receivables - Denedari (${branchHeaderLabel})` : `Payables - Lenedari (${branchHeaderLabel})`}
             </div>
             <div style={{ fontSize: "10px", color: "#9ca3af" }}>{list.length} accounts</div>
           </div>
@@ -429,7 +429,7 @@ export default function PayablesReceivables() {
 
       <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
         <PageHeader
-          eyebrow={\`\${t("Reports")} • \${branchHeaderLabel}\`}
+          eyebrow={`${t("Reports")} • ${branchHeaderLabel}`}
           title={t("PayablesReceivables")}
           description="Receivables aur Payables — dono alag sections mein clearly dikhain."
           actions={
