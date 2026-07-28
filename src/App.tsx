@@ -24,7 +24,6 @@ const AdminPanel = lazyWithRetry(() => import("./pages/AdminPanel"), "admin-pane
 const AdminUsers = lazyWithRetry(() => import("./pages/AdminUsers"), "admin-users");
 const AuditLogs = lazyWithRetry(() => import("./pages/AuditLogs"), "audit-logs");
 const PayablesReceivables = lazyWithRetry(() => import("./pages/PayablesReceivables"), "payables-receivables");
-const RecurringTransactions = lazyWithRetry(() => import("./pages/RecurringTransactions"), "recurring-transactions");
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "not-found");
 
 const queryClient = new QueryClient({
@@ -72,7 +71,6 @@ const App = () => {
                     <Route path="/admin/users" element={<AdminUsers />} />
                     <Route path="/admin/audit" element={<AuditLogs />} />
                     <Route path="/payables-receivables" element={<PayablesReceivables />} />
-                    <Route path="/recurring-transactions" element={<RecurringTransactions />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>
