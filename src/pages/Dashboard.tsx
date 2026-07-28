@@ -397,7 +397,7 @@ export default function Dashboard() {
             </Link>
             <Link to="/transactions/new">
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs font-bold transition-transform active:scale-95">
-                <Receipt className="w-4 h-4 mr-1.5" /> New Voucher
+                <Receipt className="w-4 h-4 mr-1.5" /> New Entry
               </Button>
             </Link>
           </div>

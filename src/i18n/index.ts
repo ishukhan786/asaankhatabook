@@ -16,7 +16,7 @@ const resources = {
       "TotalPayable": "Total Payable",
       "TotalReceivable": "Total Receivable",
       "NewAccount": "New Customer",
-      "NewTransaction": "New Voucher",
+      "NewTransaction": "New Entry",
       "Branches": "Branches",
       "AdminPanel": "Admin Panel",
       "Users": "Users",

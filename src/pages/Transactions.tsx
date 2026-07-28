@@ -229,7 +229,7 @@ export default function Transactions() {
               <Download className="w-4 h-4 mr-1" /> Export CSV
             </Button>
             {canWriteTransactions && (
-              <Link to="/transactions/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> New Voucher</Button></Link>
+              <Link to="/transactions/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> New Entry</Button></Link>
             )}
           </div>
         }
