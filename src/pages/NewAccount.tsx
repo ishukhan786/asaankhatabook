@@ -23,11 +23,11 @@ const schema = z.object({
 });
 
 const accountTypeOptions = [
-  { value: "customer", label: "Customer", preview: "CUS-000001" },
-  { value: "supplier", label: "Supplier", preview: "SUP-000001" },
-  { value: "employee", label: "Employee", preview: "EMP-000001" },
-  { value: "bank", label: "Bank", preview: "BNK-000001" },
-  { value: "cash", label: "Cash", preview: "CAS-000001" },
+  { value: "customer", label: "Customer", preview: "CUS-0001" },
+  { value: "supplier", label: "Supplier", preview: "SUP-0001" },
+  { value: "employee", label: "Employee", preview: "EMP-0001" },
+  { value: "bank", label: "Bank", preview: "BNK-0001" },
+  { value: "cash", label: "Cash", preview: "CAS-0001" },
 ] as const;
 
 const accountTypePrefix = {
@@ -78,7 +78,7 @@ export default function NewAccount() {
       .limit(1);
 
     const lastNumber = Number(String(data?.[0]?.account_no ?? "").match(new RegExp(`^${prefix}-(\\d+)$`))?.[1] ?? "0");
-    return `${prefix}-${String(lastNumber + offset).padStart(6, "0")}`;
+    return `${prefix}-${String(lastNumber + offset).padStart(4, "0")}`;
   }, []);
 
   const submit = async (e: React.FormEvent) => {
