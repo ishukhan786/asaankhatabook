@@ -156,6 +156,9 @@ const PrintDocument = React.memo(({
       <div style={{ padding: "22px 36px 18px", borderBottom: "2px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <div style={{ fontSize: "22px", fontWeight: "900", color: "#111827" }}>{bizName}</div>
+          <div style={{ fontSize: "14px", fontWeight: "800", color: "#374151", marginTop: "4px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            {printType === "receivable" ? "Receivable Report" : printType === "payable" ? "Payable Report" : "Payable & Receivable Report"}
+          </div>
           {bizPhone && <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "4px" }}>📞 {bizPhone}</div>}
           {bizAddress && <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "2px" }}>📍 {bizAddress}</div>}
         </div>
