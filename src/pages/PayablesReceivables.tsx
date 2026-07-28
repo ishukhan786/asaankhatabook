@@ -99,13 +99,6 @@ const PrintDocument = React.memo(({
             </div>
             <div style={{ fontSize: "10px", color: "#9ca3af" }}>{list.length} accounts</div>
           </div>
-          <div style={{ textAlign: "right" }}>
-            {totals.map(([cur, amount], idx) => (
-              <div key={cur} style={{ fontSize: idx === 0 ? "17px" : "13px", fontWeight: idx === 0 ? "900" : "800", color: accent, marginTop: idx > 0 ? "2px" : "0" }}>
-                {formatMoney(amount, cur)}
-              </div>
-            ))}
-          </div>
         </div>
         <div style={{ padding: "0 36px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
@@ -167,30 +160,7 @@ const PrintDocument = React.memo(({
           <div style={{ fontSize: "11px", color: "#6b7280" }}>Time: {printTime}</div>
         </div>
       </div>
-      <div style={{ padding: "16px 36px 8px", display: "flex", gap: "14px" }}>
-        {(printType === "both" || printType === "receivable") && (
-          <div style={{ flex: 1, border: "1.5px solid #fca5a5", borderRadius: "8px", padding: "11px 14px", background: "#fff5f5" }}>
-            <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: "700" }}>Total Receivable (Denedari)</div>
-            {recTotals.map(([cur, amount], idx) => (
-              <div key={cur} style={{ fontSize: idx === 0 ? "17px" : "13px", fontWeight: idx === 0 ? "900" : "800", color: "#dc2626", marginTop: "3px" }}>
-                {formatMoney(amount, cur)}
-              </div>
-            ))}
-            <div style={{ fontSize: "10px", color: "#9ca3af", marginTop: "4px" }}>{receivables.length} accounts</div>
-          </div>
-        )}
-        {(printType === "both" || printType === "payable") && (
-          <div style={{ flex: 1, border: "1.5px solid #86efac", borderRadius: "8px", padding: "11px 14px", background: "#f0fdf4" }}>
-            <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: "700" }}>Total Payable (Lenedari)</div>
-            {payTotals.map(([cur, amount], idx) => (
-              <div key={cur} style={{ fontSize: idx === 0 ? "17px" : "13px", fontWeight: idx === 0 ? "900" : "800", color: "#16a34a", marginTop: "3px" }}>
-                {formatMoney(amount, cur)}
-              </div>
-            ))}
-            <div style={{ fontSize: "10px", color: "#9ca3af", marginTop: "4px" }}>{payables.length} accounts</div>
-          </div>
-        )}
-      </div>
+
       {(printType === "both" || printType === "receivable") && renderTable(receivables, "receivable")}
       {(printType === "both" || printType === "payable") && renderTable(payables, "payable")}
       <div style={{ margin: "0 36px", borderTop: "1px solid #e5e7eb", padding: "10px 0", display: "flex", justifyContent: "space-between" }}>
