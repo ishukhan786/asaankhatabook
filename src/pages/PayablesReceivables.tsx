@@ -28,6 +28,17 @@ interface AccountBalance {
   balance: number;
 }
 
+const aggregateByCurrency = (list: AccountBalance[]) => {
+  const totals: Record<string, number> = {};
+  list.forEach(a => {
+    const cur = a.currency || "PKR";
+    totals[cur] = (totals[cur] || 0) + Math.abs(a.balance);
+  });
+  return Object.entries(totals)
+    .filter(([_, val]) => val > 0)
+    .sort(([curA], [curB]) => curA === "PKR" ? -1 : curB === "PKR" ? 1 : curA.localeCompare(curB));
+};
+
 const PRINT_STYLES = `
 @media print {
   .screen-ui, header, aside, nav, footer, button { 
@@ -67,37 +78,38 @@ const PrintDocument = React.memo(({
   bizName: string; bizPhone: string; bizAddress: string;
   printDate: string; printTime: string;
 }) => {
-  const recPKR = receivables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
-  const recAED = receivables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
-  const payPKR = payables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
-  const payAED = payables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
+  const recTotals = aggregateByCurrency(receivables);
+  const payTotals = aggregateByCurrency(payables);
 
   const renderTable = (list: AccountBalance[], type: "receivable" | "payable") => {
     const isR = type === "receivable";
     const accent = isR ? "#dc2626" : "#16a34a";
     const accentBg = isR ? "#fff5f5" : "#f0fdf4";
     const accentBorder = isR ? "#fca5a5" : "#86efac";
-    const tPKR = isR ? recPKR : payPKR;
-    const tAED = isR ? recAED : payAED;
+    const totals = isR ? recTotals : payTotals;
+    
     return (
       <div style={{ marginBottom: "28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "0 36px 10px" }}>
           <div style={{ width: "4px", height: "26px", background: accent, borderRadius: "4px" }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: "15px", fontWeight: "800", color: "#111827" }}>
-              {isR ? `Receivables - Denedari (${branchHeaderLabel})` : `Payables - Lenedari (${branchHeaderLabel})`}
+              {isR ? \`Receivables - Denedari (\${branchHeaderLabel})\` : \`Payables - Lenedari (\${branchHeaderLabel})\`}
             </div>
             <div style={{ fontSize: "10px", color: "#9ca3af" }}>{list.length} accounts</div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: "17px", fontWeight: "900", color: accent }}>{formatMoney(tPKR, "PKR")}</div>
-            {tAED > 0 && <div style={{ fontSize: "13px", fontWeight: "800", color: accent }}>{formatMoney(tAED, "AED")}</div>}
+            {totals.map(([cur, amount], idx) => (
+              <div key={cur} style={{ fontSize: idx === 0 ? "17px" : "13px", fontWeight: idx === 0 ? "900" : "800", color: accent, marginTop: idx > 0 ? "2px" : "0" }}>
+                {formatMoney(amount, cur)}
+              </div>
+            ))}
           </div>
         </div>
         <div style={{ padding: "0 36px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
             <thead>
-              <tr style={{ borderTop: `3px solid ${accent}`, borderBottom: "2px solid #e5e7eb", background: "#f9fafb" }}>
+              <tr style={{ borderTop: \`3px solid \${accent}\`, borderBottom: "2px solid #e5e7eb", background: "#f9fafb" }}>
                 {["#", "Account No", "Account Name", "Branch", "Mobile", "Address", "Balance"].map((h, i) => (
                   <th key={h} style={{ padding: "8px 10px", textAlign: i === 6 ? "right" : "left", fontSize: "9px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1px", color: "#374151" }}>{h}</th>
                 ))}
@@ -120,11 +132,14 @@ const PrintDocument = React.memo(({
               ))}
             </tbody>
             <tfoot>
-              <tr style={{ background: accentBg, borderTop: `2px solid ${accentBorder}` }}>
+              <tr style={{ background: accentBg, borderTop: \`2px solid \${accentBorder}\` }}>
                 <td colSpan={6} style={{ padding: "9px 10px", textAlign: "right", fontWeight: "800", fontSize: "9px", color: "#374151", textTransform: "uppercase" }}>Grand Total — {list.length} Account{list.length !== 1 ? "s" : ""}</td>
-                <td style={{ padding: "9px 10px", textAlign: "right", fontWeight: "900", fontSize: "13px", color: accent }}>
-                  <div>{formatMoney(tPKR, "PKR")}</div>
-                  {tAED > 0 && <div style={{ marginTop: "2px", fontSize: "11px" }}>{formatMoney(tAED, "AED")}</div>}
+                <td style={{ padding: "9px 10px", textAlign: "right", fontWeight: "900", color: accent }}>
+                  {totals.map(([cur, amount], idx) => (
+                    <div key={cur} style={{ fontSize: idx === 0 ? "13px" : "11px", marginTop: idx > 0 ? "2px" : "0" }}>
+                      {formatMoney(amount, cur)}
+                    </div>
+                  ))}
                 </td>
               </tr>
             </tfoot>
@@ -151,15 +166,21 @@ const PrintDocument = React.memo(({
       <div style={{ padding: "16px 36px 8px", display: "flex", gap: "14px" }}>
         <div style={{ flex: 1, border: "1.5px solid #fca5a5", borderRadius: "8px", padding: "11px 14px", background: "#fff5f5" }}>
           <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: "700" }}>Total Receivable (Denedari)</div>
-          <div style={{ fontSize: "17px", fontWeight: "900", color: "#dc2626", marginTop: "3px" }}>{formatMoney(recPKR, "PKR")}</div>
-          {recAED > 0 && <div style={{ fontSize: "13px", fontWeight: "800", color: "#dc2626" }}>{formatMoney(recAED, "AED")}</div>}
-          <div style={{ fontSize: "10px", color: "#9ca3af", marginTop: "3px" }}>{receivables.length} accounts</div>
+          {recTotals.map(([cur, amount], idx) => (
+            <div key={cur} style={{ fontSize: idx === 0 ? "17px" : "13px", fontWeight: idx === 0 ? "900" : "800", color: "#dc2626", marginTop: "3px" }}>
+              {formatMoney(amount, cur)}
+            </div>
+          ))}
+          <div style={{ fontSize: "10px", color: "#9ca3af", marginTop: "4px" }}>{receivables.length} accounts</div>
         </div>
         <div style={{ flex: 1, border: "1.5px solid #86efac", borderRadius: "8px", padding: "11px 14px", background: "#f0fdf4" }}>
           <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: "700" }}>Total Payable (Lenedari)</div>
-          <div style={{ fontSize: "17px", fontWeight: "900", color: "#16a34a", marginTop: "3px" }}>{formatMoney(payPKR, "PKR")}</div>
-          {payAED > 0 && <div style={{ fontSize: "13px", fontWeight: "800", color: "#16a34a" }}>{formatMoney(payAED, "AED")}</div>}
-          <div style={{ fontSize: "10px", color: "#9ca3af", marginTop: "3px" }}>{payables.length} accounts</div>
+          {payTotals.map(([cur, amount], idx) => (
+            <div key={cur} style={{ fontSize: idx === 0 ? "17px" : "13px", fontWeight: idx === 0 ? "900" : "800", color: "#16a34a", marginTop: "3px" }}>
+              {formatMoney(amount, cur)}
+            </div>
+          ))}
+          <div style={{ fontSize: "10px", color: "#9ca3af", marginTop: "4px" }}>{payables.length} accounts</div>
         </div>
       </div>
       {renderTable(receivables, "receivable")}
@@ -182,8 +203,7 @@ const SectionTable = React.memo(({ list, type, navigate, sendWhatsApp }: {
   sendWhatsApp: (e: React.MouseEvent, a: AccountBalance) => void;
 }) => {
   const isR = type === "receivable";
-  const totalPKR = list.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0);
-  const totalAED = list.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0);
+  const totals = aggregateByCurrency(list);
 
   return (
     <div className="overflow-x-auto">
@@ -211,7 +231,7 @@ const SectionTable = React.memo(({ list, type, navigate, sendWhatsApp }: {
               </td>
             </tr>
           ) : list.map((a, i) => (
-            <tr key={a.id} className="hover:bg-muted/25 transition-colors cursor-pointer group" onClick={() => navigate(`/accounts/${a.id}`)}>
+            <tr key={a.id} className="hover:bg-muted/25 transition-colors cursor-pointer group" onClick={() => navigate(\`/accounts/\${a.id}\`)}>
               <td className="px-4 py-3 text-xs text-muted-foreground font-semibold">{i + 1}</td>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
@@ -250,7 +270,7 @@ const SectionTable = React.memo(({ list, type, navigate, sendWhatsApp }: {
                       <MessageSquare className="w-3.5 h-3.5" />
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => navigate(`/accounts/${a.id}`)} title="View Details">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => navigate(\`/accounts/\${a.id}\`)} title="View Details">
                     <ExternalLink className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -266,8 +286,11 @@ const SectionTable = React.memo(({ list, type, navigate, sendWhatsApp }: {
               </td>
               <td colSpan={2} className="px-4 py-4 text-right text-xs font-bold text-muted-foreground uppercase md:hidden">Total ({list.length})</td>
               <td className={`px-4 py-4 text-right font-black num ${isR ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
-                <div className="text-lg">{formatMoney(totalPKR, "PKR")}</div>
-                {totalAED > 0 && <div className="text-sm mt-1 opacity-80">{formatMoney(totalAED, "AED")}</div>}
+                {totals.map(([cur, amount], idx) => (
+                  <div key={cur} className={idx === 0 ? "text-lg" : "text-sm mt-1 opacity-80"}>
+                    {formatMoney(amount, cur)}
+                  </div>
+                ))}
               </td>
               <td />
             </tr>
@@ -335,8 +358,8 @@ export default function PayablesReceivables() {
     e.stopPropagation();
     if (!a.mobile) return;
     const type = a.balance < 0 ? "Denedari (Receivable)" : "Lenedari (Payable)";
-    const msg = `*Assalam-o-Alaikum ${a.name}!*\\n\\n*Aasaan Khatabook Balance Update*\\n---------------------------\\n*Account:* ${a.name}\\n*Account No:* ${a.account_no}\\n*Type:* ${type}\\n*Balance:* ${formatMoney(Math.abs(a.balance), a.currency)}\\n---------------------------\\nShukriya!`;
-    window.open(`https://wa.me/${a.mobile.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
+    const msg = \`*Assalam-o-Alaikum \${a.name}!*\\n\\n*Aasaan Khatabook Balance Update*\\n---------------------------\\n*Account:* \${a.name}\\n*Account No:* \${a.account_no}\\n*Type:* \${type}\\n*Balance:* \${formatMoney(Math.abs(a.balance), a.currency)}\\n---------------------------\\nShukriya!\`;
+    window.open(\`https://wa.me/\${a.mobile.replace(/\\D/g, "")}?text=\${encodeURIComponent(msg)}\`, "_blank");
   }, []);
 
   const applyBranchFilter = (list: AccountBalance[]) => {
@@ -356,10 +379,8 @@ export default function PayablesReceivables() {
     return res;
   }, [payables, role, selectedBranch, profile?.branch_id, deferredPay]);
 
-  const totalRecPKR = useMemo(() => filteredReceivables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0), [filteredReceivables]);
-  const totalRecAED = useMemo(() => filteredReceivables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0), [filteredReceivables]);
-  const totalPayPKR = useMemo(() => filteredPayables.filter(a => a.currency === "PKR").reduce((s, a) => s + Math.abs(a.balance), 0), [filteredPayables]);
-  const totalPayAED = useMemo(() => filteredPayables.filter(a => a.currency === "AED").reduce((s, a) => s + Math.abs(a.balance), 0), [filteredPayables]);
+  const recTotals = useMemo(() => aggregateByCurrency(filteredReceivables), [filteredReceivables]);
+  const payTotals = useMemo(() => aggregateByCurrency(filteredPayables), [filteredPayables]);
 
   const branchHeaderLabel = useMemo(() => {
     if (role === "admin") return selectedBranch !== "all" ? branches.find(x => x.id === selectedBranch)?.name || "All Branches" : "All Branches";
@@ -393,7 +414,7 @@ export default function PayablesReceivables() {
 
       <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
         <PageHeader
-          eyebrow={`${t("Reports")} • ${branchHeaderLabel}`}
+          eyebrow={\`\${t("Reports")} • \${branchHeaderLabel}\`}
           title={t("PayablesReceivables")}
           description="Receivables aur Payables — dono alag sections mein clearly dikhain."
           actions={
@@ -423,40 +444,48 @@ export default function PayablesReceivables() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Card className="relative overflow-hidden border-2 border-red-200 dark:border-red-900/50 bg-gradient-to-br from-red-50/60 to-white dark:from-red-950/20 dark:to-card">
             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500" />
-            <div className="p-6 flex items-center gap-5">
+            <div className="p-6 flex items-start gap-5">
               <div className="w-14 h-14 rounded-2xl bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-500/25 shrink-0">
                 <ArrowDownLeft className="w-7 h-7" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold uppercase tracking-widest text-red-600 dark:text-red-400 flex items-center gap-2 flex-wrap">
+                <div className="text-xs font-bold uppercase tracking-widest text-red-600 dark:text-red-400 flex items-center gap-2 flex-wrap mb-2">
                   <span>Receivables — Denedari</span>
                   <span className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-0.5 rounded-full text-[10px]">{filteredReceivables.length} accounts</span>
                 </div>
-                <div className="mt-1.5 flex items-baseline gap-3 flex-wrap">
-                  <span className="text-3xl font-black text-red-600 dark:text-red-400 num">{formatMoney(totalRecPKR, "PKR")}</span>
-                  {totalRecAED > 0 && <span className="text-xl font-bold text-red-400 num">{formatMoney(totalRecAED, "AED")}</span>}
+                <div className="flex flex-col gap-1.5">
+                  {recTotals.map(([cur, amount], idx) => (
+                    <span key={cur} className={\`font-black num tracking-tight text-red-600 dark:text-red-400 \${idx === 0 ? "text-3xl" : "text-xl opacity-80"}\`}>
+                      {formatMoney(amount, cur)}
+                    </span>
+                  ))}
+                  {recTotals.length === 0 && <span className="text-3xl font-black text-red-600 dark:text-red-400 num">0</span>}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Customers ko dena hai aap ko</p>
+                <p className="text-xs text-muted-foreground mt-2">Customers ko dena hai aap ko</p>
               </div>
             </div>
           </Card>
 
           <Card className="relative overflow-hidden border-2 border-emerald-200 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50/60 to-white dark:from-emerald-950/20 dark:to-card">
             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500" />
-            <div className="p-6 flex items-center gap-5">
+            <div className="p-6 flex items-start gap-5">
               <div className="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/25 shrink-0">
                 <ArrowUpRight className="w-7 h-7" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 flex items-center gap-2 flex-wrap">
+                <div className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 flex items-center gap-2 flex-wrap mb-2">
                   <span>Payables — Lenedari</span>
                   <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full text-[10px]">{filteredPayables.length} accounts</span>
                 </div>
-                <div className="mt-1.5 flex items-baseline gap-3 flex-wrap">
-                  <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 num">{formatMoney(totalPayPKR, "PKR")}</span>
-                  {totalPayAED > 0 && <span className="text-xl font-bold text-emerald-400 num">{formatMoney(totalPayAED, "AED")}</span>}
+                <div className="flex flex-col gap-1.5">
+                  {payTotals.map(([cur, amount], idx) => (
+                    <span key={cur} className={\`font-black num tracking-tight text-emerald-600 dark:text-emerald-400 \${idx === 0 ? "text-3xl" : "text-xl opacity-80"}\`}>
+                      {formatMoney(amount, cur)}
+                    </span>
+                  ))}
+                  {payTotals.length === 0 && <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 num">0</span>}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Aap ko customers se lena hai</p>
+                <p className="text-xs text-muted-foreground mt-2">Aap ko customers se lena hai</p>
               </div>
             </div>
           </Card>
