@@ -39,6 +39,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { AsaanKhataLogo } from "@/components/Logo";
+import { motion } from "framer-motion";
 
 type NavItem = {
   title: string;
@@ -124,12 +125,12 @@ export function AppSidebar() {
       }} />
 
       <SidebarHeader className="bg-transparent px-4 py-5 z-10 relative shrink-0">
-        <div
+        <motion.div
           layout
           className={cn("flex items-center", collapsed ? "justify-center" : "gap-4")}
         >
           <AsaanKhataLogo size={42} showText={!collapsed} />
-        </div>
+        </motion.div>
       </SidebarHeader>
 
       <SidebarContent className="premium-sidebar-scroll bg-transparent px-3 py-2 z-10 relative flex-1 overflow-y-auto min-h-0">
@@ -190,7 +191,7 @@ export function AppSidebar() {
                           }}
                         >
                           {active && (
-                            <div
+                            <motion.div
                               layoutId="sidebar-active-glow"
                               className="absolute inset-0 pointer-events-none"
                               style={{ background: "linear-gradient(105deg, hsl(184 80% 60% / 0.08) 0%, hsl(0 0% 100% / 0.12) 50%, transparent 100%)" }}
