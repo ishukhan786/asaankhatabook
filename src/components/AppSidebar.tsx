@@ -1,7 +1,5 @@
 import {
-  Bell,
   Building2,
-  ChevronDown,
   FileBarChart,
   History,
   LayoutDashboard,
@@ -24,14 +22,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -249,59 +239,6 @@ export function AppSidebar() {
       <SidebarFooter className="pt-3 pb-4 px-3 z-10 relative shrink-0" style={{ background: "transparent" }}>
         {/* Footer top border */}
         <div className="absolute top-0 left-3 right-3 h-px" style={{ background: "var(--glass-border)" }} />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className={cn(
-                "group flex w-full items-center rounded-xl text-left outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50",
-                collapsed ? "justify-center p-2" : "gap-3 p-2.5",
-              )}
-              style={{
-                background: "var(--glass-bg)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-                border: "1px solid var(--glass-border)",
-                boxShadow: "0 1px 0 hsl(0 0% 100% / 0.7) inset, 0 4px 12px -4px hsl(184 80% 22% / 0.12)",
-              }}
-              aria-label="Open user menu"
-            >
-              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sidebar-border bg-sidebar dark:border-white/10 dark:bg-[#09111c]">
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Profile" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" />
-                ) : (
-                  <UserCog className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-sidebar-foreground dark:text-slate-300 dark:group-hover:text-white" />
-                )}
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-sidebar bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-              </div>
-              {!collapsed && (
-                <>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold text-sidebar-foreground transition-colors dark:text-slate-200 dark:group-hover:text-white">{profile?.full_name ?? "User"}</div>
-                    <div className="mt-0.5 flex items-center gap-2">
-                      <span className="rounded-md bg-sidebar-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-sidebar-foreground dark:bg-white/10 dark:text-slate-400 dark:group-hover:text-slate-300">
-                        {role?.replace("_", " ") ?? "Guest"}
-                      </span>
-                      {loading && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />}
-                    </div>
-                  </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-300 group-data-[state=open]:rotate-180 group-hover:text-sidebar-foreground dark:text-slate-500 dark:group-hover:text-slate-300" />
-                </>
-              )}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="right" align="end" className="w-56 backdrop-blur-2xl shadow-2xl rounded-xl" style={{ background: "var(--glass-bg-hover)", border: "1px solid var(--glass-border)", boxShadow: "var(--glass-glow-hover)" }}>
-            <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground dark:text-slate-400">My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-border dark:bg-white/10" />
-            <DropdownMenuItem onClick={() => toast.info("Notifications system is coming soon!")} className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground cursor-pointer rounded-lg m-1 transition-colors dark:focus:bg-white/10 dark:focus:text-white">
-              <Bell className="mr-2 h-4 w-4" />
-              Notifications
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/settings")} className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground cursor-pointer rounded-lg m-1 transition-colors dark:focus:bg-white/10 dark:focus:text-white">
-              <SettingsIcon className="mr-2 h-4 w-4" />
-              Settings
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         <Button
           onClick={signOut}
