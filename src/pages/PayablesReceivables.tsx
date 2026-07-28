@@ -56,7 +56,9 @@ const PRINT_STYLES = `
   }
   #print-wrapper { 
     display: block !important; 
-    position: static !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 100% !important;
     background: #ffffff !important;
     color: #000000 !important;
