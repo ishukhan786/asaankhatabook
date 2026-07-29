@@ -391,7 +391,7 @@ export type Database = {
       }
     }
     Enums: {
-      account_type: "customer" | "supplier" | "employee" | "bank" | "cash"
+      account_type: "customer" | "supplier" | "employee" | "bank" | "cash" | "party"
       app_role: "admin" | "branch_manager" | "accountant" | "cashier" | "viewer" | "branch_user"
       currency_code: "PKR" | "AED"
       transaction_type: "general" | "payment" | "receipt" | "transfer" | "expense" | "journal"
@@ -522,7 +522,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_type: ["customer", "supplier", "employee", "bank", "cash"],
+      account_type: ["customer", "supplier", "employee", "bank", "cash", "party"],
       app_role: ["admin", "branch_user"],
       currency_code: ["PKR", "AED"],
       transaction_type: ["general", "payment", "receipt", "transfer", "expense", "journal"],

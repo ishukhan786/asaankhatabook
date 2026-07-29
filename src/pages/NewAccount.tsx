@@ -18,7 +18,7 @@ const schema = z.object({
   mobile: z.string().trim().max(20).optional().or(z.literal("")),
   address: z.string().trim().max(300).optional().or(z.literal("")),
   currency: z.enum(["PKR", "AED"]),
-  account_type: z.enum(["customer", "supplier", "employee", "bank", "cash"]),
+  account_type: z.enum(["customer", "supplier", "employee", "bank", "cash", "party"]),
   branch_id: z.string().uuid("Select a branch").optional().or(z.literal("")),
 });
 
@@ -28,6 +28,7 @@ const accountTypeOptions = [
   { value: "employee", label: "Employee", preview: "EMP-0001" },
   { value: "bank", label: "Bank", preview: "BNK-0001" },
   { value: "cash", label: "Cash", preview: "CAS-0001" },
+  { value: "party", label: "Party", preview: "PRT-0001" },
 ] as const;
 
 const accountTypePrefix = {
@@ -36,6 +37,7 @@ const accountTypePrefix = {
   employee: "EMP",
   bank: "BNK",
   cash: "CAS",
+  party: "PRT",
 } as const;
 
 type BranchShort = { id: string; name: string };
@@ -50,7 +52,7 @@ export default function NewAccount() {
     name: "", 
     mobile: "", 
     address: "", 
-    account_type: "customer" as "customer" | "supplier" | "employee" | "bank" | "cash",
+    account_type: "customer" as "customer" | "supplier" | "employee" | "bank" | "cash" | "party",
     currency: "PKR" as "PKR" | "AED", 
     branch_id: profile?.branch_id || "" 
   });
