@@ -232,12 +232,13 @@ export default function Reports() {
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 ">
       <PageHeader
+        className="print:hidden"
         eyebrow="Financial Insights"
         title={<span className="flex items-center gap-3"><span className="p-2 rounded-xl bg-primary/10 text-primary"><FileBarChart className="w-7 h-7" /></span>Reports &amp; Ledger</span>}
       />
 
       <Tabs defaultValue="ledger" className="space-y-6">
-        <TabsList className="grid w-full max-w-lg grid-cols-3 p-1 bg-muted/20 border border-border/30 rounded-xl">
+        <TabsList className="grid w-full max-w-lg grid-cols-3 p-1 bg-muted/20 border border-border/30 rounded-xl print:hidden">
           <TabsTrigger value="ledger" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
             <Users className="w-4 h-4" /> Ledger Summary
           </TabsTrigger>
