@@ -37,7 +37,7 @@ const PRINT_STYLES = `
   }
   @page {
     size: A4 portrait;
-    margin: 10mm 12mm 10mm 12mm;
+    margin: 10mm 5mm 10mm 5mm;
   }
 }
 `;
