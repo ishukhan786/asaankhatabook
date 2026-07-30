@@ -97,28 +97,6 @@ export const resources = {
       "AdminPanel": "ایڈمن پینل",
       "Users": "صارفین",
       "AuditLogs": "آڈٹ لاگز",
-      // Settings & Profile
-      "Profile": "Profile",
-      "Business": "Business",
-      "Preferences": "Preferences",
-      "Security": "Security",
-      "ProfileInfo": "Profile Information",
-      "BusinessDetails": "Business Details",
-      "GeneralPreferences": "General Preferences",
-      "AccountSecurity": "Account Security",
-      "SessionManagement": "Session Management",
-      "FullName": "Full Name",
-      "BusinessName": "Business Name",
-      "BusinessPhone": "Business Phone",
-      "BusinessAddress": "Business Address",
-      "NewPassword": "New Password",
-      "ConfirmPassword": "Confirm Password",
-      "UpdatePassword": "Update Password",
-      "Theme": "Theme",
-    }
-  },
-  ur: {
-    translation: {
 
       // Labels & Buttons
       "Search": "تلاش کریں...",
