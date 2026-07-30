@@ -23,7 +23,8 @@ import {
   DollarSign,
   PieChart as PieChartIcon,
   BarChart3,
-  UserCheck
+  UserCheck,
+  Activity
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -534,42 +535,87 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* 📍 SECTION 4: Branch Summary — Compact Row */}
-      <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs w-full">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
-          <h2 className="font-bold text-base flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-primary" /> Branch Summary
-          </h2>
-          <Badge variant="outline" className="text-[11px] font-semibold">{stats.byBranch.length} Branches</Badge>
-        </div>
+      {/* 📍 SECTION 4: TWO-COLUMN LAYOUT (Branch Summary on Left, Recent Activity on Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Side: Branch Summary */}
+        <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
+            <h2 className="font-bold text-base flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-primary" /> Branch Summary
+            </h2>
+            <Badge variant="outline" className="text-[11px] font-semibold">{stats ? stats.byBranch.length : 0} Branches</Badge>
+          </div>
 
-        {stats.byBranch.length === 0 ? (
-          <div className="text-sm text-muted-foreground py-4 text-center">
-            No branches setup yet. <Link to="/branches" className="text-primary underline font-medium">Create one</Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {stats.byBranch.map((b) => (
-              <div key={b.name} className="p-3.5 rounded-xl border border-border/60 bg-muted/20">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-sm truncate pr-2">{b.name}</span>
-                  <span className="text-xs text-muted-foreground">{b.accounts} accs</span>
-                </div>
-                <div className="flex gap-3 text-xs num">
-                  <div>
-                    <span className="text-muted-foreground text-[10px] uppercase">PKR: </span>
-                    <span className={`font-bold ${b.pkr >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatMoney(b.pkr, "PKR")}</span>
+          {!stats || stats.byBranch.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">
+              No branches setup yet. <Link to="/branches" className="text-primary underline font-medium">Create one</Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {stats.byBranch.map((b) => (
+                <div key={b.name} className="p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-semibold text-xs truncate pr-2">{b.name}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">{b.accounts} accounts</span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground text-[10px] uppercase">AED: </span>
-                    <span className={`font-bold ${b.aed >= 0 ? "text-blue-600" : "text-red-600"}`}>{formatMoney(b.aed, "AED")}</span>
+                  <div className="flex items-center justify-between text-xs num pt-1 border-t border-border/40">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground text-[10px] uppercase font-bold">PKR:</span>
+                      <span className={`font-bold ${b.pkr >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{formatMoney(b.pkr, "PKR")}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground text-[10px] uppercase font-bold">AED:</span>
+                      <span className={`font-bold ${b.aed >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}`}>{formatMoney(b.aed, "AED")}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Right Side: Recent Activity */}
+        <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
+            <h2 className="font-bold text-base flex items-center gap-2">
+              <Activity className="w-4 h-4 text-primary" /> Recent Activity
+            </h2>
+            <Link to="/transactions" className="text-xs text-primary hover:underline font-semibold">View All</Link>
           </div>
-        )}
-      </Card>
+
+          <div className="space-y-3">
+            {recent.length === 0 ? (
+              <div className="text-xs text-muted-foreground py-6 text-center">No recent activity recorded.</div>
+            ) : (
+              recent.slice(0, 5).map((r) => {
+                const isCredit = Number(r.credit ?? 0) > 0;
+                const amount = isCredit ? Number(r.credit) : Number(r.debit);
+                const cur = r.accounts?.currency || "PKR";
+                return (
+                  <div key={r.id} className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-[10px] shrink-0 ${isCredit ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"}`}>
+                        {isCredit ? "RCP" : "PAY"}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-xs truncate">{r.accounts?.name || "General Entry"}</div>
+                        <div className="text-[10px] text-muted-foreground font-mono truncate">{r.txn_code || formatDate(r.txn_date)} · {r.details || "No details"}</div>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0 pl-2">
+                      <div className={`font-bold text-xs num ${isCredit ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                        {isCredit ? "+" : "-"}{formatMoney(amount, cur)}
+                      </div>
+                      <span className="text-[9px] text-muted-foreground/80 font-mono">{formatDate(r.txn_date)}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </Card>
+      </div>
 
 
 
