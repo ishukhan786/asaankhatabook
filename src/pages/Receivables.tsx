@@ -169,7 +169,7 @@ export default function Receivables() {
     <>
       <style>{PRINT_STYLES}</style>
 
-      {/* Dedicated High-End Minimalist Print Document */}
+      {/* Dedicated High-End Print Document */}
       <div id="print-receivables-wrapper" style={{ display: "none" }}>
         <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
           
@@ -179,75 +179,75 @@ export default function Receivables() {
               <div style={{ fontSize: "20px", fontWeight: "900", color: "#0f172a", letterSpacing: "-0.5px" }}>
                 {profile?.business_name || "AsaanKhata"}
               </div>
-              <div style={{ fontSize: "12px", fontWeight: "800", color: "#334155", marginTop: "2px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              <div style={{ fontSize: "12px", fontWeight: "800", color: "#dc2626", marginTop: "3px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 RECEIVABLES STATEMENT REPORT · (خلاصہ قابلِ وصول - لینا ہے)
               </div>
-              <div style={{ fontSize: "10px", color: "#475569", marginTop: "3px" }}>
+              <div style={{ fontSize: "10px", color: "#64748b", marginTop: "3px" }}>
                 {profile?.business_phone && <span>Phone: {profile.business_phone} · </span>}
                 {profile?.business_address && <span>Address: {profile.business_address} · </span>}
                 <span>Branch: {selectedBranchName}</span>
               </div>
             </div>
-            <div style={{ textAlign: "right", fontSize: "10px", color: "#334155" }}>
-              <div>Date: <strong>{printDate}</strong></div>
-              <div>Time: <strong>{printTime}</strong></div>
-              <div>Total Accounts: <strong>{filtered.length}</strong></div>
+            <div style={{ textAlign: "right", fontSize: "10px", color: "#475569" }}>
+              <div>Date: <strong style={{ color: "#0f172a" }}>{printDate}</strong></div>
+              <div>Time: <strong style={{ color: "#0f172a" }}>{printTime}</strong></div>
+              <div>Total Accounts: <strong style={{ color: "#dc2626" }}>{filtered.length}</strong></div>
             </div>
           </div>
 
-          {/* Multi-Currency Grand Totals Summary Box */}
-          <div style={{ margin: "14px 0", border: "1px solid #0f172a", borderRadius: "6px", padding: "10px 14px", background: "#fafafa" }}>
-            <div style={{ fontSize: "9.5px", fontWeight: "800", textTransform: "uppercase", color: "#0f172a", letterSpacing: "0.5px", marginBottom: "8px" }}>
+          {/* Multi-Currency Grand Totals Summary Box - Zero Background Color */}
+          <div style={{ margin: "14px 0", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "12px 16px", background: "transparent" }}>
+            <div style={{ fontSize: "9.5px", fontWeight: "800", textTransform: "uppercase", color: "#dc2626", letterSpacing: "0.5px", marginBottom: "8px" }}>
               OUTSTANDING RECEIVABLES SUMMARY
             </div>
-            <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "28px", flexWrap: "wrap" }}>
               {totals.map(([cur, amount]) => (
-                <div key={cur} style={{ borderLeft: "3px solid #0f172a", paddingLeft: "8px" }}>
-                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>
+                <div key={cur} style={{ borderLeft: "3px solid #dc2626", paddingLeft: "10px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
                     {cur} TOTAL
                   </div>
-                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", marginTop: "1px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#dc2626", fontFamily: "monospace", marginTop: "2px" }}>
                     {formatMoney(amount, cur)}
                   </div>
                 </div>
               ))}
               {totals.length === 0 && (
-                <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "8px" }}>
-                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569" }}>TOTAL</div>
-                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#0f172a", fontFamily: "monospace" }}>0.00</div>
+                <div style={{ borderLeft: "3px solid #dc2626", paddingLeft: "10px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL</div>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#dc2626", fontFamily: "monospace", marginTop: "2px" }}>0.00</div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Clean Data Table */}
+          {/* Clean Data Table - Transparent Background */}
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginTop: "8px" }}>
             <thead>
-              <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "1.5px solid #0f172a", background: "#ffffff", color: "#0f172a", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                <th style={{ padding: "6px 8px", textAlign: "left", width: "30px" }}>#</th>
-                <th style={{ padding: "6px 8px", textAlign: "left", width: "90px" }}>Account No</th>
-                <th style={{ padding: "6px 8px", textAlign: "left" }}>Customer Name</th>
-                <th style={{ padding: "6px 8px", textAlign: "left" }}>Contact</th>
-                <th style={{ padding: "6px 8px", textAlign: "left" }}>Branch</th>
-                <th style={{ padding: "6px 8px", textAlign: "right" }}>Receivable Amount</th>
+              <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <th style={{ padding: "7px 8px", textAlign: "left", width: "30px", color: "#475569" }}>#</th>
+                <th style={{ padding: "7px 8px", textAlign: "left", width: "95px", color: "#0369a1" }}>Account No</th>
+                <th style={{ padding: "7px 8px", textAlign: "left", color: "#0f172a" }}>Customer Name</th>
+                <th style={{ padding: "7px 8px", textAlign: "left", color: "#475569" }}>Contact</th>
+                <th style={{ padding: "7px 8px", textAlign: "left", color: "#475569" }}>Branch</th>
+                <th style={{ padding: "7px 8px", textAlign: "right", color: "#dc2626" }}>Receivable Amount</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: "20px", textAlign: "center", color: "#64748b" }}>
+                  <td colSpan={6} style={{ padding: "20px", textAlign: "center", color: "#94a3b8" }}>
                     No receivable records found.
                   </td>
                 </tr>
               ) : (
                 filtered.map((a, i) => (
-                  <tr key={a.id} style={{ borderBottom: "1px solid #cbd5e1" }}>
-                    <td style={{ padding: "6px 8px", color: "#64748b", fontWeight: "600" }}>{i + 1}</td>
-                    <td style={{ padding: "6px 8px", fontFamily: "monospace", fontWeight: "700", color: "#0f172a" }}>{a.account_no}</td>
-                    <td style={{ padding: "6px 8px", fontWeight: "700", color: "#0f172a" }}>{a.name}</td>
-                    <td style={{ padding: "6px 8px", color: "#475569" }}>{a.mobile || "-"}</td>
-                    <td style={{ padding: "6px 8px", color: "#475569" }}>{a.branch_name}</td>
-                    <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", fontSize: "11px" }}>
+                  <tr key={a.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                    <td style={{ padding: "7px 8px", color: "#94a3b8", fontWeight: "600" }}>{i + 1}</td>
+                    <td style={{ padding: "7px 8px", fontFamily: "monospace", fontWeight: "700", color: "#0369a1" }}>{a.account_no}</td>
+                    <td style={{ padding: "7px 8px", fontWeight: "700", color: "#0f172a" }}>{a.name}</td>
+                    <td style={{ padding: "7px 8px", color: "#475569" }}>{a.mobile || "-"}</td>
+                    <td style={{ padding: "7px 8px", color: "#475569" }}>{a.branch_name}</td>
+                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#dc2626", fontFamily: "monospace", fontSize: "11px" }}>
                       {formatMoney(Math.abs(a.balance), a.currency)}
                     </td>
                   </tr>
@@ -260,11 +260,11 @@ export default function Receivables() {
           <div style={{ marginTop: "40px", paddingTop: "15px", borderTop: "1px solid #cbd5e1", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div style={{ width: "180px", textAlign: "center" }}>
               <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
-              <div style={{ fontSize: "9px", fontWeight: "700", color: "#334155", textTransform: "uppercase" }}>Prepared By</div>
+              <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>Prepared By</div>
             </div>
             <div style={{ width: "180px", textAlign: "center" }}>
               <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
-              <div style={{ fontSize: "9px", fontWeight: "700", color: "#334155", textTransform: "uppercase" }}>Authorized Signature &amp; Stamp</div>
+              <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>Authorized Signature &amp; Stamp</div>
             </div>
           </div>
 
