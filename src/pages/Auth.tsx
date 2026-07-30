@@ -39,15 +39,15 @@ export default function Auth() {
         await setActive({ session: result.createdSessionId });
         navigate("/");
       } else {
-        setError("Login mein masla hua. Dobara try karein.");
+        setError("Authentication failed. Please try again.");
       }
     } catch (err: unknown) {
       const clerkErr = err as { errors?: Array<{ code?: string; message?: string }> };
       const errCode = clerkErr?.errors?.[0]?.code;
       if (errCode === "session_exists") {
-        navigate("/"); // Agar pehle se session hai toh seedha andar le jayen
+        navigate("/"); // If session already exists, proceed to dashboard
       } else {
-        const msg = clerkErr?.errors?.[0]?.message || "Username ya password ghalat hai.";
+        const msg = clerkErr?.errors?.[0]?.message || "Invalid username or password.";
         setError(msg);
       }
     } finally {
@@ -64,8 +64,8 @@ export default function Auth() {
         {/* App Name */}
         <div className="flex flex-col items-center text-center mb-6">
           <AsaanKhataLogo size={56} className="justify-center mb-2" />
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-display mt-2">آسان کھاتہ بک</h1>
-          <p className="text-muted-foreground text-sm mt-1">اپنے اکاؤنٹ میں لاگ ان کریں</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground font-display mt-2">AsaanKhata</h1>
+          <p className="text-muted-foreground text-sm mt-1">Smart accounting, simplified</p>
         </div>
 
         {/* Glass Login Card */}
@@ -81,7 +81,7 @@ export default function Auth() {
                   type="text"
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  placeholder="apna username dalein"
+                  placeholder="Enter your username"
                   required
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border bg-background/40 backdrop-blur text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition"
                   style={{ borderColor: "var(--glass-border)" }}
@@ -98,7 +98,7 @@ export default function Auth() {
                   type={showPass ? "text" : "password"}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="password dalein"
+                  placeholder="Enter your password"
                   required
                   className="w-full pl-9 pr-10 py-2.5 rounded-xl border bg-background/40 backdrop-blur text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition"
                   style={{ borderColor: "var(--glass-border)" }}
