@@ -447,6 +447,32 @@ export default function AdminPanel() {
               </Button>
             </div>
           </Card>
+
+          {/* Security & API Integrity Status */}
+          <Card className="p-6 glass border-emerald-500/20 relative overflow-hidden">
+            <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl" />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display font-bold text-xs uppercase tracking-wider text-muted-foreground">Security &amp; API Integrity</h3>
+              <Shield className="w-4 h-4 text-emerald-500" />
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-1 border-b border-border/10">
+                <span className="text-xs text-foreground/80">Client API Key</span>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 font-bold px-2 py-0.5 rounded">Publishable Only</span>
+              </div>
+              <div className="flex items-center justify-between py-1 border-b border-border/10">
+                <span className="text-xs text-foreground/80">Secret Authentication Keys</span>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 font-bold px-2 py-0.5 rounded">Encrypted Server-Side</span>
+              </div>
+              <div className="flex items-center justify-between py-1 border-b border-border/10">
+                <span className="text-xs text-foreground/80">RLS (Row Level Security)</span>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 font-bold px-2 py-0.5 rounded">Enforced</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground/85 leading-relaxed mt-2.5">
+                Client-side API keys are public by design and contain no administrative rights. All critical secrets (like Clerk Secret Key) are isolated on secure server environments, blocking external penetration.
+              </p>
+            </div>
+          </Card>
         </div>
       </div>
     </div>
