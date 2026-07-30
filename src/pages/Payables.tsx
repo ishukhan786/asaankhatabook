@@ -256,17 +256,6 @@ export default function Payables() {
             </tbody>
           </table>
 
-          {/* Signatures & Stamp Footer */}
-          <div style={{ marginTop: "40px", paddingTop: "15px", borderTop: "1px solid #cbd5e1", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-            <div style={{ width: "180px", textAlign: "center" }}>
-              <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
-              <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>Prepared By</div>
-            </div>
-            <div style={{ width: "180px", textAlign: "center" }}>
-              <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
-              <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>Authorized Signature &amp; Stamp</div>
-            </div>
-          </div>
 
           {/* Page Footer */}
           <div style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", fontSize: "8.5px", color: "#94a3b8" }}>
