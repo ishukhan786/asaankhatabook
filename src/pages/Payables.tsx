@@ -188,7 +188,7 @@ export default function Payables() {
           {/* 2. Centered Report Title */}
           <div style={{ textAlign: "center", margin: "12px 0 10px 0" }}>
             <div style={{ fontSize: "14px", fontWeight: "900", color: "#059669", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "2px solid #059669", display: "inline-block", paddingBottom: "2px" }}>
-              (خلاصہ قابلِ ادائیگی - دینا ہے) · REPORT STATEMENT
+              (خلاصہ قابلِ ادائیگی - دینا ہے) · PAYABLES REPORT
             </div>
             <div style={{ fontSize: "9.5px", color: "#64748b", marginTop: "4px" }}>
               Printed Date: <strong>{printDate}</strong> · Time: <strong>{printTime}</strong> · Total Accounts: <strong style={{ color: "#059669" }}>{filtered.length}</strong>
