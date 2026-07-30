@@ -144,7 +144,7 @@ export function AppSidebar() {
                           to={item.url}
                           aria-current={active ? "page" : undefined}
                           className={cn(
-                            "group relative flex h-11 w-full items-center overflow-hidden rounded-xl border text-sm font-medium outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/60",
+                            "group/item relative flex h-11 w-full items-center overflow-hidden rounded-xl border text-sm font-medium outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/60",
                             collapsed ? "justify-center px-0" : "gap-3 px-3",
                           )}
                           style={active ? {
@@ -165,7 +165,7 @@ export function AppSidebar() {
                             />
                           )}
                           {/* Hover glass overlay */}
-                          <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+                          <div className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 pointer-events-none"
                             style={{
                               background: "var(--glass-bg)",
                               backdropFilter: "blur(12px)",
@@ -177,7 +177,7 @@ export function AppSidebar() {
                               "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-300 relative z-10",
                               active 
                                 ? "bg-sidebar-accent/10 border border-sidebar-border/20 shadow-inner scale-110" 
-                                : "opacity-75 group-hover:opacity-100 group-hover:scale-110",
+                                : "opacity-75 group-hover/item:opacity-100 group-hover/item:scale-110",
                               item.colorClass || "text-muted-foreground"
                             )}
                           >
@@ -185,7 +185,7 @@ export function AppSidebar() {
                           </span>
                           {!collapsed && (
                             <>
-                              <span className={cn("min-w-0 flex-1 truncate transition-colors relative z-10", active ? "font-bold tracking-wide text-sidebar-foreground" : "font-medium text-muted-foreground group-hover:text-sidebar-foreground")}>
+                              <span className={cn("min-w-0 flex-1 truncate transition-colors relative z-10", active ? "font-bold tracking-wide text-sidebar-foreground" : "font-medium text-muted-foreground group-hover/item:text-sidebar-foreground")}>
                                 {item.title}
                               </span>
                               {item.badge && (
