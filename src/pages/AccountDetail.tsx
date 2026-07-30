@@ -6,13 +6,35 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, Pencil, MessageSquare, Receipt, Loader, ArrowUpRight, ArrowDownRight, Globe2, Mail, Search } from "lucide-react";
+import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, Pencil, MessageSquare, Receipt, Loader, ArrowUpRight, ArrowDownRight, Globe2, Mail, Search, Printer } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { Account, Transaction, TransactionWithBalance } from "@/types";
+
+const PRINT_STYLES = `
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  .screen-ui, header, aside, nav, footer, button, .print\\:hidden { 
+    display: none !important; 
+  }
+  #print-account-detail-wrapper {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+}
+`;
 import { validateTransaction, validateDebitCredit } from "@/lib/validation";
 import { handleSupabaseError, handleFormError } from "@/lib/errors";
 import {
@@ -309,85 +331,210 @@ export default function AccountDetail() {
     setEmailBusy(false);
   };
 
-  return (
-    <div className="p-2 md:p-4 max-w-[1600px] mx-auto space-y-3   ">
-      <div className="flex items-center justify-between">
-        <Link to="/accounts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Accounts</Link>
-        {role === "admin" && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10"><Trash2 className="w-4 h-4 mr-1" /> Delete Account</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete the account <strong>{account.name}</strong> and all of its <strong>{rows.length}</strong> transactions. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={deleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete Forever</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
-      </div>
+  const now = new Date();
+  const printDate = now.toLocaleDateString("en-PK", { day: "2-digit", month: "short", year: "numeric" });
+  const printTime = now.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
 
-      {/* Hero Banner */}
-      <Card className="glass-hero px-3 py-2.5 relative overflow-hidden border-border/40">
-        <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-primary/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Left Details */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="outline" className="font-mono text-[9px] bg-background/50 border-primary/20 text-primary px-1.5 py-0">{account.account_no}</Badge>
-              <h1 className="font-display text-xl font-bold tracking-tight text-foreground leading-tight">{account.name}</h1>
-            </div>
-            {(account.mobile || account.branches?.name || account.address) && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                {account.mobile && (
-                  <div className="flex items-center gap-1.5">
-                    <Phone className="w-3 h-3 text-primary" />
-                    <span className="text-xs text-muted-foreground">{account.mobile}</span>
-                  </div>
-                )}
-                {account.branches?.name && (
-                  <div className="flex items-center gap-1.5">
-                    <Building2 className="w-3 h-3 text-primary" />
-                    <span className="text-xs text-muted-foreground">{account.branches.name}</span>
-                  </div>
-                )}
-                {account.address && (
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="w-3 h-3 text-primary" />
-                    <span className="text-xs text-muted-foreground">{account.address}</span>
-                  </div>
-                )}
+  return (
+    <>
+      <style>{PRINT_STYLES}</style>
+
+      {/* Dedicated High-End Print Document */}
+      <div id="print-account-detail-wrapper" style={{ display: "none" }}>
+        <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
+          
+          {/* Header */}
+          <div style={{ paddingBottom: "12px", borderBottom: "2px solid #0f172a", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div>
+              <div style={{ fontSize: "20px", fontWeight: "900", color: "#0f172a", letterSpacing: "-0.5px" }}>
+                {profile?.business_name || "AsaanKhata"}
               </div>
-            )}
+              <div style={{ fontSize: "12px", fontWeight: "800", color: "#0369a1", marginTop: "3px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                ACCOUNT LEDGER STATEMENT REPORT · ({account?.name})
+              </div>
+              <div style={{ fontSize: "10px", color: "#64748b", marginTop: "3px" }}>
+                {account?.mobile && <span>Phone: {account.mobile} · </span>}
+                {account?.address && <span>Address: {account.address} · </span>}
+                <span>Branch: {account?.branches?.name || "Main"}</span>
+              </div>
+            </div>
+            <div style={{ textAlign: "right", fontSize: "10px", color: "#475569" }}>
+              <div>Account Code: <strong style={{ color: "#0369a1", fontFamily: "monospace" }}>{account?.account_no}</strong></div>
+              <div>Date: <strong style={{ color: "#0f172a" }}>{printDate}</strong></div>
+              <div>Time: <strong style={{ color: "#0f172a" }}>{printTime}</strong></div>
+            </div>
           </div>
-          {/* Right Balance */}
-          <div className="flex items-center gap-3 bg-background/50 border border-border/50 rounded-lg px-3 py-2 shrink-0">
-            <div className="text-right">
-              <div className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{t("NetBalance")} · <span className="font-mono">{account.currency}</span></div>
-              <div className={`font-display font-bold text-xl num ${running >= 0 ? "text-success" : "text-destructive"}`}>
-                {formatMoney(running, account.currency)} <span className="text-[10px] font-medium opacity-70">{balanceLabel(running)}</span>
+
+          {/* Account Overview Box - Zero Background Fill */}
+          <div style={{ margin: "14px 0", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "12px 16px", background: "transparent" }}>
+            <div style={{ fontSize: "9.5px", fontWeight: "800", textTransform: "uppercase", color: "#0369a1", letterSpacing: "0.5px", marginBottom: "8px" }}>
+              ACCOUNT BALANCE OVERVIEW ({account?.currency})
+            </div>
+            <div style={{ display: "flex", gap: "28px", flexWrap: "wrap" }}>
+              <div style={{ borderLeft: "3px solid #b91c1c", paddingLeft: "10px" }}>
+                <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL DEBIT (NAM)</div>
+                <div style={{ fontSize: "15px", fontWeight: "900", color: "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                  {formatMoney(totDebit, account?.currency)}
+                </div>
+              </div>
+              <div style={{ borderLeft: "3px solid #047857", paddingLeft: "10px" }}>
+                <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CREDIT (JAMA)</div>
+                <div style={{ fontSize: "15px", fontWeight: "900", color: "#047857", fontFamily: "monospace", marginTop: "2px" }}>
+                  {formatMoney(totCredit, account?.currency)}
+                </div>
+              </div>
+              <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "10px" }}>
+                <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>NET BALANCE</div>
+                <div style={{ fontSize: "15px", fontWeight: "900", color: running >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                  {formatMoney(running, account?.currency)} ({balanceLabel(running)})
+                </div>
               </div>
             </div>
-            <div className="flex flex-col gap-1 pl-3 border-l border-border/50">
-              <Button onClick={() => setQuickOpen(true)} size="sm" className="h-7 text-[11px] px-2 gradient-primary text-primary-foreground"><Plus className="w-3 h-3 mr-0.5" /> {t("AddEntry")}</Button>
-              <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" disabled={exporting} onClick={handleExportStatement}>
-                {exporting ? <Loader className="w-3 h-3 mr-0.5 animate-spin" /> : <FileDown className="w-3 h-3 mr-0.5" />}
-                {exporting ? "Wait..." : t("ExportPDF")}
-              </Button>
-              <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => setEmailOpen(true)}>
-                <Mail className="w-3 h-3 mr-0.5" /> Email
-              </Button>
+          </div>
+
+          {/* Clean Data Table - Transparent Background */}
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginTop: "8px" }}>
+            <thead>
+              <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <th style={{ padding: "7px 8px", textAlign: "left", width: "30px", color: "#475569" }}>#</th>
+                <th style={{ padding: "7px 8px", textAlign: "left", width: "80px", color: "#475569" }}>Date</th>
+                <th style={{ padding: "7px 8px", textAlign: "left", width: "95px", color: "#0369a1" }}>Code</th>
+                <th style={{ padding: "7px 8px", textAlign: "left", color: "#0f172a" }}>Details / Narration</th>
+                <th style={{ padding: "7px 8px", textAlign: "right", color: "#b91c1c" }}>Debit (Nam)</th>
+                <th style={{ padding: "7px 8px", textAlign: "right", color: "#047857" }}>Credit (Jama)</th>
+                <th style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a" }}>Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: "20px", textAlign: "center", color: "#94a3b8" }}>
+                    No transaction entries found for this account.
+                  </td>
+                </tr>
+              ) : (
+                rows.map((r, i) => (
+                  <tr key={r.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                    <td style={{ padding: "7px 8px", color: "#94a3b8", fontWeight: "600" }}>{i + 1}</td>
+                    <td style={{ padding: "7px 8px", color: "#475569", fontFamily: "monospace" }}>{formatDate(String(r.txn_date || ""))}</td>
+                    <td style={{ padding: "7px 8px", fontFamily: "monospace", fontWeight: "700", color: "#0369a1" }}>{r.txn_code}</td>
+                    <td style={{ padding: "7px 8px", fontWeight: "700", color: "#0f172a" }}>{r.details}</td>
+                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#b91c1c", fontFamily: "monospace" }}>
+                      {Number(r.debit) > 0 ? formatMoney(Number(r.debit), account?.currency) : "-"}
+                    </td>
+                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#047857", fontFamily: "monospace" }}>
+                      {Number(r.credit) > 0 ? formatMoney(Number(r.credit), account?.currency) : "-"}
+                    </td>
+                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: r.balance >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", fontSize: "11px" }}>
+                      {formatMoney(r.balance, account?.currency)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+
+          {/* Signatures & Stamp Footer */}
+          <div style={{ marginTop: "40px", paddingTop: "15px", borderTop: "1px solid #cbd5e1", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div style={{ width: "180px", textAlign: "center" }}>
+              <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
+              <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>Prepared By</div>
             </div>
+            <div style={{ width: "180px", textAlign: "center" }}>
+              <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
+              <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>Authorized Signature &amp; Stamp</div>
+            </div>
+          </div>
+
+          {/* Page Footer */}
+          <div style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", fontSize: "8.5px", color: "#94a3b8" }}>
+            <div>AsaanKhata System · Official Account Statement</div>
+            <div>Printed: {printDate} {printTime}</div>
           </div>
         </div>
-      </Card>
+      </div>
+
+      <div className="screen-ui p-2 md:p-4 max-w-[1600px] mx-auto space-y-3">
+        <div className="flex items-center justify-between">
+          <Link to="/accounts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Accounts</Link>
+          {role === "admin" && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10"><Trash2 className="w-4 h-4 mr-1" /> Delete Account</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete the account <strong>{account.name}</strong> and all of its <strong>{rows.length}</strong> transactions. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={deleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete Forever</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+
+        {/* Hero Banner */}
+        <Card className="glass-hero px-3 py-2.5 relative overflow-hidden border-border/40">
+          <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-primary/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            {/* Left Details */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="font-mono text-[9px] bg-background/50 border-primary/20 text-primary px-1.5 py-0">{account.account_no}</Badge>
+                <h1 className="font-display text-xl font-bold tracking-tight text-foreground leading-tight">{account.name}</h1>
+              </div>
+              {(account.mobile || account.branches?.name || account.address) && (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                  {account.mobile && (
+                    <div className="flex items-center gap-1.5">
+                      <Phone className="w-3 h-3 text-primary" />
+                      <span className="text-xs text-muted-foreground">{account.mobile}</span>
+                    </div>
+                  )}
+                  {account.branches?.name && (
+                    <div className="flex items-center gap-1.5">
+                      <Building2 className="w-3 h-3 text-primary" />
+                      <span className="text-xs text-muted-foreground">{account.branches.name}</span>
+                    </div>
+                  )}
+                  {account.address && (
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="w-3 h-3 text-primary" />
+                      <span className="text-xs text-muted-foreground">{account.address}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* Right Balance */}
+            <div className="flex items-center gap-3 bg-background/50 border border-border/50 rounded-lg px-3 py-2 shrink-0">
+              <div className="text-right">
+                <div className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{t("NetBalance")} · <span className="font-mono">{account.currency}</span></div>
+                <div className={`font-display font-bold text-xl num ${running >= 0 ? "text-success" : "text-destructive"}`}>
+                  {formatMoney(running, account.currency)} <span className="text-[10px] font-medium opacity-70">{balanceLabel(running)}</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 pl-3 border-l border-border/50">
+                <Button onClick={() => setQuickOpen(true)} size="sm" className="h-7 text-[11px] px-2 gradient-primary text-primary-foreground"><Plus className="w-3 h-3 mr-0.5" /> {t("AddEntry")}</Button>
+                <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" disabled={exporting} onClick={handleExportStatement}>
+                  {exporting ? <Loader className="w-3 h-3 mr-0.5 animate-spin" /> : <FileDown className="w-3 h-3 mr-0.5" />}
+                  {exporting ? "Wait..." : t("ExportPDF")}
+                </Button>
+                <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => window.print()}>
+                  <Printer className="w-3 h-3 mr-0.5" /> Print
+                </Button>
+                <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => setEmailOpen(true)}>
+                  <Mail className="w-3 h-3 mr-0.5" /> Email
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-2">
@@ -687,6 +834,7 @@ export default function AccountDetail() {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 }
 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, FileDown, FileBarChart, Users, Receipt, ArrowUpRight, ArrowDownLeft, Scale, Building2, Phone, MapPin, Wallet } from "lucide-react";
+import { Search, FileDown, FileBarChart, Users, Receipt, ArrowUpRight, ArrowDownLeft, Scale, Building2, Phone, MapPin, Wallet, Printer } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { exportLedgerPDF, exportStatementPDF } from "@/lib/pdf";
 import PayablesReceivables from "./PayablesReceivables";
@@ -19,6 +19,28 @@ import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
 import { logger } from "@/lib/logger";
 import { PageHeader } from "@/components/PageHeader";
 import { useTranslation } from "react-i18next";
+
+const PRINT_STYLES = `
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  .screen-ui, header, aside, nav, footer, button, .print\\:hidden { 
+    display: none !important; 
+  }
+  .print-report-wrapper {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+}
+`;
 
 export default function Reports() {
   const { t } = useTranslation();
@@ -231,8 +253,189 @@ export default function Reports() {
     return { debit, credit, net, opening, closing };
   }, [statementRows, statementTxns, from]);
 
+  const now = new Date();
+  const printDate = now.toLocaleDateString("en-PK", { day: "2-digit", month: "short", year: "numeric" });
+  const printTime = now.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
+
   return (
-    <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 ">
+    <>
+      <style>{PRINT_STYLES}</style>
+
+      {/* Printable Financial Summary & Ledger Statement Templates */}
+      <div className="print-report-wrapper" style={{ display: "none" }}>
+        <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
+          
+          {/* Header */}
+          <div style={{ paddingBottom: "12px", borderBottom: "2px solid #0f172a", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div>
+              <div style={{ fontSize: "20px", fontWeight: "900", color: "#0f172a", letterSpacing: "-0.5px" }}>
+                {profile?.business_name || "AsaanKhata"}
+              </div>
+              <div style={{ fontSize: "12px", fontWeight: "800", color: "#0369a1", marginTop: "3px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                {selectedAccId ? `ACCOUNT STATEMENT REPORT (${selectedAccount?.name})` : "ALL ACCOUNTS FINANCIAL SUMMARY REPORT"}
+              </div>
+              <div style={{ fontSize: "10px", color: "#64748b", marginTop: "3px" }}>
+                {profile?.business_phone && <span>Phone: {profile.business_phone} · </span>}
+                {profile?.business_address && <span>Address: {profile.business_address}</span>}
+              </div>
+            </div>
+            <div style={{ textAlign: "right", fontSize: "10px", color: "#475569" }}>
+              <div>Date: <strong style={{ color: "#0f172a" }}>{printDate}</strong></div>
+              <div>Time: <strong style={{ color: "#0f172a" }}>{printTime}</strong></div>
+              {from && <div>Period: <strong>{from} to {to || "Today"}</strong></div>}
+            </div>
+          </div>
+
+          {/* Summary Metric Box - Zero Background Fill */}
+          <div style={{ margin: "14px 0", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "12px 16px", background: "transparent" }}>
+            <div style={{ fontSize: "9.5px", fontWeight: "800", textTransform: "uppercase", color: "#0369a1", letterSpacing: "0.5px", marginBottom: "8px" }}>
+              {selectedAccId ? `ACCOUNT OVERVIEW (${selectedAccount?.account_no})` : "LEDGER SUMMARY METRICS"}
+            </div>
+            {selectedAccId ? (
+              <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
+                <div style={{ borderLeft: "3px solid #0369a1", paddingLeft: "10px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>OPENING BALANCE</div>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", marginTop: "2px" }}>
+                    {formatMoney(statementTotals.opening, selectedAccount?.currency || "")}
+                  </div>
+                </div>
+                <div style={{ borderLeft: "3px solid #047857", paddingLeft: "10px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CREDIT (CASH IN)</div>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#047857", fontFamily: "monospace", marginTop: "2px" }}>
+                    {formatMoney(statementTotals.credit, selectedAccount?.currency || "")}
+                  </div>
+                </div>
+                <div style={{ borderLeft: "3px solid #b91c1c", paddingLeft: "10px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL DEBIT (CASH OUT)</div>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                    {formatMoney(statementTotals.debit, selectedAccount?.currency || "")}
+                  </div>
+                </div>
+                <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "10px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>CLOSING BALANCE</div>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: statementTotals.closing >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                    {formatMoney(statementTotals.closing, selectedAccount?.currency || "")}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", gap: "28px", flexWrap: "wrap" }}>
+                <div style={{ borderLeft: "3px solid #b91c1c", paddingLeft: "10px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CASH OUT (DEBITS)</div>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                    {formatMoney(ledgerTotals.debit, ledgerTotals.currency)}
+                  </div>
+                </div>
+                <div style={{ borderLeft: "3px solid #047857", paddingLeft: "10px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CASH IN (CREDITS)</div>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#047857", fontFamily: "monospace", marginTop: "2px" }}>
+                    {formatMoney(ledgerTotals.credit, ledgerTotals.currency)}
+                  </div>
+                </div>
+                <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "10px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>NET LEDGER BALANCE</div>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: ledgerTotals.net >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                    {formatMoney(ledgerTotals.net, ledgerTotals.currency)}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Table */}
+          {selectedAccId ? (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginTop: "8px" }}>
+              <thead>
+                <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  <th style={{ padding: "7px 8px", textAlign: "left" }}>Date</th>
+                  <th style={{ padding: "7px 8px", textAlign: "left" }}>Details / Narration</th>
+                  <th style={{ padding: "7px 8px", textAlign: "right", color: "#b91c1c" }}>Debit</th>
+                  <th style={{ padding: "7px 8px", textAlign: "right", color: "#047857" }}>Credit</th>
+                  <th style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a" }}>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statementRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: "20px", textAlign: "center", color: "#94a3b8" }}>No transaction records found.</td>
+                  </tr>
+                ) : (
+                  statementRows.map((t, idx) => (
+                    <tr key={t.id || idx} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                      <td style={{ padding: "7px 8px", color: "#64748b", fontFamily: "monospace" }}>{formatDate(t.txn_date || "")}</td>
+                      <td style={{ padding: "7px 8px", fontWeight: "700", color: "#0f172a" }}>{t.details}</td>
+                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#b91c1c", fontFamily: "monospace", fontWeight: "700" }}>
+                        {Number(t.debit) > 0 ? formatMoney(Number(t.debit), selectedAccount?.currency || "") : "-"}
+                      </td>
+                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#047857", fontFamily: "monospace", fontWeight: "700" }}>
+                        {Number(t.credit) > 0 ? formatMoney(Number(t.credit), selectedAccount?.currency || "") : "-"}
+                      </td>
+                      <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: t.balance >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace" }}>
+                        {formatMoney(t.balance, selectedAccount?.currency || "")}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginTop: "8px" }}>
+              <thead>
+                <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  <th style={{ padding: "7px 8px", textAlign: "left", width: "95px", color: "#0369a1" }}>Account No</th>
+                  <th style={{ padding: "7px 8px", textAlign: "left", color: "#0f172a" }}>Account Name</th>
+                  <th style={{ padding: "7px 8px", textAlign: "left", color: "#475569" }}>Branch</th>
+                  <th style={{ padding: "7px 8px", textAlign: "left", color: "#475569" }}>Cur</th>
+                  <th style={{ padding: "7px 8px", textAlign: "right", color: "#b91c1c" }}>Debit</th>
+                  <th style={{ padding: "7px 8px", textAlign: "right", color: "#047857" }}>Credit</th>
+                  <th style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a" }}>Net Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summary.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ padding: "20px", textAlign: "center", color: "#94a3b8" }}>No ledger accounts found.</td>
+                  </tr>
+                ) : (
+                  summary.map((r) => (
+                    <tr key={r.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                      <td style={{ padding: "7px 8px", fontFamily: "monospace", fontWeight: "700", color: "#0369a1" }}>{r.account_no}</td>
+                      <td style={{ padding: "7px 8px", fontWeight: "700", color: "#0f172a" }}>{r.name}</td>
+                      <td style={{ padding: "7px 8px", color: "#475569" }}>{r.branches?.name || "N/A"}</td>
+                      <td style={{ padding: "7px 8px", color: "#475569", fontWeight: "700" }}>{r.currency}</td>
+                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#b91c1c", fontFamily: "monospace", fontWeight: "700" }}>{formatMoney(r.debit, r.currency)}</td>
+                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#047857", fontFamily: "monospace", fontWeight: "700" }}>{formatMoney(r.credit, r.currency)}</td>
+                      <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: r.net >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace" }}>
+                        {formatMoney(r.net, r.currency)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+
+          {/* Signatures */}
+          <div style={{ marginTop: "40px", paddingTop: "15px", borderTop: "1px solid #cbd5e1", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div style={{ width: "180px", textAlign: "center" }}>
+              <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
+              <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>Prepared By</div>
+            </div>
+            <div style={{ width: "180px", textAlign: "center" }}>
+              <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
+              <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>Authorized Signature &amp; Stamp</div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", fontSize: "8.5px", color: "#94a3b8" }}>
+            <div>AsaanKhata System · Official Audit Statement</div>
+            <div>Printed: {printDate} {printTime}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="screen-ui p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
       <PageHeader
         className="print:hidden"
         eyebrow={t("Reports")}
@@ -330,14 +533,19 @@ export default function Reports() {
                 />
               </div>
             </Card>
-            <Button 
-              onClick={handleExportLedger} 
-              disabled={exporting} 
-              className="gradient-primary text-primary-foreground shadow-soft hover:shadow-glow h-11 px-6 rounded-xl font-semibold transition-all  flex items-center justify-center gap-2 self-stretch lg:self-auto"
-            >
-              <FileDown className="w-4 h-4" /> 
-              {exporting ? "Exporting..." : "Export Ledger PDF"}
-            </Button>
+            <div className="flex items-center gap-3 flex-wrap self-stretch lg:self-auto">
+              <Button 
+                onClick={handleExportLedger} 
+                disabled={exporting} 
+                className="gradient-primary text-primary-foreground shadow-soft hover:shadow-glow h-11 px-5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+              >
+                <FileDown className="w-4 h-4" /> 
+                {exporting ? "Exporting..." : "Export Ledger PDF"}
+              </Button>
+              <Button onClick={() => window.print()} variant="outline" className="h-11 px-5 gap-2 border-2 rounded-xl font-semibold hover:bg-primary/10">
+                <Printer className="w-4 h-4" /> Print Report
+              </Button>
+            </div>
           </div>
 
           {/* Ledger Table */}
@@ -453,14 +661,24 @@ export default function Reports() {
                 />
               </div>
             </Card>
-            <Button 
-              disabled={!selectedAccount || statementRows.length === 0 || exporting} 
-              onClick={() => handleExportStatement(selectedAccount, statementRows)}
-              className="gradient-primary text-primary-foreground shadow-soft hover:shadow-glow h-11 px-6 rounded-xl font-semibold transition-all  flex items-center justify-center gap-2 self-stretch lg:self-auto"
-            >
-              <FileDown className="w-4 h-4" /> 
-              {exporting ? "Exporting..." : "Export Statement PDF"}
-            </Button>
+            <div className="flex items-center gap-3 flex-wrap self-stretch lg:self-auto">
+              <Button 
+                disabled={!selectedAccount || statementRows.length === 0 || exporting} 
+                onClick={() => handleExportStatement(selectedAccount, statementRows)}
+                className="gradient-primary text-primary-foreground shadow-soft hover:shadow-glow h-11 px-5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+              >
+                <FileDown className="w-4 h-4" /> 
+                {exporting ? "Exporting..." : "Export Statement PDF"}
+              </Button>
+              <Button 
+                disabled={!selectedAccount || statementRows.length === 0}
+                onClick={() => window.print()} 
+                variant="outline" 
+                className="h-11 px-5 gap-2 border-2 rounded-xl font-semibold hover:bg-primary/10"
+              >
+                <Printer className="w-4 h-4" /> Print Statement
+              </Button>
+            </div>
           </div>
 
           {!selectedAccId ? (
@@ -623,5 +841,6 @@ export default function Reports() {
         </TabsContent>
       </Tabs>
     </div>
+    </>
   );
 }
