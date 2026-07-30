@@ -173,25 +173,25 @@ export default function Receivables() {
       <div id="print-receivables-wrapper" style={{ display: "none" }}>
         <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
           
-          {/* Business & Document Header */}
-          <div style={{ paddingBottom: "12px", borderBottom: "2px solid #0f172a", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-            <div>
-              <div style={{ fontSize: "20px", fontWeight: "900", color: "#0f172a", letterSpacing: "-0.5px" }}>
-                {profile?.business_name || "AsaanKhata"}
-              </div>
-              <div style={{ fontSize: "12px", fontWeight: "800", color: "#dc2626", marginTop: "3px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                RECEIVABLES STATEMENT REPORT · (خلاصہ قابلِ وصول - لینا ہے)
-              </div>
-              <div style={{ fontSize: "10px", color: "#64748b", marginTop: "3px" }}>
-                {profile?.business_phone && <span>Phone: {profile.business_phone} · </span>}
-                {profile?.business_address && <span>Address: {profile.business_address} · </span>}
-                <span>Branch: {selectedBranchName}</span>
-              </div>
+          {/* 1. Top Business Information */}
+          <div style={{ textAlign: "center", borderBottom: "1px solid #cbd5e1", paddingBottom: "8px" }}>
+            <div style={{ fontSize: "22px", fontWeight: "900", color: "#0f172a", letterSpacing: "-0.5px" }}>
+              {profile?.business_name || "AsaanKhata"}
             </div>
-            <div style={{ textAlign: "right", fontSize: "10px", color: "#475569" }}>
-              <div>Date: <strong style={{ color: "#0f172a" }}>{printDate}</strong></div>
-              <div>Time: <strong style={{ color: "#0f172a" }}>{printTime}</strong></div>
-              <div>Total Accounts: <strong style={{ color: "#dc2626" }}>{filtered.length}</strong></div>
+            <div style={{ fontSize: "10px", color: "#64748b", marginTop: "3px" }}>
+              {profile?.business_phone && <span>Phone: {profile.business_phone} · </span>}
+              {profile?.business_address && <span>Address: {profile.business_address} · </span>}
+              <span>Branch: {selectedBranchName}</span>
+            </div>
+          </div>
+
+          {/* 2. Centered Report Title */}
+          <div style={{ textAlign: "center", margin: "12px 0 10px 0" }}>
+            <div style={{ fontSize: "14px", fontWeight: "900", color: "#dc2626", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "2px solid #dc2626", display: "inline-block", paddingBottom: "2px" }}>
+              (خلاصہ قابلِ وصول - لینا ہے) · REPORT STATEMENT
+            </div>
+            <div style={{ fontSize: "9.5px", color: "#64748b", marginTop: "4px" }}>
+              Printed Date: <strong>{printDate}</strong> · Time: <strong>{printTime}</strong> · Total Accounts: <strong style={{ color: "#dc2626" }}>{filtered.length}</strong>
             </div>
           </div>
 
