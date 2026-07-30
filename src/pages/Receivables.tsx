@@ -272,7 +272,7 @@ export default function Receivables() {
           title={<span className="flex items-center gap-3"><span className="p-2 rounded-2xl bg-red-500/10 text-red-600"><ArrowDownLeft className="w-7 h-7" /></span>{t("Receivables")}</span>}
           description="Customers and accounts from whom you need to collect payments."
           actions={
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
               {role === "admin" && (
                 <div className="w-56">
                   <Select value={selectedBranch} onValueChange={setSelectedBranch}>

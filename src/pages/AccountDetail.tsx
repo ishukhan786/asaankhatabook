@@ -581,7 +581,7 @@ export default function AccountDetail() {
         </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <Card className="glass-card px-3 py-2 border-l-2 border-l-primary/40">
           <div className="flex items-center justify-between">
             <div>
@@ -725,7 +725,7 @@ export default function AccountDetail() {
                 required 
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Debit (Nikala / Diya)</Label>
                 <Input 
@@ -784,7 +784,7 @@ export default function AccountDetail() {
             <DialogTitle className="flex items-center gap-2 font-display text-xl text-primary"><Receipt className="w-6 h-6" /> Add Transaction</DialogTitle>
           </DialogHeader>
           <form onSubmit={submitQuick} className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Date *</Label>
                 <Input 
@@ -808,7 +808,7 @@ export default function AccountDetail() {
                 rows={2} 
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-destructive font-bold">Debit (Nikala)</Label>
                 <Input 

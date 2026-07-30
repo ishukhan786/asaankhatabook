@@ -348,7 +348,7 @@ export default function Dashboard() {
     return (
       <div className="p-6 md:p-10 space-y-6 max-w-[1600px] mx-auto">
         <Skeleton className="h-20 w-full rounded-2xl" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Skeleton className="h-32 w-full rounded-2xl" />
           <Skeleton className="h-32 w-full rounded-2xl" />
           <Skeleton className="h-32 w-full rounded-2xl" />

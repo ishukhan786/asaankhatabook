@@ -225,7 +225,7 @@ export default function Transactions() {
         eyebrow={t("Transactions")}
         title={t("Transactions")}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button variant="outline" className="glass" onClick={handleExport} disabled={!rows || rows.length === 0}>
               <Download className="w-4 h-4 mr-1" /> Export CSV
             </Button>
@@ -236,7 +236,7 @@ export default function Transactions() {
         }
       />
 
-      <Card className="glass p-4 grid md:grid-cols-3 gap-3">
+      <Card className="glass p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
           <Label className="text-xs text-muted-foreground">{t("Search")}</Label>
           <div className="relative">
@@ -329,7 +329,7 @@ export default function Transactions() {
                 <p className="text-sm font-medium text-destructive">{editErrors.details.message}</p>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Debit (Nikala / Diya)</Label>
                 <Input type="number" step="0.01" min="0" {...editForm.form.register("debit")} />

@@ -76,7 +76,7 @@ export default function AppLayout() {
             </div>
 
             {/* Global Search in Top Center */}
-            <div className="flex-1 max-w-sm mx-auto px-4 print:hidden" style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}>
+            <div className="hidden md:block flex-1 max-w-sm mx-auto px-4 print:hidden" style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}>
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -108,6 +108,15 @@ export default function AppLayout() {
               <div className="text-xs text-muted-foreground hidden sm:block font-medium">
                 {new Date().toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
               </div>
+
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full h-9 w-9 hover:bg-primary/10 transition-colors md:hidden"
+                onClick={() => setSearchOpen(true)}
+              >
+                <Search className="w-4 h-4 text-primary" />
+              </Button>
 
               <Button 
                 variant="ghost" 
