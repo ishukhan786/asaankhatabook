@@ -572,6 +572,10 @@
 /* Sidebar text overrides for readability on emerald green background */
 [data-sidebar="sidebar"], .sidebar, aside {
   --muted-foreground: 160 40% 90% !important;
+  --glass-bg: rgba(255, 255, 255, 0.12) !important;
+  --glass-bg-hover: rgba(255, 255, 255, 0.22) !important;
+  --glass-border: rgba(255, 255, 255, 0.18) !important;
+  --primary: 0 0% 100% !important;
 }
 
 
