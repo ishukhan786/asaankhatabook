@@ -454,13 +454,13 @@ export default function AccountDetail() {
                     <td style={{ padding: "7px 8px", color: "#94a3b8", fontWeight: "600" }}>{i + 1}</td>
                     <td style={{ padding: "7px 8px", color: "#475569", fontFamily: "monospace" }}>{formatDate(String(r.txn_date || ""))}</td>
                     <td style={{ padding: "7px 8px", fontWeight: "700", color: "#0f172a" }}>{r.details}</td>
-                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace" }}>
+                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", fontSize: "12px" }}>
                       {Number(r.debit) > 0 ? formatMoney(Number(r.debit)) : "-"}
                     </td>
-                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace" }}>
+                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", fontSize: "12px" }}>
                       {Number(r.credit) > 0 ? formatMoney(Number(r.credit)) : "-"}
                     </td>
-                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: r.balance >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", fontSize: "11px" }}>
+                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: r.balance >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", fontSize: "12px" }}>
                       {formatMoney(r.balance, account?.currency)} {balanceLabel(r.balance)}
                     </td>
                   </tr>
