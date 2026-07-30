@@ -150,7 +150,7 @@ export function AppSidebar() {
                           style={active ? {
                             background: "transparent",
                             borderColor: "transparent",
-                            boxShadow: "inset 3px 0 0 #ffffff",
+                            boxShadow: "inset 3px 0 0 hsl(var(--sidebar-primary))",
                           } : {
                             borderColor: "transparent",
                           }}
