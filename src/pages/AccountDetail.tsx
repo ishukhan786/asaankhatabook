@@ -382,7 +382,7 @@ export default function AccountDetail() {
           {/* 2. Centered Report Title */}
           <div style={{ textAlign: "center", margin: "12px 0 10px 0" }}>
             <div style={{ fontSize: "14px", fontWeight: "900", color: "#0369a1", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "2px solid #0369a1", display: "inline-block", paddingBottom: "2px" }}>
-              ACCOUNT LEDGER STATEMENT REPORT
+              Customer Ledger Report
             </div>
             <div style={{ fontSize: "9.5px", color: "#64748b", marginTop: "4px" }}>
               Printed Date: <strong>{printDate}</strong> · Time: <strong>{printTime}</strong>
