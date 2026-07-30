@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, FileDown, FileBarChart, Users, Receipt, ArrowUpRight, ArrowDownLeft, Scale, Building2, Phone, MapPin, Wallet, Printer } from "lucide-react";
+import { Search, FileDown, FileBarChart, Users, Receipt, ArrowUpRight, ArrowDownLeft, Scale, Building2, Phone, MapPin, Printer } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { exportLedgerPDF, exportStatementPDF } from "@/lib/pdf";
-import PayablesReceivables from "./PayablesReceivables";
+
 import { useDebounce } from "@/hooks/useDebounce";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -471,9 +471,7 @@ export default function Reports() {
           <TabsTrigger value="statement" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
             <Receipt className="w-4 h-4" /> {t("LedgerStatement")}
           </TabsTrigger>
-          <TabsTrigger value="payables-receivables" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-            <Wallet className="w-4 h-4" /> {t("PayablesReceivables")}
-          </TabsTrigger>
+
         </TabsList>
 
         {/* Ledger Summary Tab */}
@@ -857,9 +855,7 @@ export default function Reports() {
             </div>
           )}
         </TabsContent>
-        <TabsContent value="payables-receivables" className="space-y-6 outline-none">
-          <PayablesReceivables embedded={true} />
-        </TabsContent>
+
       </Tabs>
     </div>
     </>
