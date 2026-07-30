@@ -197,24 +197,30 @@ export default function Payables() {
             </div>
           </div>
 
-          {/* Grand Totals Metric Box */}
-          <div style={{ margin: "14px 0", background: "#ecfdf5", border: "1.5px solid #a7f3d0", borderRadius: "10px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div className="text-[10px]" style={{ fontSize: "10px", fontWeight: "800", textTransform: "uppercase", color: "#047857", letterSpacing: "0.5px" }}>
-                TOTAL OUTSTANDING PAYABLES ({filtered.length} ACCOUNTS)
-              </div>
-              <div style={{ display: "flex", gap: "16px", marginTop: "4px", flexWrap: "wrap" }}>
-                {totals.map(([cur, amount]) => (
-                  <div key={cur} style={{ fontSize: "18px", fontWeight: "900", color: "#065f46", fontFamily: "monospace" }}>
+          {/* Grand Totals Metric Box - Multi-Currency Grid */}
+          <div style={{ margin: "14px 0", background: "#f0fdf4", border: "1.5px solid #a7f3d0", borderRadius: "12px", padding: "14px 18px" }}>
+            <div style={{ fontSize: "10px", fontWeight: "800", textTransform: "uppercase", color: "#047857", letterSpacing: "0.5px", marginBottom: "10px", display: "flex", justifyContent: "space-between" }}>
+              <span>TOTAL OUTSTANDING PAYABLES SUMMARY ({filtered.length} ACCOUNTS)</span>
+              <span>STATUS: ACTIVE LIABILITY</span>
+            </div>
+            
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px" }}>
+              {totals.map(([cur, amount]) => (
+                <div key={cur} style={{ background: "#ffffff", border: "1px solid #6ee7b7", borderRadius: "8px", padding: "10px 14px" }}>
+                  <div style={{ fontSize: "9.5px", fontWeight: "700", color: "#047857", textTransform: "uppercase" }}>
+                    {cur === "PKR" ? "🇵🇰 PKR Total" : cur === "AED" ? "🇦🇪 AED Total" : cur === "USD" ? "🇺🇸 USD Total" : `${cur} Total`}
+                  </div>
+                  <div style={{ fontSize: "17px", fontWeight: "900", color: "#065f46", fontFamily: "monospace", marginTop: "3px" }}>
                     {formatMoney(amount, cur)}
                   </div>
-                ))}
-                {totals.length === 0 && <div style={{ fontSize: "18px", fontWeight: "900", color: "#065f46" }}>0.00</div>}
-              </div>
-            </div>
-            <div style={{ fontSize: "10px", color: "#047857", fontWeight: "700", textAlign: "right" }}>
-              STATUS: ACTIVE LIABILITY<br />
-              <span style={{ fontSize: "9px", opacity: 0.8 }}>Generated automatically by AsaanKhata</span>
+                </div>
+              ))}
+              {totals.length === 0 && (
+                <div style={{ background: "#ffffff", border: "1px solid #6ee7b7", borderRadius: "8px", padding: "10px 14px" }}>
+                  <div style={{ fontSize: "9.5px", fontWeight: "700", color: "#047857" }}>TOTAL BALANCE</div>
+                  <div style={{ fontSize: "17px", fontWeight: "900", color: "#065f46", fontFamily: "monospace", marginTop: "3px" }}>0.00</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -252,22 +258,6 @@ export default function Payables() {
                 ))
               )}
             </tbody>
-            {filtered.length > 0 && (
-              <tfoot>
-                <tr style={{ background: "#ecfdf5", borderTop: "2px solid #047857" }}>
-                  <td colSpan={5} style={{ padding: "10px", textAlign: "right", fontWeight: "900", fontSize: "10px", color: "#047857", textTransform: "uppercase" }}>
-                    GRAND TOTAL PAYABLE ({filtered.length} ACCOUNTS)
-                  </td>
-                  <td style={{ padding: "10px", textAlign: "right", fontWeight: "900", color: "#065f46", fontFamily: "monospace" }}>
-                    {totals.map(([cur, amount], idx) => (
-                      <div key={cur} style={{ fontSize: idx === 0 ? "13px" : "11px" }}>
-                        {formatMoney(amount, cur)}
-                      </div>
-                    ))}
-                  </td>
-                </tr>
-              </tfoot>
-            )}
           </table>
 
           {/* Signatures & Footer */}
@@ -335,13 +325,18 @@ export default function Payables() {
                   <span>{t("TotalPayable")}</span>
                   <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full text-[10px]">{filtered.length} {t("TotalAccounts")}</span>
                 </div>
-                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                  {totals.map(([cur, amount], idx) => (
-                    <span key={cur} className={`font-black num tracking-tight text-emerald-600 dark:text-emerald-400 ${idx === 0 ? "text-3xl" : "text-xl opacity-80"}`}>
-                      {formatMoney(amount, cur)}
-                    </span>
+                <div className="flex flex-wrap items-center gap-3 mt-2">
+                  {totals.map(([cur, amount]) => (
+                    <div key={cur} className="flex items-center gap-2 bg-emerald-100/80 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/60 px-3.5 py-1.5 rounded-xl shadow-xs">
+                      <span className="text-xs font-extrabold uppercase text-emerald-800 dark:text-emerald-300">
+                        {cur === "PKR" ? "🇵🇰 PKR" : cur === "AED" ? "🇦🇪 AED" : cur === "USD" ? "🇺🇸 USD" : cur}
+                      </span>
+                      <span className="font-black text-lg num text-emerald-700 dark:text-emerald-300">
+                        {formatMoney(amount, cur)}
+                      </span>
+                    </div>
                   ))}
-                  {totals.length === 0 && <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 num">0</span>}
+                  {totals.length === 0 && <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 num">0</span>}
                 </div>
               </div>
             </div>
