@@ -282,26 +282,42 @@ export default function Reports() {
       <div className="print-report-wrapper" style={{ display: "none" }}>
         <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
           
-          {/* Header */}
-          <div style={{ paddingBottom: "12px", borderBottom: "2px solid #0f172a", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-            <div>
-              <div style={{ fontSize: "20px", fontWeight: "900", color: "#0f172a", letterSpacing: "-0.5px" }}>
-                {profile?.business_name || "AsaanKhata"}
-              </div>
-              <div style={{ fontSize: "12px", fontWeight: "800", color: "#0369a1", marginTop: "3px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                {selectedAccId ? `ACCOUNT STATEMENT REPORT (${selectedAccount?.name})` : "ALL ACCOUNTS FINANCIAL SUMMARY REPORT"}
-              </div>
-              <div style={{ fontSize: "10px", color: "#64748b", marginTop: "3px" }}>
-                {profile?.business_phone && <span>Phone: {profile.business_phone} · </span>}
-                {profile?.business_address && <span>Address: {profile.business_address}</span>}
-              </div>
+          {/* 1. Top Business Information */}
+          <div style={{ textAlign: "center", borderBottom: "1px solid #cbd5e1", paddingBottom: "8px" }}>
+            <div style={{ fontSize: "22px", fontWeight: "900", color: "#0f172a", letterSpacing: "-0.5px" }}>
+              {profile?.business_name || "AsaanKhata"}
             </div>
-            <div style={{ textAlign: "right", fontSize: "10px", color: "#475569" }}>
-              <div>Date: <strong style={{ color: "#0f172a" }}>{printDate}</strong></div>
-              <div>Time: <strong style={{ color: "#0f172a" }}>{printTime}</strong></div>
-              {from && <div>Period: <strong>{from} to {to || "Today"}</strong></div>}
+            <div style={{ fontSize: "10px", color: "#64748b", marginTop: "3px" }}>
+              {profile?.business_phone && <span>Phone: {profile.business_phone} · </span>}
+              {profile?.business_address && <span>Address: {profile.business_address}</span>}
             </div>
           </div>
+
+          {/* 2. Centered Report Title */}
+          <div style={{ textAlign: "center", margin: "12px 0 10px 0" }}>
+            <div style={{ fontSize: "14px", fontWeight: "900", color: "#0369a1", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "2px solid #0369a1", display: "inline-block", paddingBottom: "2px" }}>
+              {selectedAccId ? "ACCOUNT LEDGER STATEMENT REPORT" : "ALL ACCOUNTS FINANCIAL SUMMARY REPORT"}
+            </div>
+            <div style={{ fontSize: "9.5px", color: "#64748b", marginTop: "4px" }}>
+              Date: <strong>{printDate}</strong> · Time: <strong>{printTime}</strong>
+              {from && <span> · Period: <strong>{from} to {to || "Today"}</strong></span>}
+            </div>
+          </div>
+
+          {/* 3. Customer Details Card */}
+          {selectedAccId && selectedAccount && (
+            <div style={{ margin: "10px 0 14px 0", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "10px 14px", background: "transparent" }}>
+              <div style={{ fontSize: "9px", fontWeight: "800", textTransform: "uppercase", color: "#0369a1", letterSpacing: "0.5px", marginBottom: "6px" }}>
+                CUSTOMER &amp; ACCOUNT DETAILS
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 20px", fontSize: "11px" }}>
+                <div><span style={{ color: "#64748b" }}>Customer Name:</span> <strong style={{ color: "#0f172a", fontSize: "11.5px" }}>{selectedAccount.name}</strong></div>
+                <div><span style={{ color: "#64748b" }}>Account No:</span> <strong style={{ color: "#0369a1", fontFamily: "monospace", fontSize: "11.5px" }}>{selectedAccount.account_no}</strong></div>
+                <div><span style={{ color: "#64748b" }}>Mobile No:</span> <strong style={{ color: "#0f172a" }}>{selectedAccount.mobile || "-"}</strong></div>
+                <div><span style={{ color: "#64748b" }}>Address:</span> <strong style={{ color: "#0f172a" }}>{selectedAccount.address || "-"}</strong></div>
+              </div>
+            </div>
+          )}
 
           {/* Summary Metric Box - Zero Background Fill */}
           <div style={{ margin: "14px 0", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "12px 16px", background: "transparent" }}>
