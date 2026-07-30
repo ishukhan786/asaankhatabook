@@ -97,8 +97,28 @@ export const resources = {
       "AdminPanel": "ایڈمن پینل",
       "Users": "صارفین",
       "AuditLogs": "آڈٹ لاگز",
-      "SignOut": "لاگ آؤٹ",
-      "Welcome": "خوش آمدید، {{name}}",
+      // Settings & Profile
+      "Profile": "Profile",
+      "Business": "Business",
+      "Preferences": "Preferences",
+      "Security": "Security",
+      "ProfileInfo": "Profile Information",
+      "BusinessDetails": "Business Details",
+      "GeneralPreferences": "General Preferences",
+      "AccountSecurity": "Account Security",
+      "SessionManagement": "Session Management",
+      "FullName": "Full Name",
+      "BusinessName": "Business Name",
+      "BusinessPhone": "Business Phone",
+      "BusinessAddress": "Business Address",
+      "NewPassword": "New Password",
+      "ConfirmPassword": "Confirm Password",
+      "UpdatePassword": "Update Password",
+      "Theme": "Theme",
+    }
+  },
+  ur: {
+    translation: {
 
       // Labels & Buttons
       "Search": "تلاش کریں...",
@@ -148,6 +168,25 @@ export const resources = {
       "ClosingBalance": "آخری بقایا",
       "Receipt": "وصولی (جمع)",
       "Payment": "ادائیگی (بنام)",
+
+      // Settings & Profile
+      "Profile": "پروفائل",
+      "Business": "کاروبار",
+      "Preferences": "ترجیحات",
+      "Security": "سیکیورٹی",
+      "ProfileInfo": "پروفائل معلومات",
+      "BusinessDetails": "کاروباری تفصیلات",
+      "GeneralPreferences": "عام ترجیحات",
+      "AccountSecurity": "اکاؤنٹ سیکیورٹی",
+      "SessionManagement": "سیشن انتظامیہ",
+      "FullName": "پورا نام",
+      "BusinessName": "کاروبار کا نام",
+      "BusinessPhone": "کاروباری فون نمبر",
+      "BusinessAddress": "کاروباری پتہ",
+      "NewPassword": "نیا پاس ورڈ",
+      "ConfirmPassword": "پاس ورڈ کی تصدیق",
+      "UpdatePassword": "پاس ورڈ اپ ڈیٹ کریں",
+      "Theme": "تھیم",
     }
   }
 };

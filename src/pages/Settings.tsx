@@ -252,16 +252,16 @@ export default function Settings() {
       <Tabs defaultValue="profile" className="flex flex-col md:flex-row gap-6 lg:gap-10">
         <TabsList className="flex flex-row md:flex-col justify-start items-stretch h-auto bg-transparent space-x-2 md:space-x-0 md:space-y-2 w-full md:w-64 p-0 overflow-x-auto pb-2 md:pb-0">
           <TabsTrigger value="profile" className="justify-start px-4 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all rounded-lg text-left whitespace-nowrap md:whitespace-normal">
-            <User className="w-4 h-4 mr-3" /> Profile
+            <User className="w-4 h-4 mr-3" /> {t("Profile")}
           </TabsTrigger>
           <TabsTrigger value="business" className="justify-start px-4 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all rounded-lg text-left whitespace-nowrap md:whitespace-normal">
-            <Building2 className="w-4 h-4 mr-3" /> Business
+            <Building2 className="w-4 h-4 mr-3" /> {t("Business")}
           </TabsTrigger>
           <TabsTrigger value="preferences" className="justify-start px-4 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all rounded-lg text-left whitespace-nowrap md:whitespace-normal">
-            <Globe2 className="w-4 h-4 mr-3" /> Preferences
+            <Globe2 className="w-4 h-4 mr-3" /> {t("Preferences")}
           </TabsTrigger>
           <TabsTrigger value="security" className="justify-start px-4 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all rounded-lg text-left whitespace-nowrap md:whitespace-normal">
-            <Lock className="w-4 h-4 mr-3" /> Security
+            <Lock className="w-4 h-4 mr-3" /> {t("Security")}
           </TabsTrigger>
         </TabsList>
 
@@ -269,7 +269,7 @@ export default function Settings() {
           <TabsContent value="profile" className="mt-0 space-y-6 outline-none focus-visible:ring-0">
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-lg font-bold border-b pb-2">
-                Profile Information
+                {t("ProfileInfo")}
               </div>
               <Card className="glass p-6">
                 <form onSubmit={updateProfile} className="space-y-6">
@@ -305,7 +305,7 @@ export default function Settings() {
                         <Input id="email" value={user?.email} disabled className="bg-muted/50 cursor-not-allowed font-medium" />
                       </div>
                       <div className="grid gap-2">
-                        <Label htmlFor="name" className="text-muted-foreground">Full Name</Label>
+                        <Label htmlFor="name" className="text-muted-foreground">{t("FullName")}</Label>
                         <Input 
                           id="name" 
                           value={fullName} 
@@ -324,7 +324,7 @@ export default function Settings() {
                           Saving...
                         </>
                       ) : (
-                        "Save Changes"
+                        t("Save")
                       )}
                     </Button>
                   </div>
@@ -336,13 +336,13 @@ export default function Settings() {
           <TabsContent value="business" className="mt-0 space-y-6 outline-none focus-visible:ring-0">
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-lg font-bold border-b pb-2">
-                Business Details
+                {t("BusinessDetails")}
               </div>
               <Card className="glass p-6">
                 <form onSubmit={updateBusinessInfo} className="space-y-5">
                   <div className="grid md:grid-cols-2 gap-5">
                     <div className="grid gap-2">
-                      <Label htmlFor="businessName" className="text-muted-foreground">Business Name</Label>
+                      <Label htmlFor="businessName" className="text-muted-foreground">{t("BusinessName")}</Label>
                       <Input
                         id="businessName"
                         value={businessName}
@@ -352,7 +352,7 @@ export default function Settings() {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="businessPhone" className="text-muted-foreground">Business Phone</Label>
+                      <Label htmlFor="businessPhone" className="text-muted-foreground">{t("BusinessPhone")}</Label>
                       <Input
                         id="businessPhone"
                         value={businessPhone}
@@ -363,7 +363,7 @@ export default function Settings() {
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="businessAddress" className="text-muted-foreground">Business Address</Label>
+                    <Label htmlFor="businessAddress" className="text-muted-foreground">{t("BusinessAddress")}</Label>
                     <Input
                         id="businessAddress"
                         value={businessAddress}
@@ -380,7 +380,7 @@ export default function Settings() {
                           Saving...
                         </>
                       ) : (
-                        "Save Business Info"
+                        t("Save")
                       )}
                     </Button>
                   </div>
@@ -393,22 +393,22 @@ export default function Settings() {
             <section className="space-y-6">
               <div>
                 <div className="flex items-center gap-2 text-lg font-bold border-b pb-2">
-                  General Preferences
+                  {t("GeneralPreferences")}
                 </div>
                 <Card className="glass p-6 mt-4 space-y-5">
                   <div className="grid md:grid-cols-2 gap-5">
                     <div className="grid gap-2">
-                      <Label className="text-muted-foreground">Language</Label>
+                      <Label className="text-muted-foreground">App Language / زبان</Label>
                       <Select value={prefs.language} onValueChange={(value: "en" | "ur") => setPrefs({ ...prefs, language: value })}>
                         <SelectTrigger className="font-medium"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="ur">Urdu / RTL</SelectItem>
+                          <SelectItem value="ur">اردو (Urdu)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid gap-2">
-                      <Label className="text-muted-foreground">Theme</Label>
+                      <Label className="text-muted-foreground">{t("Theme")}</Label>
                       <Button 
                         variant="outline" 
                         className="justify-start font-medium"
@@ -421,10 +421,10 @@ export default function Settings() {
                   </div>
                   <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-4">
                     <div className="space-y-1">
-                      <div className="font-semibold">Local Preferences</div>
+                      <div className="font-semibold">{t("Preferences")}</div>
                       <div className="text-sm text-muted-foreground">Save your UI preferences locally on this device.</div>
                     </div>
-                    <Button type="button" variant="secondary" onClick={savePreferences}>Save</Button>
+                    <Button type="button" variant="secondary" onClick={savePreferences}>{t("Save")}</Button>
                   </div>
                 </Card>
               </div>
@@ -507,13 +507,13 @@ export default function Settings() {
           <TabsContent value="security" className="mt-0 space-y-6 outline-none focus-visible:ring-0">
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-lg font-bold border-b pb-2">
-                Account Security
+                {t("AccountSecurity")}
               </div>
               <Card className="glass p-6">
                 <form onSubmit={changePassword} className="space-y-5">
                   <div className="grid md:grid-cols-2 gap-5">
                     <div className="grid gap-2">
-                      <Label htmlFor="pass" className="text-muted-foreground">New Password</Label>
+                      <Label htmlFor="pass" className="text-muted-foreground">{t("NewPassword")}</Label>
                       <Input 
                         id="pass" 
                         type="password" 
@@ -524,7 +524,7 @@ export default function Settings() {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="cpass" className="text-muted-foreground">Confirm New Password</Label>
+                      <Label htmlFor="cpass" className="text-muted-foreground">{t("ConfirmPassword")}</Label>
                       <Input 
                         id="cpass" 
                         type="password" 
@@ -543,7 +543,7 @@ export default function Settings() {
                           Updating...
                         </>
                       ) : (
-                        "Update Password"
+                        t("UpdatePassword")
                       )}
                     </Button>
                   </div>
@@ -553,15 +553,15 @@ export default function Settings() {
 
             <section className="space-y-4 pt-4">
               <div className="flex items-center gap-2 text-lg font-bold border-b pb-2 text-destructive">
-                Session Management
+                {t("SessionManagement")}
               </div>
               <Card className="border-destructive/20 bg-destructive/5 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <div className="font-bold text-destructive">Sign out from this device</div>
+                  <div className="font-bold text-destructive">{t("SignOut")}</div>
                   <div className="text-sm text-destructive/80 mt-1">Use this when switching users or leaving a shared computer.</div>
                 </div>
                 <Button type="button" variant="destructive" onClick={signOut} className="shadow-lg shadow-destructive/20">
-                  <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                  <LogOut className="w-4 h-4 mr-2" /> {t("SignOut")}
                 </Button>
               </Card>
             </section>
