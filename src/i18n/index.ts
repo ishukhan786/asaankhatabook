@@ -6,7 +6,7 @@ const resources = {
     translation: {
       "Dashboard": "Dashboard",
       "Accounts": "Customers",
-      "Transactions": "Voucher History",
+      "Transactions": "Transactions",
       "Expenses": "Expenses",
       "Reports": "Reports",
       "Settings": "Settings",
