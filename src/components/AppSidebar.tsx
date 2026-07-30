@@ -9,6 +9,7 @@ import {
   Shield,
   UserCog,
   Users,
+  Wallet,
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -63,6 +64,7 @@ export function AppSidebar() {
         { title: t("Dashboard"), url: "/", icon: LayoutDashboard, exact: true, colorClass: "text-indigo-500 dark:text-indigo-400" },
         { title: t("Accounts"), url: "/accounts", icon: Users, colorClass: "text-amber-500 dark:text-amber-400" },
         { title: t("Transactions"), url: "/transactions", icon: Receipt, dot: true, colorClass: "text-emerald-500 dark:text-emerald-400" },
+        { title: t("PayablesReceivables"), url: "/payables-receivables", icon: Wallet, colorClass: "text-teal-500 dark:text-teal-400" },
         { title: t("Reports"), url: "/reports", icon: FileBarChart, colorClass: "text-purple-500 dark:text-purple-400" },
       ],
     },

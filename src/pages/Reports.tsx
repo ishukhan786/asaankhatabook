@@ -247,7 +247,7 @@ export default function Reports() {
           <TabsTrigger value="statement" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
             <Receipt className="w-4 h-4" /> {t("LedgerStatement")}
           </TabsTrigger>
-          <TabsTrigger value="statement" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="payables-receivables" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
             <Wallet className="w-4 h-4" /> {t("PayablesReceivables")}
           </TabsTrigger>
         </TabsList>
