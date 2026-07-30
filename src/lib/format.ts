@@ -5,7 +5,10 @@ export const formatNumber = (n: number | string | null | undefined) => {
 
 export const formatMoney = (n: number | string | null | undefined, currency: string = "") => {
   const v = formatNumber(n);
-  return currency ? `${currency} ${v}` : v;
+  if (!currency) return v;
+  const c = currency.trim().toUpperCase();
+  const displayCur = c === "PKR" ? "Rs" : currency;
+  return `${displayCur} ${v}`;
 };
 
 export const balanceLabel = (n: number) => (n >= 0 ? "CR" : "DR");
