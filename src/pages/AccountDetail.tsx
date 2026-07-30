@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, Pencil, MessageSquare, Receipt, Loader, ArrowUpRight, ArrowDownRight, Globe2, Mail } from "lucide-react";
+import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, Pencil, MessageSquare, Receipt, Loader, ArrowUpRight, ArrowDownRight, Globe2, Mail, Search } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -57,6 +57,7 @@ export default function AccountDetail() {
   const [txns, setTxns] = useState<TxnType[] | null>(null);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
   // Email Statement state
@@ -124,6 +125,13 @@ export default function AccountDetail() {
   const filteredRows = (txns ?? []).filter((t) => {
     if (from && t.txn_date < from) return false;
     if (to && t.txn_date > to) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesDetails = t.details?.toLowerCase().includes(q);
+      const matchesCode = t.txn_code?.toLowerCase().includes(q);
+      const matchesNotes = t.notes?.toLowerCase().includes(q);
+      return !!(matchesDetails || matchesCode || matchesNotes);
+    }
     return true;
   });
 
@@ -419,14 +427,25 @@ export default function AccountDetail() {
         </Card>
       </div>
 
-      <Card className="glass px-3 py-2 flex flex-row items-center gap-3">
-        <div className="flex items-center gap-2 flex-1">
-          <Label className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider whitespace-nowrap">From</Label>
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-7 text-xs" />
+      <Card className="glass p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search transactions by narration or voucher no..."
+            className="pl-8 h-8 text-xs bg-background/40 border-white/10"
+          />
         </div>
-        <div className="flex items-center gap-2 flex-1">
-          <Label className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider whitespace-nowrap">To</Label>
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-7 text-xs" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+            <Label className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider whitespace-nowrap">From</Label>
+            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 text-xs bg-background/40" />
+          </div>
+          <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+            <Label className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider whitespace-nowrap">To</Label>
+            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 text-xs bg-background/40" />
+          </div>
         </div>
       </Card>
 
@@ -452,7 +471,11 @@ export default function AccountDetail() {
             </thead>
             <tbody>
               {rows.length === 0 ? (
-                <tr><td colSpan={role === "admin" ? 7 : 6} className="text-center py-6 text-muted-foreground text-sm">No transactions yet.</td></tr>
+                <tr>
+                  <td colSpan={role === "admin" ? 7 : 6} className="text-center py-6 text-muted-foreground text-sm">
+                    {searchQuery ? "No transactions found matching your search." : "No transactions yet."}
+                  </td>
+                </tr>
               ) : rows.map((t) => (
                 <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30 group">
                   <td className="px-4 py-1.5 num text-muted-foreground whitespace-nowrap text-xs">{formatDate(t.txn_date)}</td>

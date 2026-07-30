@@ -247,10 +247,17 @@ export default function Accounts() {
       {/* Mobile view: simple cards for each account */}
       <div className="md:hidden space-y-4 mt-4">
         {filtered.map((r) => (
-          <Card key={r.id} className="p-4">
-            <div className="font-medium mb-1">{r.name}</div>
-            <div className="text-sm text-muted-foreground mb-1">{r.account_no}</div>
-            <div className="text-sm">{r.currency}</div>
+          <Card 
+            key={r.id} 
+            className="p-4 cursor-pointer hover:bg-muted/40 transition-colors"
+            onClick={() => navigate(`/accounts/${r.id}`)}
+          >
+            <div className="font-medium mb-1 text-primary hover:underline">{r.name}</div>
+            <div className="text-xs text-muted-foreground mb-1 font-mono">{r.account_no}</div>
+            <div className="flex items-center justify-between mt-2">
+              <Badge variant="secondary" className="font-mono text-[10px]">{r.currency}</Badge>
+              <span className="text-[10px] text-muted-foreground">{r.branches?.name ?? "N/A"}</span>
+            </div>
           </Card>
         ))}
       </div>
