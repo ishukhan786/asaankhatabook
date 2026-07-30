@@ -461,39 +461,46 @@ export default function AccountDetail() {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b border-border/50">
               <tr className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
-                <th className="text-left px-4 py-2">Date</th>
-                <th className="text-left px-4 py-2">Details</th>
-                <th className="text-right px-4 py-2">Debit</th>
-                <th className="text-right px-4 py-2">Credit</th>
-                <th className="text-right px-4 py-2">Balance</th>
-                {role === "admin" && <th className="px-4 py-2"></th>}
+                <th className="text-left px-4 py-2.5">Date</th>
+                <th className="text-left px-4 py-2.5">Voucher No</th>
+                <th className="text-left px-4 py-2.5">Details</th>
+                <th className="text-right px-4 py-2.5">Debit</th>
+                <th className="text-right px-4 py-2.5">Credit</th>
+                <th className="text-right px-4 py-2.5">Balance</th>
+                <th className="text-right px-4 py-2.5">Actions</th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={role === "admin" ? 7 : 6} className="text-center py-6 text-muted-foreground text-sm">
+                  <td colSpan={7} className="text-center py-6 text-muted-foreground text-sm">
                     {searchQuery ? "No transactions found matching your search." : "No transactions yet."}
                   </td>
                 </tr>
               ) : rows.map((t) => (
-                <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30 group">
-                  <td className="px-4 py-1.5 num text-muted-foreground whitespace-nowrap text-xs">{formatDate(t.txn_date)}</td>
-                  <td className="px-4 py-1.5 font-medium text-xs">{t.details}</td>
-                  <td className="px-4 py-1.5 text-right num text-destructive font-medium text-xs">{Number(t.debit) > 0 ? formatMoney(Number(t.debit)) : "-"}</td>
-                  <td className="px-4 py-1.5 text-right num text-success font-medium text-xs">{Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "-"}</td>
-                  <td className={`px-4 py-1 text-right num font-bold text-xs ${t.balance >= 0 ? "text-success" : "text-destructive"}`}>
-                    {formatMoney(t.balance)} <span className="text-[9px] opacity-60 ml-0.5">{balanceLabel(t.balance)}</span>
+                <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30 group transition-colors">
+                  <td className="px-4 py-2.5 num text-muted-foreground whitespace-nowrap text-xs">{formatDate(t.txn_date)}</td>
+                  <td className="px-4 py-2.5 font-mono text-xs font-semibold text-primary">{t.txn_code || "-"}</td>
+                  <td className="px-4 py-2.5 font-medium text-xs">
+                    <div>{t.details}</div>
+                    {t.notes && <div className="text-[10px] text-muted-foreground/70 italic mt-0.5">{t.notes}</div>}
                   </td>
-                  {(role === "admin" || t.created_by === profile?.id) && (
-                    <td className="px-4 py-1.5 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-success" onClick={() => sendWhatsApp(t)} aria-label="Send WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditTx(t)} aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingTx(t)} aria-label="Delete transaction"><Trash2 className="w-3.5 h-3.5" /></Button>
-                      </div>
-                    </td>
-                  )}
+                  <td className="px-4 py-2.5 text-right num text-destructive font-semibold text-xs">{Number(t.debit) > 0 ? formatMoney(Number(t.debit), account.currency) : "-"}</td>
+                  <td className="px-4 py-2.5 text-right num text-success font-semibold text-xs">{Number(t.credit) > 0 ? formatMoney(Number(t.credit), account.currency) : "-"}</td>
+                  <td className={`px-4 py-2.5 text-right num font-bold text-xs ${t.balance >= 0 ? "text-success" : "text-destructive"}`}>
+                    {formatMoney(t.balance, account.currency)} <span className="text-[9px] opacity-60 ml-0.5">{balanceLabel(t.balance)}</span>
+                  </td>
+                  <td className="px-4 py-2.5 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-success hover:bg-success/10" onClick={() => sendWhatsApp(t)} title="Share via WhatsApp" aria-label="Send WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>
+                      {(role === "admin" || t.created_by === profile?.id) && (
+                        <>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted" onClick={() => openEditTx(t)} title="Edit transaction" aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setDeletingTx(t)} title="Delete transaction" aria-label="Delete transaction"><Trash2 className="w-3.5 h-3.5" /></Button>
+                        </>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
