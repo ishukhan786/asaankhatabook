@@ -74,7 +74,7 @@ export default function AppLayout() {
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   aria-label="Global Search"
-                  placeholder="Search accounts or commands... (Ctrl+K)"
+                  placeholder="Search accounts or commands..."
                   onClick={() => setSearchOpen(true)}
                   className="h-9 w-full rounded-xl pl-9 pr-10 text-xs placeholder:text-muted-foreground outline-none transition-all duration-300 cursor-pointer bg-muted/40 hover:bg-muted/60 border border-border/50"
                   readOnly
