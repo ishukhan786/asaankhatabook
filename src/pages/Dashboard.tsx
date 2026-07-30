@@ -425,12 +425,12 @@ export default function Dashboard() {
           <div className="flex flex-wrap items-center gap-2.5 pt-3 mt-3 border-t border-border/50">
             <Link to="/accounts/new">
               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs font-bold transition-transform active:scale-95">
-                <Plus className="w-4 h-4 mr-1.5" /> + New Customer
+                <Plus className="w-4 h-4 mr-1.5" /> {t("NewAccount")}
               </Button>
             </Link>
             <Link to="/transactions/new">
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs font-bold transition-transform active:scale-95">
-                <Receipt className="w-4 h-4 mr-1.5" /> New Entry
+                <Receipt className="w-4 h-4 mr-1.5" /> {t("NewTransaction")}
               </Button>
             </Link>
           </div>
@@ -442,7 +442,7 @@ export default function Dashboard() {
         {/* PKR Balance */}
         <Card className="rounded-2xl p-4 border border-emerald-200/60 dark:border-emerald-900/40 bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/20 dark:to-card shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">PKR Balance</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">{t("PKRBalance")}</span>
             <Badge className="bg-emerald-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">PKR</Badge>
           </div>
           <div className="text-xl md:text-2xl font-extrabold num text-emerald-700 dark:text-emerald-400 mt-2">
@@ -454,7 +454,7 @@ export default function Dashboard() {
         {/* AED Balance */}
         <Card className="rounded-2xl p-4 border border-blue-200/60 dark:border-blue-900/40 bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/20 dark:to-card shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">AED Balance</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">{t("AEDBalance")}</span>
             <Badge className="bg-blue-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">AED</Badge>
           </div>
           <div className="text-xl md:text-2xl font-extrabold num text-blue-700 dark:text-blue-400 mt-2">
@@ -466,7 +466,7 @@ export default function Dashboard() {
         {/* USD Balance */}
         <Card className="rounded-2xl p-4 border border-purple-200/60 dark:border-purple-900/40 bg-gradient-to-br from-purple-50/50 to-white dark:from-purple-950/20 dark:to-card shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">USD Balance</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">{t("USDBalance")}</span>
             <Badge className="bg-purple-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">USD</Badge>
           </div>
           <div className="text-xl md:text-2xl font-extrabold num text-purple-700 dark:text-purple-400 mt-2">
@@ -478,19 +478,19 @@ export default function Dashboard() {
         {/* Total Customers */}
         <Card className="rounded-2xl p-4 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Customers</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("TotalAccounts")}</span>
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
               <Users className="w-4 h-4" />
             </div>
           </div>
           <div className="text-xl md:text-2xl font-extrabold num mt-2">{stats.accounts}</div>
-          <p className="text-xs text-muted-foreground mt-1">Active customer accounts</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("HintActiveAccounts")}</p>
         </Card>
 
         {/* Total Vouchers */}
         <Card className="rounded-2xl p-4 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Vouchers</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("TotalVouchers")}</span>
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
               <Receipt className="w-4 h-4" />
             </div>
@@ -507,32 +507,32 @@ export default function Dashboard() {
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-emerald-500" />
-              <h2 className="font-bold text-sm">PKR Summary</h2>
+              <h2 className="font-bold text-sm">PKR {t("FinancialSummary")}</h2>
             </div>
             <Badge className="bg-emerald-600 text-white font-bold text-[10px]">PKR</Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-4">
             <div>
-              <div className="text-[10px] text-muted-foreground font-semibold uppercase">Cash</div>
+              <div className="text-[10px] text-muted-foreground font-semibold uppercase">{t("Cash")}</div>
               <div className="text-sm font-bold num text-slate-800 dark:text-slate-100 mt-0.5">
                 {formatMoney(stats.cashPKR, "PKR")}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase">Receivable</div>
+              <div className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase">{t("Receivables")}</div>
               <div className="text-sm font-bold num text-orange-600 dark:text-orange-400 mt-0.5">
                 {formatMoney(stats.receivablePKR, "PKR")}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase">Payable</div>
+              <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase">{t("Payables")}</div>
               <div className="text-sm font-bold num text-red-600 dark:text-red-400 mt-0.5">
                 {formatMoney(stats.payablePKR, "PKR")}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase">Net Balance</div>
+              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase">{t("NetBalance")}</div>
               <div className="text-sm font-bold num text-emerald-600 dark:text-emerald-400 mt-0.5">
                 {formatMoney(stats.netPKR, "PKR")}
               </div>
@@ -545,32 +545,32 @@ export default function Dashboard() {
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <h2 className="font-bold text-sm">AED Summary</h2>
+              <h2 className="font-bold text-sm">AED {t("FinancialSummary")}</h2>
             </div>
             <Badge className="bg-blue-600 text-white font-bold text-[10px]">AED</Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-4">
             <div>
-              <div className="text-[10px] text-muted-foreground font-semibold uppercase">Cash</div>
+              <div className="text-[10px] text-muted-foreground font-semibold uppercase">{t("Cash")}</div>
               <div className="text-sm font-bold num text-slate-800 dark:text-slate-100 mt-0.5">
                 {formatMoney(stats.cashAED, "AED")}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase">Receivable</div>
+              <div className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase">{t("Receivables")}</div>
               <div className="text-sm font-bold num text-orange-600 dark:text-orange-400 mt-0.5">
                 {formatMoney(stats.receivableAED, "AED")}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase">Payable</div>
+              <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase">{t("Payables")}</div>
               <div className="text-sm font-bold num text-red-600 dark:text-red-400 mt-0.5">
                 {formatMoney(stats.payableAED, "AED")}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold uppercase">Net Balance</div>
+              <div className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold uppercase">{t("NetBalance")}</div>
               <div className="text-sm font-bold num text-blue-600 dark:text-blue-400 mt-0.5">
                 {formatMoney(stats.netAED, "AED")}
               </div>
@@ -583,32 +583,32 @@ export default function Dashboard() {
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-purple-500" />
-              <h2 className="font-bold text-sm">USD Summary</h2>
+              <h2 className="font-bold text-sm">USD {t("FinancialSummary")}</h2>
             </div>
             <Badge className="bg-purple-600 text-white font-bold text-[10px]">USD</Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-4">
             <div>
-              <div className="text-[10px] text-muted-foreground font-semibold uppercase">Cash</div>
+              <div className="text-[10px] text-muted-foreground font-semibold uppercase">{t("Cash")}</div>
               <div className="text-sm font-bold num text-slate-800 dark:text-slate-100 mt-0.5">
                 {formatMoney(stats.cashUSD, "USD")}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase">Receivable</div>
+              <div className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase">{t("Receivables")}</div>
               <div className="text-sm font-bold num text-orange-600 dark:text-orange-400 mt-0.5">
                 {formatMoney(stats.receivableUSD, "USD")}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase">Payable</div>
+              <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase">{t("Payables")}</div>
               <div className="text-sm font-bold num text-red-600 dark:text-red-400 mt-0.5">
                 {formatMoney(stats.payableUSD, "USD")}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold uppercase">Net Balance</div>
+              <div className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold uppercase">{t("NetBalance")}</div>
               <div className="text-sm font-bold num text-purple-600 dark:text-purple-400 mt-0.5">
                 {formatMoney(stats.netUSD, "USD")}
               </div>
@@ -623,7 +623,7 @@ export default function Dashboard() {
         <Card className="lg:col-span-1 rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
             <h2 className="font-bold text-base flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-primary" /> Branch Summary
+              <Building2 className="w-4 h-4 text-primary" /> {t("BranchSummary")}
             </h2>
             <Badge variant="outline" className="text-[11px] font-semibold">{stats ? stats.byBranch.length : 0} Branches</Badge>
           </div>
@@ -664,9 +664,9 @@ export default function Dashboard() {
         <Card className="lg:col-span-3 rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
             <h2 className="font-bold text-base flex items-center gap-2">
-              <Activity className="w-4 h-4 text-primary" /> Recent Activity
+              <Activity className="w-4 h-4 text-primary" /> {t("RecentActivity")}
             </h2>
-            <Link to="/transactions" className="text-xs text-primary hover:underline font-semibold">View All</Link>
+            <Link to="/transactions" className="text-xs text-primary hover:underline font-semibold">{t("ViewAll")}</Link>
           </div>
 
           <div className="space-y-3">

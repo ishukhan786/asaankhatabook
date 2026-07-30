@@ -31,6 +31,7 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { TableSkeleton } from "@/components/TableSkeleton";
+import { useTranslation } from "react-i18next";
 
 
 export type AccountSummary = {
@@ -46,6 +47,7 @@ export type AccountSummary = {
 };
 
 export default function Accounts() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { role, canWriteTransactions } = useAuth();
   const [rows, setRows] = useState<AccountSummary[] | null>(null);
@@ -170,8 +172,8 @@ export default function Accounts() {
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
       <PageHeader
-        eyebrow="Ledger"
-        title="Customers"
+        eyebrow={t("Accounts")}
+        title={t("Accounts")}
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <div className="relative w-full sm:w-80">
@@ -179,14 +181,14 @@ export default function Accounts() {
               <Input 
                 value={q} 
                 onChange={(e) => setQ(e.target.value)} 
-                placeholder="Search by name, account no, mobile..." 
+                placeholder={t("SearchPlaceholder")} 
                 className="pl-10 bg-background/40 backdrop-blur-sm border-white/10" 
               />
             </div>
             {canWriteTransactions && (
               <Link to="/accounts/new" className="shrink-0">
                 <Button className="gradient-primary text-primary-foreground shadow-soft">
-                  <Plus className="w-4 h-4 mr-1" /> New Customer
+                  <Plus className="w-4 h-4 mr-1" /> {t("NewAccount")}
                 </Button>
               </Link>
             )}
@@ -201,7 +203,7 @@ export default function Accounts() {
           icon={Users}
           title="No customers yet"
           description="Create your first customer to start tracking transactions."
-          action={canWriteTransactions ? <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground"><Plus className="w-4 h-4 mr-1" /> Create customer</Button></Link> : undefined}
+          action={canWriteTransactions ? <Link to="/accounts/new"><Button className="gradient-primary text-primary-foreground"><Plus className="w-4 h-4 mr-1" /> {t("NewAccount")}</Button></Link> : undefined}
         />
       ) : (
         <Card className="glass overflow-hidden hidden md:block">
@@ -209,12 +211,12 @@ export default function Accounts() {
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
                 <tr className="text-xs text-muted-foreground uppercase tracking-wider">
-                  <th className="text-left font-medium px-4 py-3">Account No</th>
-                  <th className="text-left font-medium px-4 py-3">Name</th>
-                  <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Mobile</th>
-                  <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Branch</th>
-                  <th className="text-left font-medium px-4 py-3">Currency</th>
-                  <th className="text-right font-medium px-4 py-3">Actions</th>
+                  <th className="text-left font-medium px-4 py-3">{t("AccountNo")}</th>
+                  <th className="text-left font-medium px-4 py-3">{t("Account")}</th>
+                  <th className="text-left font-medium px-4 py-3 hidden md:table-cell">{t("Mobile")}</th>
+                  <th className="text-left font-medium px-4 py-3 hidden md:table-cell">{t("Branch")}</th>
+                  <th className="text-left font-medium px-4 py-3">{t("Currency")}</th>
+                  <th className="text-right font-medium px-4 py-3">{t("Actions")}</th>
                 </tr>
               </thead>
               <tbody>

@@ -6,18 +6,25 @@ import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "next-themes";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/clerk-react";
 import { GlobalSearch } from "./GlobalSearch";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
 
 export default function AppLayout() {
   const { theme, setTheme } = useTheme();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const { i18n, t } = useTranslation();
+
+  const toggleLanguage = () => {
+    const nextLang = i18n.language === "ur" ? "en" : "ur";
+    i18n.changeLanguage(nextLang);
+  };
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -85,7 +92,19 @@ export default function AppLayout() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3" style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}>
+            <div className="flex items-center gap-2.5" style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}>
+              {/* Language Switcher Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 rounded-full px-3 text-xs font-semibold border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
+                onClick={toggleLanguage}
+                title={i18n.language === "ur" ? "Switch to English" : "اردو زبان میں تبدیل کریں"}
+              >
+                <Languages className="w-3.5 h-3.5 text-primary" />
+                <span>{i18n.language === "ur" ? "English" : "اردو"}</span>
+              </Button>
+
               <div className="text-xs text-muted-foreground hidden sm:block font-medium">
                 {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
               </div>

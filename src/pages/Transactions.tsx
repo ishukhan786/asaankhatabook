@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useEditFormDialog, useDeleteDialog } from "@/hooks/useFormState";
 import { transactionSchema, type TransactionFormData } from "@/lib/schemas";
@@ -50,7 +51,7 @@ const escapePostgrestPattern = (value: string) =>
   value.replace(/\\/g, "\\\\").replace(/\*/g, "\\*");
 
 export default function Transactions() {
-
+  const { t } = useTranslation();
   const [rows, setRows] = useState<TxnRow[] | null>(null);
   const [q, setQ] = useState("");
   const debouncedQ = useDebounce(q, 300);
@@ -221,15 +222,15 @@ export default function Transactions() {
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
       <PageHeader
-        eyebrow="Activity"
-        title="Voucher History"
+        eyebrow={t("Transactions")}
+        title={t("Transactions")}
         actions={
           <div className="flex gap-2">
             <Button variant="outline" className="glass" onClick={handleExport} disabled={!rows || rows.length === 0}>
               <Download className="w-4 h-4 mr-1" /> Export CSV
             </Button>
             {canWriteTransactions && (
-              <Link to="/transactions/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> New Entry</Button></Link>
+              <Link to="/transactions/new"><Button className="gradient-primary text-primary-foreground shadow-soft"><Plus className="w-4 h-4 mr-1" /> {t("NewTransaction")}</Button></Link>
             )}
           </div>
         }
@@ -237,10 +238,10 @@ export default function Transactions() {
 
       <Card className="glass p-4 grid md:grid-cols-3 gap-3">
         <div>
-          <Label className="text-xs text-muted-foreground">Search</Label>
+          <Label className="text-xs text-muted-foreground">{t("Search")}</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Code, account, details..." className="pl-10" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("SearchPlaceholder")} className="pl-10" />
           </div>
         </div>
         <div><Label className="text-xs text-muted-foreground">From</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
@@ -255,12 +256,12 @@ export default function Transactions() {
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
                 <tr className="text-xs text-muted-foreground uppercase tracking-wider">
-                  <th className="text-left font-medium px-4 py-3">Date</th>
-                  <th className="text-left font-medium px-4 py-3">Voucher No</th>
-                  <th className="text-left font-medium px-4 py-3">Account</th>
-                  <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Details</th>
-                   <th className="text-right font-medium px-4 py-3">Debit</th>
-                  <th className="text-right font-medium px-4 py-3">Credit</th>
+                  <th className="text-left font-medium px-4 py-3">{t("Date")}</th>
+                  <th className="text-left font-medium px-4 py-3">{t("Code")}</th>
+                  <th className="text-left font-medium px-4 py-3">{t("Account")}</th>
+                  <th className="text-left font-medium px-4 py-3 hidden md:table-cell">{t("Narration")}</th>
+                  <th className="text-right font-medium px-4 py-3">{t("Debit")}</th>
+                  <th className="text-right font-medium px-4 py-3">{t("Credit")}</th>
                   {role === "admin" && <th className="px-4 py-3"></th>}
                 </tr>
               </thead>

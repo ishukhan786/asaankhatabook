@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, FileDown, Plus, Phone, MapPin, Building2, Trash2, Pencil, MessageSquare, Receipt, Loader, ArrowUpRight, ArrowDownRight, Globe2, Mail, Search } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { Account, Transaction, TransactionWithBalance } from "@/types";
@@ -50,6 +51,7 @@ type QuickEntryForm = {
 };
 
 export default function AccountDetail() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { role, profile } = useAuth();
@@ -368,16 +370,16 @@ export default function AccountDetail() {
           {/* Right Balance */}
           <div className="flex items-center gap-3 bg-background/50 border border-border/50 rounded-lg px-3 py-2 shrink-0">
             <div className="text-right">
-              <div className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Net Balance · <span className="font-mono">{account.currency}</span></div>
+              <div className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{t("NetBalance")} · <span className="font-mono">{account.currency}</span></div>
               <div className={`font-display font-bold text-xl num ${running >= 0 ? "text-success" : "text-destructive"}`}>
                 {formatMoney(running, account.currency)} <span className="text-[10px] font-medium opacity-70">{balanceLabel(running)}</span>
               </div>
             </div>
             <div className="flex flex-col gap-1 pl-3 border-l border-border/50">
-              <Button onClick={() => setQuickOpen(true)} size="sm" className="h-7 text-[11px] px-2 gradient-primary text-primary-foreground"><Plus className="w-3 h-3 mr-0.5" /> Add</Button>
+              <Button onClick={() => setQuickOpen(true)} size="sm" className="h-7 text-[11px] px-2 gradient-primary text-primary-foreground"><Plus className="w-3 h-3 mr-0.5" /> {t("AddEntry")}</Button>
               <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" disabled={exporting} onClick={handleExportStatement}>
                 {exporting ? <Loader className="w-3 h-3 mr-0.5 animate-spin" /> : <FileDown className="w-3 h-3 mr-0.5" />}
-                {exporting ? "Wait..." : "PDF"}
+                {exporting ? "Wait..." : t("ExportPDF")}
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => setEmailOpen(true)}>
                 <Mail className="w-3 h-3 mr-0.5" /> Email
@@ -392,7 +394,7 @@ export default function AccountDetail() {
         <Card className="glass-card px-3 py-2 border-l-2 border-l-primary/40">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Transactions</div>
+              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{t("Transactions")}</div>
               <div className="font-display text-lg font-bold num tracking-tight text-foreground">{rows.length}</div>
             </div>
             <Receipt className="w-3.5 h-3.5 text-primary opacity-60" />
@@ -401,7 +403,7 @@ export default function AccountDetail() {
         <Card className="glass-card px-3 py-2 border-l-2 border-l-destructive/40">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Total Debit</div>
+              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{t("Debit")}</div>
               <div className="font-display text-sm font-bold text-destructive num tracking-tight truncate">{formatMoney(totalDebit, account.currency)}</div>
             </div>
             <ArrowUpRight className="w-3.5 h-3.5 text-destructive opacity-60 shrink-0" />
@@ -410,7 +412,7 @@ export default function AccountDetail() {
         <Card className="glass-card px-3 py-2 border-l-2 border-l-success/40">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Total Credit</div>
+              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{t("Credit")}</div>
               <div className="font-display text-sm font-bold text-success num tracking-tight truncate">{formatMoney(totalCredit, account.currency)}</div>
             </div>
             <ArrowDownRight className="w-3.5 h-3.5 text-success opacity-60 shrink-0" />
@@ -419,7 +421,7 @@ export default function AccountDetail() {
         <Card className="glass-card px-3 py-2 border-l-2 border-l-blue-500/40">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Currency</div>
+              <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{t("Currency")}</div>
               <div className="font-display text-lg font-bold tracking-tight text-foreground">{account.currency}</div>
             </div>
             <Globe2 className="w-3.5 h-3.5 text-blue-500 opacity-60" />
