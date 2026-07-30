@@ -502,63 +502,83 @@ export default function AccountDetail() {
           )}
         </div>
 
-        {/* Hero Banner */}
-        <Card className="glass-hero px-3 py-2.5 relative overflow-hidden border-border/40">
-          <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-primary/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
-            {/* Left Details */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="outline" className="font-mono text-[9px] bg-background/50 border-primary/20 text-primary px-1.5 py-0">{account.account_no}</Badge>
-                <h1 className="font-display text-xl font-bold tracking-tight text-foreground leading-tight">{account.name}</h1>
-              </div>
-              {(account.mobile || account.branches?.name || account.address) && (
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                  {account.mobile && (
-                    <div className="flex items-center gap-1.5">
-                      <Phone className="w-3 h-3 text-primary" />
-                      <span className="text-xs text-muted-foreground">{account.mobile}</span>
-                    </div>
-                  )}
-                  {account.branches?.name && (
-                    <div className="flex items-center gap-1.5">
-                      <Building2 className="w-3 h-3 text-primary" />
-                      <span className="text-xs text-muted-foreground">{account.branches.name}</span>
-                    </div>
-                  )}
-                  {account.address && (
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className="w-3 h-3 text-primary" />
-                      <span className="text-xs text-muted-foreground">{account.address}</span>
-                    </div>
-                  )}
+        {/* Hero Banner Redesigned */}
+        <div className="bg-background/80 backdrop-blur-xl border border-border/60 rounded-2xl p-5 md:p-6 shadow-sm relative overflow-hidden mb-6">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-60" />
+          
+          <div className="relative z-10 flex flex-col lg:flex-row justify-between gap-6 lg:items-center">
+            
+            {/* Left: Customer Info */}
+            <div className="flex-1">
+              <div className="flex items-start md:items-center gap-4">
+                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 shadow-inner hidden sm:flex">
+                  <Users className="w-6 h-6 text-primary" />
                 </div>
-              )}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-foreground leading-none">{account.name}</h1>
+                    <Badge variant="outline" className="font-mono text-[10px] bg-background text-primary border-primary/30 shrink-0">{account.account_no}</Badge>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                    {account.mobile && (
+                      <div className="flex items-center gap-1.5 bg-muted/40 border border-border/50 px-2.5 py-1 rounded-md">
+                        <Phone className="w-3.5 h-3.5 text-primary/80" />
+                        <span className="font-medium">{account.mobile}</span>
+                      </div>
+                    )}
+                    {account.address && (
+                      <div className="flex items-center gap-1.5 bg-muted/40 border border-border/50 px-2.5 py-1 rounded-md">
+                        <MapPin className="w-3.5 h-3.5 text-primary/80" />
+                        <span className="font-medium">{account.address}</span>
+                      </div>
+                    )}
+                    {account.branches?.name && (
+                      <div className="flex items-center gap-1.5 bg-muted/40 border border-border/50 px-2.5 py-1 rounded-md">
+                        <Building2 className="w-3.5 h-3.5 text-primary/80" />
+                        <span className="font-medium">{account.branches.name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-            {/* Right Balance */}
-            <div className="flex items-center gap-3 bg-background/50 border border-border/50 rounded-lg px-3 py-2 shrink-0">
-              <div className="text-right">
-                <div className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{t("NetBalance")} · <span className="font-mono">{account.currency}</span></div>
-                <div className={`font-display font-bold text-xl num ${running >= 0 ? "text-success" : "text-destructive"}`}>
-                  {formatMoney(running, account.currency)} <span className="text-[10px] font-medium opacity-70">{balanceLabel(running)}</span>
+
+            {/* Right: Balances & Actions */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0">
+              
+              {/* Balance Box */}
+              <div className="bg-background border border-border/60 rounded-xl p-4 shadow-sm w-full sm:w-auto min-w-[200px] text-right">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{t("NetBalance")}</div>
+                <div className={`font-display text-3xl font-bold num tracking-tight ${running >= 0 ? "text-success" : "text-destructive"}`}>
+                  {formatMoney(running, account.currency)} 
+                </div>
+                <div className="text-[11px] font-medium opacity-70 mt-1 uppercase tracking-wider">{balanceLabel(running)}</div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">
+                <Button onClick={() => setQuickOpen(true)} className="flex-1 sm:flex-none shadow-sm gradient-primary text-primary-foreground h-11">
+                  <Plus className="w-4 h-4 mr-2" /> {t("AddEntry")}
+                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1 sm:flex-none h-11 px-3 bg-background" disabled={exporting} onClick={handleExportStatement} title={t("ExportPDF")}>
+                    {exporting ? <Loader className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                    <span className="ml-2 sm:hidden">Export PDF</span>
+                  </Button>
+                  <Button variant="outline" className="flex-1 sm:flex-none h-11 px-3 bg-background" onClick={() => window.print()} title="Print">
+                    <Printer className="w-4 h-4" />
+                    <span className="ml-2 sm:hidden">Print</span>
+                  </Button>
+                  <Button variant="outline" className="flex-1 sm:flex-none h-11 px-3 bg-background" onClick={() => setEmailOpen(true)} title="Email">
+                    <Mail className="w-4 h-4" />
+                    <span className="ml-2 sm:hidden">Email</span>
+                  </Button>
                 </div>
               </div>
-              <div className="flex flex-col gap-1 pl-3 border-l border-border/50">
-                <Button onClick={() => setQuickOpen(true)} size="sm" className="h-7 text-[11px] px-2 gradient-primary text-primary-foreground"><Plus className="w-3 h-3 mr-0.5" /> {t("AddEntry")}</Button>
-                <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" disabled={exporting} onClick={handleExportStatement}>
-                  {exporting ? <Loader className="w-3 h-3 mr-0.5 animate-spin" /> : <FileDown className="w-3 h-3 mr-0.5" />}
-                  {exporting ? "Wait..." : t("ExportPDF")}
-                </Button>
-                <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => window.print()}>
-                  <Printer className="w-3 h-3 mr-0.5" /> Print
-                </Button>
-                <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => setEmailOpen(true)}>
-                  <Mail className="w-3 h-3 mr-0.5" /> Email
-                </Button>
-              </div>
+
             </div>
           </div>
-        </Card>
+        </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-2">
