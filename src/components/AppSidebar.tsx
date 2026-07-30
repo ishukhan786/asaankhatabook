@@ -148,22 +148,13 @@ export function AppSidebar() {
                             collapsed ? "justify-center px-0" : "gap-3 px-3",
                           )}
                           style={active ? {
-                            background: "var(--glass-bg-hover)",
-                            backdropFilter: "blur(16px)",
-                            WebkitBackdropFilter: "blur(16px)",
-                            borderColor: "var(--glass-border)",
-                            boxShadow: "inset 2px 0 0 hsl(var(--primary)), 0 0 0 1px hsl(0 0% 100% / 0.5) inset, 0 4px 12px -4px hsl(184 80% 22% / 0.15)",
+                            background: "transparent",
+                            borderColor: "transparent",
+                            boxShadow: "inset 3px 0 0 #ffffff",
                           } : {
                             borderColor: "transparent",
                           }}
                         >
-                          {active && (
-                            <motion.div
-                              layoutId="sidebar-active-glow"
-                              className="absolute inset-0 pointer-events-none"
-                              style={{ background: "linear-gradient(105deg, hsl(184 80% 60% / 0.08) 0%, hsl(0 0% 100% / 0.12) 50%, transparent 100%)" }}
-                            />
-                          )}
                           {/* Hover glass overlay */}
                           <div className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 pointer-events-none"
                             style={{
