@@ -188,7 +188,7 @@ export default function Receivables() {
           {/* 2. Centered Report Title */}
           <div style={{ textAlign: "center", margin: "12px 0 10px 0" }}>
             <div style={{ fontSize: "14px", fontWeight: "900", color: "#dc2626", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "2px solid #dc2626", display: "inline-block", paddingBottom: "2px" }}>
-              (خلاصہ قابلِ وصول - لینا ہے) · REPORT STATEMENT
+              (خلاصہ قابلِ وصول - لینا ہے) · RECEIVABLES REPORT
             </div>
             <div style={{ fontSize: "9.5px", color: "#64748b", marginTop: "4px" }}>
               Printed Date: <strong>{printDate}</strong> · Time: <strong>{printTime}</strong> · Total Accounts: <strong style={{ color: "#dc2626" }}>{filtered.length}</strong>
