@@ -422,8 +422,8 @@ export default function AccountDetail() {
               </div>
               <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "10px" }}>
                 <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>NET BALANCE</div>
-                <div style={{ fontSize: "15px", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", marginTop: "2px" }}>
-                  {formatMoney(running, account?.currency)} ({balanceLabel(running)})
+                <div style={{ fontSize: "15px", fontWeight: "900", color: running >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                  {formatMoney(running, account?.currency)} {balanceLabel(running)}
                 </div>
               </div>
             </div>
@@ -462,8 +462,8 @@ export default function AccountDetail() {
                     <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace" }}>
                       {Number(r.credit) > 0 ? formatMoney(Number(r.credit)) : "-"}
                     </td>
-                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", fontSize: "11px" }}>
-                      {formatMoney(r.balance, account?.currency)}
+                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: r.balance >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", fontSize: "11px" }}>
+                      {formatMoney(r.balance, account?.currency)} {balanceLabel(r.balance)}
                     </td>
                   </tr>
                 ))

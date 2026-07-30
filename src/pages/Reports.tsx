@@ -403,8 +403,8 @@ export default function Reports() {
                       <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "monospace", fontWeight: "700" }}>
                         {Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "-"}
                       </td>
-                      <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace" }}>
-                        {formatMoney(t.balance, selectedAccount?.currency || "")}
+                      <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: t.balance >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace" }}>
+                        {formatMoney(t.balance, selectedAccount?.currency || "")} {balanceLabel(t.balance)}
                       </td>
                     </tr>
                   ))
@@ -439,7 +439,7 @@ export default function Reports() {
                       <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "monospace", fontWeight: "700" }}>{formatMoney(r.debit)}</td>
                       <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "monospace", fontWeight: "700" }}>{formatMoney(r.credit)}</td>
                       <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: r.net >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace" }}>
-                        {formatMoney(r.net, r.currency)}
+                        {formatMoney(r.net, r.currency)} {balanceLabel(r.net)}
                       </td>
                     </tr>
                   ))
