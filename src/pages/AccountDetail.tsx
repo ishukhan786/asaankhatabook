@@ -430,9 +430,9 @@ export default function AccountDetail() {
           </div>
 
           {/* Clean Data Table - Transparent Background */}
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginTop: "8px" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11.5px", marginTop: "8px" }}>
             <thead>
-              <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "10.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 <th style={{ padding: "7px 8px", textAlign: "left", width: "30px", color: "#475569" }}>#</th>
                 <th style={{ padding: "7px 8px", textAlign: "left", width: "80px", color: "#475569" }}>Date</th>
                 <th style={{ padding: "7px 8px", textAlign: "left", width: "95px", color: "#0369a1" }}>Code</th>

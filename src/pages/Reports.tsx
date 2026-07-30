@@ -377,9 +377,9 @@ export default function Reports() {
 
           {/* Table */}
           {selectedAccId ? (
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginTop: "8px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11.5px", marginTop: "8px" }}>
               <thead>
-                <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "10.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                   <th style={{ padding: "7px 8px", textAlign: "left" }}>Date</th>
                   <th style={{ padding: "7px 8px", textAlign: "left" }}>Details / Narration</th>
                   <th style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a" }}>Debit</th>
@@ -412,9 +412,9 @@ export default function Reports() {
               </tbody>
             </table>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginTop: "8px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11.5px", marginTop: "8px" }}>
               <thead>
-                <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "10.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                   <th style={{ padding: "7px 8px", textAlign: "left", width: "95px", color: "#0369a1" }}>Account No</th>
                   <th style={{ padding: "7px 8px", textAlign: "left", color: "#0f172a" }}>Account Name</th>
                   <th style={{ padding: "7px 8px", textAlign: "left", color: "#475569" }}>Branch</th>
