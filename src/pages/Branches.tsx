@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/PageHeader";
+import { useTranslation } from "react-i18next";
 
 type BranchRow = {
   id: string;
@@ -20,6 +21,7 @@ type BranchRow = {
 };
 
 export default function Branches() {
+  const { t } = useTranslation();
   const { role, loading } = useAuth();
   const [rows, setRows] = useState<BranchRow[] | null>(null);
   const [name, setName] = useState("");
@@ -123,8 +125,8 @@ export default function Branches() {
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8">
       <PageHeader
-        eyebrow="Administrative Tools"
-        title={<span className="flex items-center gap-3"><span className="p-2 rounded-2xl bg-primary/10 text-primary"><Building2 className="w-7 h-7" /></span>Network <span className="text-gradient">Branches</span></span>}
+        eyebrow={t("AdminPanel")}
+        title={<span className="flex items-center gap-3"><span className="p-2 rounded-2xl bg-primary/10 text-primary"><Building2 className="w-7 h-7" /></span>{t("Branches")}</span>}
         description="Manage your business locations with auto-generated unique branch codes."
       />
 
@@ -132,11 +134,11 @@ export default function Branches() {
         {/* Creation Form */}
         <Card className="glass p-6 lg:col-span-1 sticky top-20">
           <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
-            <Plus className="w-5 h-5 text-accent" /> Add New Branch
+            <Plus className="w-5 h-5 text-accent" /> {t("NewAccount")} ({t("Branch")})
           </h2>
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Branch Name</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("Branch")} Name</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input 
@@ -148,7 +150,7 @@ export default function Branches() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Branch Code</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("Branch")} Code</Label>
               <div className="relative">
                 <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input 
@@ -158,7 +160,7 @@ export default function Branches() {
                   className="pl-10 font-mono"
                 />
               </div>
-              <p className="text-[11px] text-muted-foreground">Code is generated automatically on save and cannot be edited later.</p>
+              <p className="text-[11px] text-muted-foreground">Code is generated automatically on save.</p>
             </div>
             <Button type="submit" disabled={busy} className="w-full gradient-primary text-primary-foreground shadow-soft py-6 text-base font-semibold">
               {busy ? (
@@ -167,7 +169,7 @@ export default function Branches() {
                   Establishing...
                 </>
               ) : (
-                "Establish Branch"
+                t("Save")
               )}
             </Button>
           </form>
@@ -178,7 +180,7 @@ export default function Branches() {
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input 
-              placeholder="Search branches by name or code..." 
+              placeholder={t("SearchPlaceholder")} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 glass border-primary/20 focus-visible:ring-primary h-12 rounded-xl"
@@ -201,10 +203,8 @@ export default function Branches() {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
-              {filteredRows.map((b, i) => (
-                <div 
-                  key={b.id}
-                >
+              {filteredRows.map((b) => (
+                <div key={b.id}>
                   <Card className="glass p-5 group hover:shadow-lg transition-all relative overflow-hidden border-l-4 border-l-transparent hover:border-l-primary flex flex-col h-full">
                     <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors" />
                     
@@ -240,16 +240,15 @@ export default function Branches() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogTitle>{t("Delete")}</AlertDialogTitle>
                               <AlertDialogDescription>
                                 This action cannot be undone. This will permanently delete the branch <strong>{b.name}</strong>.
-                                It will fail if there are active accounts linked to this branch.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
                               <AlertDialogAction onClick={() => remove(b.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                Delete Branch
+                                {t("Delete")}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -274,18 +273,18 @@ export default function Branches() {
       <Dialog open={!!editingBranch} onOpenChange={(open) => !open && setEditingBranch(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Branch</DialogTitle>
+            <DialogTitle>{t("Edit")} {t("Branch")}</DialogTitle>
             <DialogDescription>
-              Update the name of this branch. The branch code cannot be modified.
+              Update the name of this branch.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={updateBranch} className="space-y-4 py-4">
              <div className="space-y-2">
-              <Label>Branch Code</Label>
+              <Label>{t("Branch")} Code</Label>
               <Input value={editingBranch?.code || ""} disabled className="font-mono bg-muted/50" />
             </div>
             <div className="space-y-2">
-              <Label>Branch Name</Label>
+              <Label>{t("Branch")} Name</Label>
               <Input 
                 value={editName} 
                 onChange={(e) => setEditName(e.target.value)} 
@@ -293,9 +292,9 @@ export default function Branches() {
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditingBranch(null)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setEditingBranch(null)}>{t("Cancel")}</Button>
               <Button type="submit" disabled={editBusy} className="gradient-primary">
-                {editBusy ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : "Save Changes"}
+                {editBusy ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : t("Save")}
               </Button>
             </DialogFooter>
           </form>

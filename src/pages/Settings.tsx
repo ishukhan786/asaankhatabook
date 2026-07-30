@@ -50,10 +50,16 @@ const loadPreferences = (): AppPreferences => {
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const { profile, user, refresh, role, signOut } = useAuth();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [prefs, setPrefs] = useState<AppPreferences>(() => loadPreferences());
+
+  useEffect(() => {
+    if (prefs.language && i18n.language !== prefs.language) {
+      i18n.changeLanguage(prefs.language);
+    }
+  }, [prefs.language, i18n]);
   
   // Profile state
   const [fullName, setFullName] = useState("");
@@ -206,10 +212,10 @@ export default function Settings() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8    ">
+    <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8">
       <PageHeader
-        eyebrow="Preferences"
-        title={<span className="flex items-center gap-2"><SettingsIcon className="w-7 h-7 text-primary" /> Settings</span>}
+        eyebrow={t("Settings")}
+        title={<span className="flex items-center gap-2"><SettingsIcon className="w-7 h-7 text-primary" /> {t("Settings")}</span>}
         description="Manage your identity, business details, app preferences, and security."
       />
 
@@ -237,7 +243,7 @@ export default function Settings() {
             <Globe2 className="w-5 h-5 text-accent-foreground" />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">Default Currency</div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">{t("Currency")}</div>
             <div className="mt-1 font-semibold text-sm">{prefs.defaultCurrency}</div>
           </div>
         </Card>
@@ -428,15 +434,25 @@ export default function Settings() {
                   PDF & Report Defaults
                 </div>
                 <Card className="glass p-6 mt-4 space-y-5">
-                  <div className="grid md:grid-cols-2 gap-5">
+                  <div className="grid md:grid-cols-3 gap-5">
                     <div className="grid gap-2">
-                      <Label className="text-muted-foreground">Default Currency</Label>
+                      <Label className="text-muted-foreground">{t("Currency")}</Label>
                       <Select value={prefs.defaultCurrency} onValueChange={(value: "PKR" | "AED" | "USD") => setPrefs({ ...prefs, defaultCurrency: value })}>
                         <SelectTrigger className="font-medium"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="PKR">PKR - Pakistani Rupee</SelectItem>
                           <SelectItem value="AED">AED - UAE Dirham</SelectItem>
                           <SelectItem value="USD">USD - US Dollar ($)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label className="text-muted-foreground">App Language / زبان</Label>
+                      <Select value={prefs.language} onValueChange={(value: "en" | "ur") => setPrefs({ ...prefs, language: value })}>
+                        <SelectTrigger className="font-medium"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="ur">اردو (Urdu)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -480,7 +496,7 @@ export default function Settings() {
                       <Download className="w-4 h-4 mr-2" /> Export Settings
                     </Button>
                     <Button type="button" onClick={savePreferences} className="gradient-primary text-primary-foreground shadow-lg shadow-primary/20">
-                      Save PDF Preferences
+                      {t("Save")}
                     </Button>
                   </div>
                 </Card>
