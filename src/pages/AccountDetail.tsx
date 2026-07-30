@@ -435,7 +435,6 @@ export default function AccountDetail() {
               <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "2px solid #0f172a", background: "transparent", color: "#0f172a", fontSize: "10.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                 <th style={{ padding: "7px 8px", textAlign: "left", width: "30px", color: "#475569" }}>#</th>
                 <th style={{ padding: "7px 8px", textAlign: "left", width: "80px", color: "#475569" }}>Date</th>
-                <th style={{ padding: "7px 8px", textAlign: "left", width: "95px", color: "#0369a1" }}>Code</th>
                 <th style={{ padding: "7px 8px", textAlign: "left", color: "#0f172a" }}>Details / Narration</th>
                 <th style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a" }}>Debit (Nam)</th>
                 <th style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a" }}>Credit (Jama)</th>
@@ -445,7 +444,7 @@ export default function AccountDetail() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: "20px", textAlign: "center", color: "#94a3b8" }}>
+                  <td colSpan={6} style={{ padding: "20px", textAlign: "center", color: "#94a3b8" }}>
                     No transaction entries found for this account.
                   </td>
                 </tr>
@@ -454,7 +453,6 @@ export default function AccountDetail() {
                   <tr key={r.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
                     <td style={{ padding: "7px 8px", color: "#94a3b8", fontWeight: "600" }}>{i + 1}</td>
                     <td style={{ padding: "7px 8px", color: "#475569", fontFamily: "monospace" }}>{formatDate(String(r.txn_date || ""))}</td>
-                    <td style={{ padding: "7px 8px", fontFamily: "monospace", fontWeight: "700", color: "#0369a1" }}>{r.txn_code}</td>
                     <td style={{ padding: "7px 8px", fontWeight: "700", color: "#0f172a" }}>{r.details}</td>
                     <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace" }}>
                       {Number(r.debit) > 0 ? formatMoney(Number(r.debit)) : "-"}
