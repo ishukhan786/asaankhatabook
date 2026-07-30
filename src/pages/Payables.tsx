@@ -169,89 +169,85 @@ export default function Payables() {
     <>
       <style>{PRINT_STYLES}</style>
 
-      {/* Dedicated High-End Print Document */}
+      {/* Dedicated High-End Minimalist Print Document */}
       <div id="print-payables-wrapper" style={{ display: "none" }}>
-        <div style={{ fontFamily: "'Inter', sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
-          {/* Top Branding Accent Bar */}
-          <div style={{ height: "6px", background: "linear-gradient(90deg, #059669 0%, #10b981 100%)", borderRadius: "3px" }} />
-
-          {/* Document Header */}
-          <div style={{ padding: "16px 0 12px", borderBottom: "2px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
+          
+          {/* Business & Document Header */}
+          <div style={{ paddingBottom: "12px", borderBottom: "2px solid #0f172a", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div>
-              <div style={{ fontSize: "22px", fontWeight: "900", color: "#065f46", letterSpacing: "-0.5px" }}>
+              <div style={{ fontSize: "20px", fontWeight: "900", color: "#0f172a", letterSpacing: "-0.5px" }}>
                 {profile?.business_name || "AsaanKhata"}
               </div>
-              <div style={{ fontSize: "13px", fontWeight: "800", color: "#047857", marginTop: "3px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                Payable Statement Report · (خلاصہ قابلِ ادائیگی - دینا ہے)
+              <div style={{ fontSize: "12px", fontWeight: "800", color: "#334155", marginTop: "2px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                PAYABLES STATEMENT REPORT · (خلاصہ قابلِ ادائیگی - دینا ہے)
               </div>
-              <div style={{ fontSize: "10px", color: "#64748b", marginTop: "4px" }}>
-                {profile?.business_phone && <span>📞 {profile.business_phone} · </span>}
-                {profile?.business_address && <span>📍 {profile.business_address} · </span>}
-                <span>🏢 Branch: {selectedBranchName}</span>
+              <div style={{ fontSize: "10px", color: "#475569", marginTop: "3px" }}>
+                {profile?.business_phone && <span>Phone: {profile.business_phone} · </span>}
+                {profile?.business_address && <span>Address: {profile.business_address} · </span>}
+                <span>Branch: {selectedBranchName}</span>
               </div>
             </div>
-            <div style={{ textAlign: "right", background: "#f0fdf4", border: "1px solid #a7f3d0", padding: "8px 12px", borderRadius: "8px" }}>
-              <div style={{ fontSize: "10px", fontWeight: "700", color: "#047857" }}>REPORT METRICS</div>
-              <div style={{ fontSize: "10px", color: "#334155", marginTop: "2px" }}>Date: <strong>{printDate}</strong></div>
-              <div style={{ fontSize: "10px", color: "#334155" }}>Time: <strong>{printTime}</strong></div>
+            <div style={{ textAlign: "right", fontSize: "10px", color: "#334155" }}>
+              <div>Date: <strong>{printDate}</strong></div>
+              <div>Time: <strong>{printTime}</strong></div>
+              <div>Total Accounts: <strong>{filtered.length}</strong></div>
             </div>
           </div>
 
-          {/* Grand Totals Metric Box - Multi-Currency Grid */}
-          <div style={{ margin: "14px 0", background: "#f0fdf4", border: "1.5px solid #a7f3d0", borderRadius: "12px", padding: "14px 18px" }}>
-            <div style={{ fontSize: "10px", fontWeight: "800", textTransform: "uppercase", color: "#047857", letterSpacing: "0.5px", marginBottom: "10px", display: "flex", justifyContent: "space-between" }}>
-              <span>TOTAL OUTSTANDING PAYABLES SUMMARY ({filtered.length} ACCOUNTS)</span>
-              <span>STATUS: ACTIVE LIABILITY</span>
+          {/* Multi-Currency Grand Totals Summary Box */}
+          <div style={{ margin: "14px 0", border: "1px solid #0f172a", borderRadius: "6px", padding: "10px 14px", background: "#fafafa" }}>
+            <div style={{ fontSize: "9.5px", fontWeight: "800", textTransform: "uppercase", color: "#0f172a", letterSpacing: "0.5px", marginBottom: "8px" }}>
+              OUTSTANDING PAYABLES SUMMARY
             </div>
-            
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
               {totals.map(([cur, amount]) => (
-                <div key={cur} style={{ background: "#ffffff", border: "1px solid #6ee7b7", borderRadius: "8px", padding: "10px 14px" }}>
-                  <div style={{ fontSize: "9.5px", fontWeight: "700", color: "#047857", textTransform: "uppercase" }}>
-                    {cur === "PKR" ? "🇵🇰 PKR Total" : cur === "AED" ? "🇦🇪 AED Total" : cur === "USD" ? "🇺🇸 USD Total" : `${cur} Total`}
+                <div key={cur} style={{ borderLeft: "3px solid #0f172a", paddingLeft: "8px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>
+                    {cur} TOTAL
                   </div>
-                  <div style={{ fontSize: "17px", fontWeight: "900", color: "#065f46", fontFamily: "monospace", marginTop: "3px" }}>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", marginTop: "1px" }}>
                     {formatMoney(amount, cur)}
                   </div>
                 </div>
               ))}
               {totals.length === 0 && (
-                <div style={{ background: "#ffffff", border: "1px solid #6ee7b7", borderRadius: "8px", padding: "10px 14px" }}>
-                  <div style={{ fontSize: "9.5px", fontWeight: "700", color: "#047857" }}>TOTAL BALANCE</div>
-                  <div style={{ fontSize: "17px", fontWeight: "900", color: "#065f46", fontFamily: "monospace", marginTop: "3px" }}>0.00</div>
+                <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "8px" }}>
+                  <div style={{ fontSize: "9px", fontWeight: "700", color: "#475569" }}>TOTAL</div>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#0f172a", fontFamily: "monospace" }}>0.00</div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Data Table */}
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginTop: "10px" }}>
+          {/* Clean Data Table */}
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginTop: "8px" }}>
             <thead>
-              <tr style={{ background: "#047857", color: "#ffffff", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                <th style={{ padding: "8px 10px", textAlign: "left", width: "30px" }}>#</th>
-                <th style={{ padding: "8px 10px", textAlign: "left", width: "90px" }}>Account No</th>
-                <th style={{ padding: "8px 10px", textAlign: "left" }}>Party / Vendor Name</th>
-                <th style={{ padding: "8px 10px", textAlign: "left" }}>Contact</th>
-                <th style={{ padding: "8px 10px", textAlign: "left" }}>Branch</th>
-                <th style={{ padding: "8px 10px", textAlign: "right" }}>Payable Amount</th>
+              <tr style={{ borderTop: "2px solid #0f172a", borderBottom: "1.5px solid #0f172a", background: "#ffffff", color: "#0f172a", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <th style={{ padding: "6px 8px", textAlign: "left", width: "30px" }}>#</th>
+                <th style={{ padding: "6px 8px", textAlign: "left", width: "90px" }}>Account No</th>
+                <th style={{ padding: "6px 8px", textAlign: "left" }}>Party / Vendor Name</th>
+                <th style={{ padding: "6px 8px", textAlign: "left" }}>Contact</th>
+                <th style={{ padding: "6px 8px", textAlign: "left" }}>Branch</th>
+                <th style={{ padding: "6px 8px", textAlign: "right" }}>Payable Amount</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ padding: "20px", textAlign: "center", color: "#64748b" }}>
-                    No payable records found for print.
+                    No payable records found.
                   </td>
                 </tr>
               ) : (
                 filtered.map((a, i) => (
-                  <tr key={a.id} style={{ background: i % 2 === 0 ? "#ffffff" : "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                    <td style={{ padding: "7px 10px", color: "#64748b", fontWeight: "600" }}>{i + 1}</td>
-                    <td style={{ padding: "7px 10px", fontFamily: "monospace", fontWeight: "700", color: "#334155" }}>{a.account_no}</td>
-                    <td style={{ padding: "7px 10px", fontWeight: "700", color: "#0f172a" }}>{a.name}</td>
-                    <td style={{ padding: "7px 10px", color: "#475569" }}>{a.mobile || "-"}</td>
-                    <td style={{ padding: "7px 10px", color: "#475569" }}>{a.branch_name}</td>
-                    <td style={{ padding: "7px 10px", textAlign: "right", fontWeight: "900", color: "#047857", fontFamily: "monospace", fontSize: "11.5px" }}>
+                  <tr key={a.id} style={{ borderBottom: "1px solid #cbd5e1" }}>
+                    <td style={{ padding: "6px 8px", color: "#64748b", fontWeight: "600" }}>{i + 1}</td>
+                    <td style={{ padding: "6px 8px", fontFamily: "monospace", fontWeight: "700", color: "#0f172a" }}>{a.account_no}</td>
+                    <td style={{ padding: "6px 8px", fontWeight: "700", color: "#0f172a" }}>{a.name}</td>
+                    <td style={{ padding: "6px 8px", color: "#475569" }}>{a.mobile || "-"}</td>
+                    <td style={{ padding: "6px 8px", color: "#475569" }}>{a.branch_name}</td>
+                    <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", fontSize: "11px" }}>
                       {formatMoney(Math.abs(a.balance), a.currency)}
                     </td>
                   </tr>
@@ -260,21 +256,21 @@ export default function Payables() {
             </tbody>
           </table>
 
-          {/* Signatures & Footer */}
-          <div style={{ marginTop: "40px", paddingTop: "15px", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-            <div style={{ width: "200px", textAlign: "center" }}>
-              <div style={{ borderBottom: "1.5px border #94a3b8", height: "30px", marginBottom: "4px" }} />
-              <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b", uppercase: "true" }}>PREPARED BY (ACCOUNTANT)</div>
+          {/* Signatures & Stamp Footer */}
+          <div style={{ marginTop: "40px", paddingTop: "15px", borderTop: "1px solid #cbd5e1", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div style={{ width: "180px", textAlign: "center" }}>
+              <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
+              <div style={{ fontSize: "9px", fontWeight: "700", color: "#334155", textTransform: "uppercase" }}>Prepared By</div>
             </div>
-            <div style={{ width: "200px", textAlign: "center" }}>
-              <div style={{ borderBottom: "1.5px border #94a3b8", height: "30px", marginBottom: "4px" }} />
-              <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b", uppercase: "true" }}>APPROVED BY / STAMP</div>
+            <div style={{ width: "180px", textAlign: "center" }}>
+              <div style={{ borderBottom: "1px solid #0f172a", height: "25px", marginBottom: "4px" }} />
+              <div style={{ fontSize: "9px", fontWeight: "700", color: "#334155", textTransform: "uppercase" }}>Authorized Signature &amp; Stamp</div>
             </div>
           </div>
 
           {/* Page Footer */}
-          <div style={{ marginTop: "20px", display: "flex", justifyContent: "space-between", fontSize: "8.5px", color: "#94a3b8" }}>
-            <div>AsaanKhata Enterprise System · Confidential Business Document</div>
+          <div style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", fontSize: "8px", color: "#94a3b8" }}>
+            <div>AsaanKhata System · Official Payable Statement</div>
             <div>Printed: {printDate} {printTime}</div>
           </div>
         </div>
