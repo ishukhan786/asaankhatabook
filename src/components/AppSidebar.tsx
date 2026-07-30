@@ -144,7 +144,7 @@ export function AppSidebar() {
                           to={item.url}
                           aria-current={active ? "page" : undefined}
                           className={cn(
-                            "group/item relative flex h-11 w-full items-center overflow-hidden rounded-xl border text-sm font-medium outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/60",
+                            "group/item relative flex h-11 w-full items-center overflow-hidden rounded-xl text-sm font-medium outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/60",
                             collapsed ? "justify-center px-0" : "gap-3 px-3",
                           )}
                           style={active ? {
