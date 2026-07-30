@@ -61,7 +61,7 @@ export default function AppLayout() {
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <header 
-            className="h-14 flex items-center justify-between border-b border-white/10 bg-[#10B981] text-white sticky top-0 z-30 pl-4 pr-4 md:pr-[140px] select-none"
+            className="h-14 flex items-center justify-between border-b border-white/10 bg-[#008B8B] text-white sticky top-0 z-30 pl-4 pr-4 md:pr-[140px] select-none"
             style={{ WebkitAppRegion: 'drag' } as CSSProperties}
           >
             <div className="flex items-center gap-3" style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}>
