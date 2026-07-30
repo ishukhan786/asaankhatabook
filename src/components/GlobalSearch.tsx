@@ -17,7 +17,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 
 export function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { canWriteTransactions, role } = useAuth();
 
   const [accounts, setAccounts] = useState<{ id: string; name: string; account_no: string }[]>([]);
@@ -50,33 +50,33 @@ export function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (open:
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={!debouncedSearch}>
-      <CommandInput placeholder="Type a command or search accounts..." value={search} onValueChange={setSearch} />
+      <CommandInput placeholder={t("SearchPlaceholder")} value={search} onValueChange={setSearch} />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>{i18n.language === "ur" ? "کوئی نتیجہ نہیں ملا" : "No results found."}</CommandEmpty>
         
-        <CommandGroup heading="Navigation">
+        <CommandGroup heading={t("Dashboard")}>
           <CommandItem onSelect={() => runCommand(() => navigate("/"))}>
             <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>Dashboard</span>
+            <span>{t("Dashboard")}</span>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/accounts"))}>
             <Users className="mr-2 h-4 w-4" />
-            <span>Accounts</span>
+            <span>{t("Accounts")}</span>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/transactions"))}>
             <FileText className="mr-2 h-4 w-4" />
-            <span>Transactions</span>
+            <span>{t("Transactions")}</span>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/settings"))}>
             <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+            <span>{t("Settings")}</span>
           </CommandItem>
         </CommandGroup>
 
         {accounts.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Accounts">
+            <CommandGroup heading={t("Accounts")}>
               {accounts.map((acc) => (
                 <CommandItem key={acc.id} onSelect={() => runCommand(() => navigate(`/accounts/${acc.id}`))}>
                   <Users className="mr-2 h-4 w-4" />
@@ -90,14 +90,14 @@ export function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (open:
         {canWriteTransactions && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Actions">
+            <CommandGroup heading={t("Actions")}>
               <CommandItem onSelect={() => runCommand(() => navigate("/transactions/new"))}>
                 <Plus className="mr-2 h-4 w-4" />
-                <span>New Transaction (Ctrl+N)</span>
+                <span>{t("NewTransaction")} (Ctrl+N)</span>
               </CommandItem>
               <CommandItem onSelect={() => runCommand(() => navigate("/accounts/new"))}>
                 <Plus className="mr-2 h-4 w-4" />
-                <span>New Account</span>
+                <span>{t("NewAccount")}</span>
               </CommandItem>
             </CommandGroup>
           </>
@@ -106,10 +106,10 @@ export function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (open:
         {role === "admin" && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Admin">
+            <CommandGroup heading={t("AdminPanel")}>
               <CommandItem onSelect={() => runCommand(() => navigate("/branches"))}>
                 <Building2 className="mr-2 h-4 w-4" />
-                <span>Manage Branches</span>
+                <span>{t("Branches")}</span>
               </CommandItem>
             </CommandGroup>
           </>

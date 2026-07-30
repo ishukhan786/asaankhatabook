@@ -18,8 +18,10 @@ import { toast } from "sonner";
 import { useRealtimeRefresh } from "@/hooks/useRealtimeRefresh";
 import { logger } from "@/lib/logger";
 import { PageHeader } from "@/components/PageHeader";
+import { useTranslation } from "react-i18next";
 
 export default function Reports() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   type AccountShort = {
     id: string;
@@ -233,20 +235,20 @@ export default function Reports() {
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 ">
       <PageHeader
         className="print:hidden"
-        eyebrow="Financial Insights"
-        title={<span className="flex items-center gap-3"><span className="p-2 rounded-xl bg-primary/10 text-primary"><FileBarChart className="w-7 h-7" /></span>Reports &amp; Ledger</span>}
+        eyebrow={t("Reports")}
+        title={<span className="flex items-center gap-3"><span className="p-2 rounded-xl bg-primary/10 text-primary"><FileBarChart className="w-7 h-7" /></span>{t("Reports")}</span>}
       />
 
       <Tabs defaultValue="ledger" className="space-y-6">
         <TabsList className="grid w-full max-w-lg grid-cols-3 p-1 bg-muted/20 border border-border/30 rounded-xl print:hidden">
           <TabsTrigger value="ledger" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-            <Users className="w-4 h-4" /> Ledger Summary
+            <Users className="w-4 h-4" /> {t("FinancialSummary")}
           </TabsTrigger>
           <TabsTrigger value="statement" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-            <Receipt className="w-4 h-4" /> Account Statement
+            <Receipt className="w-4 h-4" /> {t("LedgerStatement")}
           </TabsTrigger>
-          <TabsTrigger value="payables-receivables" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-            <Wallet className="w-4 h-4" /> Payables &amp; Receivables
+          <TabsTrigger value="statement" className="flex items-center gap-2 py-2.5 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+            <Wallet className="w-4 h-4" /> {t("PayablesReceivables")}
           </TabsTrigger>
         </TabsList>
 

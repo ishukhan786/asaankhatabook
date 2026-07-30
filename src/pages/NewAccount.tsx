@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ArrowLeft, Loader } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 const schema = z.object({
@@ -43,6 +44,7 @@ const accountTypePrefix = {
 type BranchShort = { id: string; name: string };
 
 export default function NewAccount() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const { role, profile } = useAuth();
   const [branches, setBranches] = useState<BranchShort[]>([]);
@@ -137,10 +139,10 @@ export default function NewAccount() {
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-6">
-      <Link to="/accounts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Back</Link>
+      <Link to="/accounts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> {t("Cancel")}</Link>
       <PageHeader
-        eyebrow="Create"
-        title="New Customer"
+        eyebrow={t("Accounts")}
+        title={t("NewAccount")}
         description="A unique readonly account code will be generated automatically when you save."
       />
 
@@ -153,7 +155,7 @@ export default function NewAccount() {
           )}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Account Type *</Label>
+              <Label>{t("Account")} Type *</Label>
               <Select value={form.account_type} onValueChange={(v: string) => setForm({ ...form, account_type: v as typeof form.account_type })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -162,30 +164,30 @@ export default function NewAccount() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Account Code</Label>
+              <Label>{t("AccountNo")}</Label>
               <Input value={selectedAccountType?.preview ?? "Auto generated"} readOnly disabled className="bg-muted/50 font-mono" />
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Name *</Label>
+              <Label>{t("Account")} Name *</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Customer or vendor name" required />
             </div>
             <div className="space-y-1.5">
-              <Label>Mobile</Label>
+              <Label>{t("Mobile")}</Label>
               <Input value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} placeholder="Optional" />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Address</Label>
+            <Label>{t("Address")}</Label>
             <Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Optional" rows={3} />
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Currency *</Label>
+              <Label>{t("Currency")} *</Label>
               <Select value={form.currency} onValueChange={(v: string) => setForm({ ...form, currency: v as typeof form.currency })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -196,7 +198,7 @@ export default function NewAccount() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Branch {role === "admin" ? "(Optional)" : ""}</Label>
+              <Label>{t("Branch")} {role === "admin" ? "(Optional)" : ""}</Label>
               <Select 
                 value={form.branch_id} 
                 onValueChange={(v) => setForm({ ...form, branch_id: v })}
@@ -219,14 +221,14 @@ export default function NewAccount() {
             <Button type="submit" disabled={busy} className="gradient-primary text-primary-foreground shadow-soft">
               {busy ? (
                 <>
-                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader className="w-4 h-4 mr-1 animate-spin" />
                   Saving...
                 </>
               ) : (
-                "Create account"
+                t("Save")
               )}
             </Button>
-            <Link to="/accounts"><Button type="button" variant="ghost">Cancel</Button></Link>
+            <Button type="button" variant="outline" onClick={() => nav("/accounts")}>{t("Cancel")}</Button>
           </div>
         </form>
       </Card>

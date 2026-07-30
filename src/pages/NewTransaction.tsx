@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ArrowLeft, MessageSquare, Loader } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 const schema = z.object({
@@ -33,6 +34,7 @@ const transactionTypeOptions = [
 ] as const;
 
 export default function NewTransaction() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const [params] = useSearchParams();
   type AccountShort = { id: string; account_no?: string | null; name?: string | null; currency?: string | null; mobile?: string | null };
@@ -96,10 +98,10 @@ export default function NewTransaction() {
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-6">
-      <Link to="/transactions" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Back</Link>
+      <Link to="/transactions" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> {t("Cancel")}</Link>
       <PageHeader
-        eyebrow="Record"
-        title="New Transaction"
+        eyebrow={t("Transactions")}
+        title={t("NewTransaction")}
         description="Transaction code is generated automatically and stays locked after save."
       />
 
@@ -121,15 +123,15 @@ export default function NewTransaction() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Voucher No</Label>
+              <Label>{t("Code")}</Label>
               <Input value={txnCodePreview} readOnly disabled className="bg-muted/50 font-mono" />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Account *</Label>
+            <Label>{t("Account")} *</Label>
             <Select value={form.account_id} onValueChange={(v: string) => setForm({ ...form, account_id: v })}>
-              <SelectTrigger><SelectValue placeholder={accounts.length ? "Select account" : "No accounts yet"} /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={accounts.length ? t("SearchPlaceholder") : "No accounts yet"} /></SelectTrigger>
               <SelectContent>
                 {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.account_no} - {a.name} ({a.currency})</SelectItem>)}
               </SelectContent>
@@ -138,23 +140,23 @@ export default function NewTransaction() {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Date *</Label>
+              <Label>{t("Date")} *</Label>
               <Input type="date" value={form.txn_date} onChange={(e) => setForm({ ...form, txn_date: e.target.value })} />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Details *</Label>
+            <Label>{t("Narration")} *</Label>
             <Textarea value={form.details} onChange={(e) => setForm({ ...form, details: e.target.value })} rows={3} placeholder="Description / narration" />
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Debit (Banam)</Label>
+              <Label>{t("Debit")}</Label>
               <Input type="number" step="0.01" min="0" value={form.debit} onChange={(e) => setForm({ ...form, debit: e.target.value })} placeholder="0.00" />
             </div>
             <div className="space-y-1.5">
-              <Label>Credit (Jama)</Label>
+              <Label>{t("Credit")}</Label>
               <Input type="number" step="0.01" min="0" value={form.credit} onChange={(e) => setForm({ ...form, credit: e.target.value })} placeholder="0.00" />
             </div>
           </div>
@@ -167,7 +169,7 @@ export default function NewTransaction() {
                   Saving...
                 </>
               ) : (
-                "Record transaction"
+                t("Save")
               )}
             </Button>
             <Button 
@@ -177,9 +179,9 @@ export default function NewTransaction() {
               disabled={busy || !accounts.find(a => a.id === form.account_id)?.mobile} 
               className="border-success text-success hover:bg-success/5"
             >
-              <MessageSquare className="w-4 h-4 mr-2" /> Record & WhatsApp
+              <MessageSquare className="w-4 h-4 mr-2" /> {t("ShareWhatsApp")}
             </Button>
-            <Link to="/transactions"><Button type="button" variant="ghost">Cancel</Button></Link>
+            <Link to="/transactions"><Button type="button" variant="ghost">{t("Cancel")}</Button></Link>
           </div>
         </form>
       </Card>

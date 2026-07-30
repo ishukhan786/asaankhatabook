@@ -468,8 +468,8 @@ export default function PayablesReceivables({ embedded = false }: { embedded?: b
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold uppercase tracking-widest text-red-600 dark:text-red-400 flex items-center gap-2 flex-wrap mb-2">
-                  <span>Receivables — Denedari</span>
-                  <span className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-0.5 rounded-full text-[10px]">{filteredReceivables.length} accounts</span>
+                  <span>{t("Receivables")}</span>
+                  <span className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-0.5 rounded-full text-[10px]">{filteredReceivables.length} {t("TotalAccounts")}</span>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   {recTotals.map(([cur, amount], idx) => (
@@ -479,7 +479,7 @@ export default function PayablesReceivables({ embedded = false }: { embedded?: b
                   ))}
                   {recTotals.length === 0 && <span className="text-3xl font-black text-red-600 dark:text-red-400 num">0</span>}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">Customers ko dena hai aap ko</p>
+                <p className="text-xs text-muted-foreground mt-2">{t("TotalReceivable")}</p>
               </div>
             </div>
           </Card>
@@ -492,8 +492,8 @@ export default function PayablesReceivables({ embedded = false }: { embedded?: b
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 flex items-center gap-2 flex-wrap mb-2">
-                  <span>Payables — Lenedari</span>
-                  <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full text-[10px]">{filteredPayables.length} accounts</span>
+                  <span>{t("Payables")}</span>
+                  <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full text-[10px]">{filteredPayables.length} {t("TotalAccounts")}</span>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   {payTotals.map(([cur, amount], idx) => (
@@ -503,7 +503,7 @@ export default function PayablesReceivables({ embedded = false }: { embedded?: b
                   ))}
                   {payTotals.length === 0 && <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 num">0</span>}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">Aap ko customers se lena hai</p>
+                <p className="text-xs text-muted-foreground mt-2">{t("TotalPayable")}</p>
               </div>
             </div>
           </Card>
@@ -517,7 +517,7 @@ export default function PayablesReceivables({ embedded = false }: { embedded?: b
                 <ArrowDownLeft className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-bold text-base text-red-700 dark:text-red-400">Receivables (Denedari)</h2>
+                <h2 className="font-bold text-base text-red-700 dark:text-red-400">{t("Receivables")}</h2>
                 <p className="text-xs text-red-500/60">{filteredReceivables.length} accounts — customers ko aap se lena hai</p>
               </div>
             </div>

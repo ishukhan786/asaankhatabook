@@ -81,7 +81,7 @@ export default function AppLayout() {
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   aria-label="Global Search"
-                  placeholder="Search accounts or commands..."
+                  placeholder={t("SearchPlaceholder")}
                   onClick={() => setSearchOpen(true)}
                   className="h-9 w-full rounded-xl pl-9 pr-10 text-xs placeholder:text-muted-foreground outline-none transition-all duration-300 cursor-pointer bg-muted/40 hover:bg-muted/60 border border-border/50"
                   readOnly
@@ -106,7 +106,7 @@ export default function AppLayout() {
               </Button>
 
               <div className="text-xs text-muted-foreground hidden sm:block font-medium">
-                {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
+                {new Date().toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
               </div>
 
               <Button 
