@@ -535,10 +535,10 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* 📍 SECTION 4: TWO-COLUMN LAYOUT (Branch Summary on Left, Recent Activity on Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Side: Branch Summary */}
-        <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
+      {/* 📍 SECTION 4: TWO-COLUMN LAYOUT (Branch Summary on Left 40%, Recent Activity on Right 60%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left Side: Branch Summary (40% width) */}
+        <Card className="lg:col-span-2 rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
             <h2 className="font-bold text-base flex items-center gap-2">
               <Building2 className="w-4 h-4 text-primary" /> Branch Summary
@@ -574,8 +574,8 @@ export default function Dashboard() {
           )}
         </Card>
 
-        {/* Right Side: Recent Activity */}
-        <Card className="rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
+        {/* Right Side: Recent Activity (60% width) */}
+        <Card className="lg:col-span-3 rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
             <h2 className="font-bold text-base flex items-center gap-2">
               <Activity className="w-4 h-4 text-primary" /> Recent Activity
