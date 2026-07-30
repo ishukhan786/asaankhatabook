@@ -5,7 +5,6 @@ import {
   LayoutDashboard,
   LogOut,
   Receipt,
-  Search,
   Settings as SettingsIcon,
   Shield,
   UserCog,
@@ -24,7 +23,6 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -124,28 +122,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="premium-sidebar-scroll bg-transparent px-3 py-2 z-10 relative flex-1 overflow-y-auto min-h-0">
-        {!collapsed && (
-          <div className="relative mb-5 mx-1">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              aria-label="Search navigation"
-              placeholder="Quick search..."
-              onClick={() => window.dispatchEvent(new Event("open-search"))}
-              className="h-10 rounded-xl pl-10 text-sm placeholder:text-muted-foreground outline-none transition-all duration-300 cursor-pointer"
-              style={{
-                background: "var(--glass-bg)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                border: "1px solid var(--glass-border)",
-                boxShadow: "0 1px 0 hsl(0 0% 100% / 0.6) inset, 0 2px 8px -2px hsl(184 80% 22% / 0.1)",
-              }}
-              readOnly
-            />
-            <kbd className="pointer-events-none absolute right-2.5 top-[50%] -translate-y-[50%] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-              <span className="text-xs">Ctrl</span>K
-            </kbd>
-          </div>
-        )}
+
 
         <div className="space-y-6">
           {visibleSections.map((section) => (

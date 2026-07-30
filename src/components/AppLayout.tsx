@@ -10,6 +10,8 @@ import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/clerk-react";
 import { GlobalSearch } from "./GlobalSearch";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export default function AppLayout() {
   const { theme, setTheme } = useTheme();
@@ -59,11 +61,30 @@ export default function AppLayout() {
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <header 
-            className="h-14 flex items-center gap-3 border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-30 pl-4 pr-4 md:pr-[140px] select-none"
+            className="h-14 flex items-center justify-between border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-30 pl-4 pr-4 md:pr-[140px] select-none"
             style={{ WebkitAppRegion: 'drag' } as CSSProperties}
           >
-            <SidebarTrigger style={{ WebkitAppRegion: 'no-drag' } as CSSProperties} />
-            <div className="flex-1" />
+            <div className="flex items-center gap-3" style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}>
+              <SidebarTrigger />
+            </div>
+
+            {/* Global Search in Top Center */}
+            <div className="flex-1 max-w-sm mx-auto px-4 print:hidden" style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  aria-label="Global Search"
+                  placeholder="Search accounts or commands... (Ctrl+K)"
+                  onClick={() => setSearchOpen(true)}
+                  className="h-9 w-full rounded-xl pl-9 pr-10 text-xs placeholder:text-muted-foreground outline-none transition-all duration-300 cursor-pointer bg-muted/40 hover:bg-muted/60 border border-border/50"
+                  readOnly
+                />
+                <kbd className="pointer-events-none absolute right-2.5 top-[50%] -translate-y-[50%] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[9px] font-medium opacity-80 sm:flex">
+                  <span>Ctrl</span>K
+                </kbd>
+              </div>
+            </div>
+
             <div className="flex items-center gap-3" style={{ WebkitAppRegion: 'no-drag' } as CSSProperties}>
               <div className="text-xs text-muted-foreground hidden sm:block font-medium">
                 {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
