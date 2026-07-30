@@ -398,13 +398,13 @@ export default function AccountDetail() {
               <div style={{ borderLeft: "3px solid #b91c1c", paddingLeft: "10px" }}>
                 <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL DEBIT (NAM)</div>
                 <div style={{ fontSize: "15px", fontWeight: "900", color: "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
-                  {formatMoney(totDebit, account?.currency)}
+                  {formatMoney(totalDebit, account?.currency)}
                 </div>
               </div>
               <div style={{ borderLeft: "3px solid #047857", paddingLeft: "10px" }}>
                 <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CREDIT (JAMA)</div>
                 <div style={{ fontSize: "15px", fontWeight: "900", color: "#047857", fontFamily: "monospace", marginTop: "2px" }}>
-                  {formatMoney(totCredit, account?.currency)}
+                  {formatMoney(totalCredit, account?.currency)}
                 </div>
               </div>
               <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "10px" }}>
