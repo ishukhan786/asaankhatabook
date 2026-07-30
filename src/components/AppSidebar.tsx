@@ -204,7 +204,7 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="pt-3 pb-4 px-3 z-10 relative shrink-0" style={{ background: "transparent" }}>
+      <SidebarFooter className="pt-2 pb-2 px-3 z-10 relative shrink-0" style={{ background: "transparent" }}>
         {/* Footer top border */}
         <div className="absolute top-0 left-3 right-3 h-px" style={{ background: "var(--glass-border)" }} />
 
@@ -213,7 +213,7 @@ export function AppSidebar() {
           variant="ghost"
           size={collapsed ? "icon" : "sm"}
           className={cn(
-            "mt-3 h-11 rounded-xl text-muted-foreground transition-all duration-300 hover:bg-destructive/15 hover:text-destructive hover:shadow-[0_0_15px_-5px_rgba(var(--destructive),0.4)] dark:text-slate-400",
+            "mt-2 h-9.5 rounded-xl text-muted-foreground transition-all duration-300 hover:bg-destructive/15 hover:text-destructive hover:shadow-[0_0_15px_-5px_rgba(var(--destructive),0.4)] dark:text-slate-400",
             collapsed ? "w-full" : "w-full justify-start px-3",
           )}
         >
