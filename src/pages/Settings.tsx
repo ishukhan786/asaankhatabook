@@ -21,7 +21,7 @@ interface ClerkWindow extends Window {
 }
 
 type AppPreferences = {
-  defaultCurrency: "PKR" | "AED";
+  defaultCurrency: "PKR" | "AED" | "USD";
   dateFormat: "dd MMM yyyy" | "yyyy-MM-dd" | "MM/dd/yyyy";
   language: "en" | "ur";
   showBusinessHeader: boolean;
@@ -431,11 +431,12 @@ export default function Settings() {
                   <div className="grid md:grid-cols-2 gap-5">
                     <div className="grid gap-2">
                       <Label className="text-muted-foreground">Default Currency</Label>
-                      <Select value={prefs.defaultCurrency} onValueChange={(value: "PKR" | "AED") => setPrefs({ ...prefs, defaultCurrency: value })}>
+                      <Select value={prefs.defaultCurrency} onValueChange={(value: "PKR" | "AED" | "USD") => setPrefs({ ...prefs, defaultCurrency: value })}>
                         <SelectTrigger className="font-medium"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="PKR">PKR - Pakistani Rupee</SelectItem>
                           <SelectItem value="AED">AED - UAE Dirham</SelectItem>
+                          <SelectItem value="USD">USD - US Dollar ($)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

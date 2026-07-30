@@ -45,16 +45,21 @@ interface Stats {
   branches: number;
   netPKR: number;
   netAED: number;
+  netUSD: number;
   cashPKR: number;
   cashAED: number;
+  cashUSD: number;
   receivablePKR: number;
   receivableAED: number;
+  receivableUSD: number;
   payablePKR: number;
   payableAED: number;
+  payableUSD: number;
   totalExpensePKR: number;
   totalExpenseAED: number;
-  byBranch: { name: string; pkr: number; aed: number; accounts: number }[];
-  trend: { date: string; income: number; expense: number; pkr: number; aed: number }[];
+  totalExpenseUSD: number;
+  byBranch: { name: string; pkr: number; aed: number; usd: number; accounts: number }[];
+  trend: { date: string; income: number; expense: number; pkr: number; aed: number; usd: number }[];
   topCustomers: { id: string; name: string; account_no: string; balance: number; currency: string }[];
 }
 
@@ -170,9 +175,9 @@ export default function Dashboard() {
       ]));
 
       const lowBalanceAlerts: AccountAlert[] = [];
-      let cashPKR = 0, cashAED = 0;
-      let recPKR = 0, recAED = 0;
-      let payPKR = 0, payAED = 0;
+      let cashPKR = 0, cashAED = 0, cashUSD = 0;
+      let recPKR = 0, recAED = 0, recUSD = 0;
+      let payPKR = 0, payAED = 0, payUSD = 0;
 
       const customerBalances: { id: string; name: string; account_no: string; balance: number; currency: string }[] = [];
 
@@ -185,17 +190,18 @@ export default function Dashboard() {
         // Cash/Bank account classification
         if (acc.account_type === "cash" || acc.account_type === "bank") {
           if (cur === "PKR") cashPKR += bal;
-          else cashAED += bal;
+          else if (cur === "AED") cashAED += bal;
+          else if (cur === "USD") cashUSD += bal;
         } else {
           // Receivables vs Payables
-          // balance < 0 (debit > credit) is Receivable (hum ne lena hai)
-          // balance > 0 (credit > debit) is Payable (hum ne dena hai)
           if (bal < 0) {
             if (cur === "PKR") recPKR += Math.abs(bal);
-            else recAED += Math.abs(bal);
+            else if (cur === "AED") recAED += Math.abs(bal);
+            else if (cur === "USD") recUSD += Math.abs(bal);
           } else if (bal > 0) {
             if (cur === "PKR") payPKR += bal;
-            else payAED += bal;
+            else if (cur === "AED") payAED += bal;
+            else if (cur === "USD") payUSD += bal;
           }
         }
 
@@ -227,31 +233,35 @@ export default function Dashboard() {
 
       const netPKR = Number(summaryRow?.net_pkr ?? (cashPKR + recPKR - payPKR));
       const netAED = Number(summaryRow?.net_aed ?? (cashAED + recAED - payAED));
+      const netUSD = Number(cashUSD + recUSD - payUSD);
 
       let periodExpensePKR = 0;
       let periodExpenseAED = 0;
+      let periodExpenseUSD = 0;
       expPeriod.forEach((e: { amount?: number; currency?: string }) => {
         const amount = Number(e.amount || 0);
         if (e.currency === "PKR") periodExpensePKR += amount;
         else if (e.currency === "AED") periodExpenseAED += amount;
+        else if (e.currency === "USD") periodExpenseUSD += amount;
       });
 
       // Branch Distribution
-      type BranchRPC = { branch_name?: string; pkr?: number | string; aed?: number | string; accounts_count?: number | string };
+      type BranchRPC = { branch_name?: string; pkr?: number | string; aed?: number | string; usd?: number | string; accounts_count?: number | string };
       const branchData = (branchResult.data ?? []).map((b: BranchRPC) => ({
         name: String(b.branch_name ?? ""),
         pkr: Number(b.pkr ?? 0),
         aed: Number(b.aed ?? 0),
+        usd: Number(b.usd ?? 0),
         accounts: Number(b.accounts_count ?? 0),
       }));
 
       // Trend data for chart analytics
-      const trendMap = new Map<string, { income: number; expense: number; pkr: number; aed: number }>();
+      const trendMap = new Map<string, { income: number; expense: number; pkr: number; aed: number; usd: number }>();
       const start = new Date(fromStr);
       const end = new Date(toStr);
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         const dateStr = d.toISOString().split("T")[0];
-        trendMap.set(dateStr, { income: 0, expense: 0, pkr: 0, aed: 0 });
+        trendMap.set(dateStr, { income: 0, expense: 0, pkr: 0, aed: 0, usd: 0 });
       }
 
       txPeriod.forEach((tx: { txn_date: string; credit?: number; debit?: number; accounts?: { currency?: string | null } | null }) => {
@@ -264,7 +274,8 @@ export default function Dashboard() {
           current.income += credit;
           current.expense += debit;
           if (currency === "PKR") current.pkr += (credit - debit);
-          else current.aed += (credit - debit);
+          else if (currency === "AED") current.aed += (credit - debit);
+          else if (currency === "USD") current.usd += (credit - debit);
         }
       });
 
@@ -276,6 +287,7 @@ export default function Dashboard() {
           expense: val.expense,
           pkr: val.pkr,
           aed: val.aed,
+          usd: val.usd,
         };
       });
 
@@ -287,17 +299,21 @@ export default function Dashboard() {
         branches: branchData.length,
         netPKR,
         netAED,
+        netUSD,
         cashPKR,
         cashAED,
+        cashUSD,
         receivablePKR: recPKR,
         receivableAED: recAED,
+        receivableUSD: recUSD,
         payablePKR: payPKR,
         payableAED: payAED,
+        payableUSD: payUSD,
         totalExpensePKR: periodExpensePKR,
         totalExpenseAED: periodExpenseAED,
+        totalExpenseUSD: periodExpenseUSD,
         byBranch: branchData,
         trend: trendData,
-        topCustomers: customerBalances.slice(0, 5)
       });
       setAlerts(lowBalanceAlerts);
       setRecent((recentTx ?? []) as Tables<"transactions">[]);
@@ -406,90 +422,102 @@ export default function Dashboard() {
       </div>
 
       {/* 📍 SECTION 1: FINANCIAL OVERVIEW (TOP ROW) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 !mt-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 !mt-10">
         {/* PKR Balance */}
-        <Card className="rounded-2xl p-5 border border-emerald-200/60 dark:border-emerald-900/40 bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/20 dark:to-card shadow-xs relative overflow-hidden">
+        <Card className="rounded-2xl p-4 border border-emerald-200/60 dark:border-emerald-900/40 bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/20 dark:to-card shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">PKR Balance</span>
             <Badge className="bg-emerald-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">PKR</Badge>
           </div>
-          <div className="text-2xl md:text-3xl font-extrabold num text-emerald-700 dark:text-emerald-400 mt-2">
+          <div className="text-xl md:text-2xl font-extrabold num text-emerald-700 dark:text-emerald-400 mt-2">
             {formatMoney(stats.netPKR, "PKR")}
           </div>
           <p className="text-xs text-muted-foreground mt-1">{balanceLabel(stats.netPKR)}</p>
         </Card>
 
         {/* AED Balance */}
-        <Card className="rounded-2xl p-5 border border-blue-200/60 dark:border-blue-900/40 bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/20 dark:to-card shadow-xs relative overflow-hidden">
+        <Card className="rounded-2xl p-4 border border-blue-200/60 dark:border-blue-900/40 bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/20 dark:to-card shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">AED Balance</span>
             <Badge className="bg-blue-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">AED</Badge>
           </div>
-          <div className="text-2xl md:text-3xl font-extrabold num text-blue-700 dark:text-blue-400 mt-2">
+          <div className="text-xl md:text-2xl font-extrabold num text-blue-700 dark:text-blue-400 mt-2">
             {formatMoney(stats.netAED, "AED")}
           </div>
           <p className="text-xs text-muted-foreground mt-1">{balanceLabel(stats.netAED)}</p>
         </Card>
 
+        {/* USD Balance */}
+        <Card className="rounded-2xl p-4 border border-purple-200/60 dark:border-purple-900/40 bg-gradient-to-br from-purple-50/50 to-white dark:from-purple-950/20 dark:to-card shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">USD Balance</span>
+            <Badge className="bg-purple-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">USD</Badge>
+          </div>
+          <div className="text-xl md:text-2xl font-extrabold num text-purple-700 dark:text-purple-400 mt-2">
+            {formatMoney(stats.netUSD, "USD")}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">{balanceLabel(stats.netUSD)}</p>
+        </Card>
+
         {/* Total Customers */}
-        <Card className="rounded-2xl p-5 border border-border/80 bg-card shadow-xs">
+        <Card className="rounded-2xl p-4 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Customers</span>
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl md:text-3xl font-extrabold num mt-2">{stats.accounts}</div>
-          <p className="text-xs text-muted-foreground mt-1">Active customer & ledger accounts</p>
+          <div className="text-xl md:text-2xl font-extrabold num mt-2">{stats.accounts}</div>
+          <p className="text-xs text-muted-foreground mt-1">Active customer accounts</p>
         </Card>
 
         {/* Total Vouchers */}
-        <Card className="rounded-2xl p-5 border border-border/80 bg-card shadow-xs">
+        <Card className="rounded-2xl p-4 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Vouchers</span>
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
               <Receipt className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl md:text-3xl font-extrabold num mt-2">{stats.totalVouchers}</div>
+          <div className="text-xl md:text-2xl font-extrabold num mt-2">{stats.totalVouchers}</div>
           <p className="text-xs text-muted-foreground mt-1">In selected timeframe</p>
         </Card>
       </div>
 
-      {/* 📍 SECTION 2 & 3: FINANCIAL SUMMARIES (PKR & AED) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 📍 SECTION 2, 3 & USD: FINANCIAL SUMMARIES (PKR, AED & USD) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* PKR Summary Card */}
-        <Card className="rounded-2xl p-6 border border-emerald-200/80 dark:border-emerald-900/60 bg-card shadow-xs">
-          <div className="flex items-center justify-between pb-4 border-b border-border/60">
+        <Card className="rounded-2xl p-5 border border-emerald-200/80 dark:border-emerald-900/60 bg-card shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-emerald-500" />
-              <h2 className="font-bold text-base">PKR Financial Summary</h2>
+              <h2 className="font-bold text-sm">PKR Summary</h2>
             </div>
-            <Badge className="bg-emerald-600 text-white font-bold text-xs">PKR</Badge>
+            <Badge className="bg-emerald-600 text-white font-bold text-[10px]">PKR</Badge>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5">
+          <div className="grid grid-cols-2 gap-3 pt-4">
             <div>
-              <div className="text-xs text-muted-foreground font-semibold">Cash</div>
-              <div className="text-base font-bold num text-slate-800 dark:text-slate-100 mt-1">
+              <div className="text-[10px] text-muted-foreground font-semibold uppercase">Cash</div>
+              <div className="text-sm font-bold num text-slate-800 dark:text-slate-100 mt-0.5">
                 {formatMoney(stats.cashPKR, "PKR")}
               </div>
             </div>
             <div>
-              <div className="text-xs text-orange-600 dark:text-orange-400 font-semibold">Receivable</div>
-              <div className="text-base font-bold num text-orange-600 dark:text-orange-400 mt-1">
+              <div className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase">Receivable</div>
+              <div className="text-sm font-bold num text-orange-600 dark:text-orange-400 mt-0.5">
                 {formatMoney(stats.receivablePKR, "PKR")}
               </div>
             </div>
             <div>
-              <div className="text-xs text-red-600 dark:text-red-400 font-semibold">Payable</div>
-              <div className="text-base font-bold num text-red-600 dark:text-red-400 mt-1">
+              <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase">Payable</div>
+              <div className="text-sm font-bold num text-red-600 dark:text-red-400 mt-0.5">
                 {formatMoney(stats.payablePKR, "PKR")}
               </div>
             </div>
             <div>
-              <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Net Balance</div>
-              <div className="text-base font-bold num text-emerald-600 dark:text-emerald-400 mt-1">
+              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase">Net Balance</div>
+              <div className="text-sm font-bold num text-emerald-600 dark:text-emerald-400 mt-0.5">
                 {formatMoney(stats.netPKR, "PKR")}
               </div>
             </div>
@@ -497,38 +525,76 @@ export default function Dashboard() {
         </Card>
 
         {/* AED Summary Card */}
-        <Card className="rounded-2xl p-6 border border-blue-200/80 dark:border-blue-900/60 bg-card shadow-xs">
-          <div className="flex items-center justify-between pb-4 border-b border-border/60">
+        <Card className="rounded-2xl p-5 border border-blue-200/80 dark:border-blue-900/60 bg-card shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <h2 className="font-bold text-base">AED Financial Summary</h2>
+              <h2 className="font-bold text-sm">AED Summary</h2>
             </div>
-            <Badge className="bg-blue-600 text-white font-bold text-xs">AED</Badge>
+            <Badge className="bg-blue-600 text-white font-bold text-[10px]">AED</Badge>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5">
+          <div className="grid grid-cols-2 gap-3 pt-4">
             <div>
-              <div className="text-xs text-muted-foreground font-semibold">Cash</div>
-              <div className="text-base font-bold num text-slate-800 dark:text-slate-100 mt-1">
+              <div className="text-[10px] text-muted-foreground font-semibold uppercase">Cash</div>
+              <div className="text-sm font-bold num text-slate-800 dark:text-slate-100 mt-0.5">
                 {formatMoney(stats.cashAED, "AED")}
               </div>
             </div>
             <div>
-              <div className="text-xs text-orange-600 dark:text-orange-400 font-semibold">Receivable</div>
-              <div className="text-base font-bold num text-orange-600 dark:text-orange-400 mt-1">
+              <div className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase">Receivable</div>
+              <div className="text-sm font-bold num text-orange-600 dark:text-orange-400 mt-0.5">
                 {formatMoney(stats.receivableAED, "AED")}
               </div>
             </div>
             <div>
-              <div className="text-xs text-red-600 dark:text-red-400 font-semibold">Payable</div>
-              <div className="text-base font-bold num text-red-600 dark:text-red-400 mt-1">
+              <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase">Payable</div>
+              <div className="text-sm font-bold num text-red-600 dark:text-red-400 mt-0.5">
                 {formatMoney(stats.payableAED, "AED")}
               </div>
             </div>
             <div>
-              <div className="text-xs text-blue-600 dark:text-blue-400 font-semibold">Net Balance</div>
-              <div className="text-base font-bold num text-blue-600 dark:text-blue-400 mt-1">
+              <div className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold uppercase">Net Balance</div>
+              <div className="text-sm font-bold num text-blue-600 dark:text-blue-400 mt-0.5">
                 {formatMoney(stats.netAED, "AED")}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* USD Summary Card */}
+        <Card className="rounded-2xl p-5 border border-purple-200/80 dark:border-purple-900/60 bg-card shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-border/60">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-purple-500" />
+              <h2 className="font-bold text-sm">USD Summary</h2>
+            </div>
+            <Badge className="bg-purple-600 text-white font-bold text-[10px]">USD</Badge>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-4">
+            <div>
+              <div className="text-[10px] text-muted-foreground font-semibold uppercase">Cash</div>
+              <div className="text-sm font-bold num text-slate-800 dark:text-slate-100 mt-0.5">
+                {formatMoney(stats.cashUSD, "USD")}
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase">Receivable</div>
+              <div className="text-sm font-bold num text-orange-600 dark:text-orange-400 mt-0.5">
+                {formatMoney(stats.receivableUSD, "USD")}
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase">Payable</div>
+              <div className="text-sm font-bold num text-red-600 dark:text-red-400 mt-0.5">
+                {formatMoney(stats.payableUSD, "USD")}
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold uppercase">Net Balance</div>
+              <div className="text-sm font-bold num text-purple-600 dark:text-purple-400 mt-0.5">
+                {formatMoney(stats.netUSD, "USD")}
               </div>
             </div>
           </div>
@@ -566,6 +632,10 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground text-[10px] uppercase font-bold">AED:</span>
                       <span className={`font-bold ${b.aed >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}`}>{formatMoney(b.aed, "AED")}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground text-[10px] uppercase font-bold">USD:</span>
+                      <span className={`font-bold ${b.usd >= 0 ? "text-purple-600 dark:text-purple-400" : "text-red-600 dark:text-red-400"}`}>{formatMoney(b.usd, "USD")}</span>
                     </div>
                   </div>
                 </div>

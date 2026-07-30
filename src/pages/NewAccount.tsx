@@ -17,7 +17,7 @@ const schema = z.object({
   name: z.string().trim().min(2).max(100),
   mobile: z.string().trim().max(20).optional().or(z.literal("")),
   address: z.string().trim().max(300).optional().or(z.literal("")),
-  currency: z.enum(["PKR", "AED"]),
+  currency: z.enum(["PKR", "AED", "USD"]),
   account_type: z.enum(["customer", "supplier", "employee", "bank", "cash", "party"]),
   branch_id: z.string().uuid("Select a branch").optional().or(z.literal("")),
 });
@@ -53,7 +53,7 @@ export default function NewAccount() {
     mobile: "", 
     address: "", 
     account_type: "customer" as "customer" | "supplier" | "employee" | "bank" | "cash" | "party",
-    currency: "PKR" as "PKR" | "AED", 
+    currency: "PKR" as "PKR" | "AED" | "USD", 
     branch_id: profile?.branch_id || "" 
   });
   const selectedAccountType = accountTypeOptions.find((option) => option.value === form.account_type);
@@ -191,6 +191,7 @@ export default function NewAccount() {
                 <SelectContent>
                   <SelectItem value="PKR">PKR - Pakistani Rupee</SelectItem>
                   <SelectItem value="AED">AED - UAE Dirham</SelectItem>
+                  <SelectItem value="USD">USD - US Dollar ($)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
