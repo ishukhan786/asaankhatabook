@@ -139,12 +139,12 @@ export function AppSidebar() {
 
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild tooltip={item.title} className="h-11 rounded-xl p-0 hover:bg-transparent">
+                      <SidebarMenuButton asChild tooltip={item.title} className="h-12 rounded-xl p-0 hover:bg-transparent">
                         <NavLink
                           to={item.url}
                           aria-current={active ? "page" : undefined}
                           className={cn(
-                            "group/item relative flex h-11 w-full items-center overflow-hidden rounded-xl text-sm font-medium outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/60",
+                            "group/item relative flex h-12 w-full items-center rounded-xl text-sm font-medium outline-none transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/60",
                             collapsed ? "justify-center px-0" : "gap-3 px-3",
                           )}
                           style={active ? {
@@ -176,7 +176,7 @@ export function AppSidebar() {
                           </span>
                           {!collapsed && (
                             <>
-                              <span className={cn("min-w-0 flex-1 truncate transition-colors relative z-10", active ? "font-bold tracking-wide text-sidebar-foreground" : "font-medium text-muted-foreground group-hover/item:text-sidebar-foreground")}>
+                              <span className={cn("min-w-0 flex-1 truncate transition-colors relative z-10 leading-snug py-0.5", active ? "font-bold tracking-wide text-sidebar-foreground" : "font-medium text-muted-foreground group-hover/item:text-sidebar-foreground")}>
                                 {item.title}
                               </span>
                               {item.badge && (
