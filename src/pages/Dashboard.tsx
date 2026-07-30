@@ -535,10 +535,10 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* 📍 SECTION 4: TWO-COLUMN LAYOUT (Branch Summary on Left 40%, Recent Activity on Right 60%) */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left Side: Branch Summary (40% width) */}
-        <Card className="lg:col-span-2 rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
+      {/* 📍 SECTION 4: TWO-COLUMN LAYOUT (Branch Summary on Left 25%, Recent Activity on Right 75%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Side: Branch Summary (25% width) */}
+        <Card className="lg:col-span-1 rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
             <h2 className="font-bold text-base flex items-center gap-2">
               <Building2 className="w-4 h-4 text-primary" /> Branch Summary
@@ -558,12 +558,12 @@ export default function Dashboard() {
                     <span className="font-semibold text-xs truncate pr-2">{b.name}</span>
                     <span className="text-[10px] text-muted-foreground font-mono">{b.accounts} accounts</span>
                   </div>
-                  <div className="flex items-center justify-between text-xs num pt-1 border-t border-border/40">
-                    <div className="flex items-center gap-1">
+                  <div className="flex flex-col gap-1 text-xs num pt-1 border-t border-border/40">
+                    <div className="flex items-center justify-between">
                       <span className="text-muted-foreground text-[10px] uppercase font-bold">PKR:</span>
                       <span className={`font-bold ${b.pkr >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{formatMoney(b.pkr, "PKR")}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center justify-between">
                       <span className="text-muted-foreground text-[10px] uppercase font-bold">AED:</span>
                       <span className={`font-bold ${b.aed >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}`}>{formatMoney(b.aed, "AED")}</span>
                     </div>
@@ -574,7 +574,7 @@ export default function Dashboard() {
           )}
         </Card>
 
-        {/* Right Side: Recent Activity (60% width) */}
+        {/* Right Side: Recent Activity (75% width) */}
         <Card className="lg:col-span-3 rounded-2xl p-6 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
             <h2 className="font-bold text-base flex items-center gap-2">
