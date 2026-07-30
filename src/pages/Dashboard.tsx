@@ -245,15 +245,31 @@ export default function Dashboard() {
         else if (e.currency === "USD") periodExpenseUSD += amount;
       });
 
-      // Branch Distribution
-      type BranchRPC = { branch_name?: string; pkr?: number | string; aed?: number | string; usd?: number | string; accounts_count?: number | string };
-      const branchData = (branchResult.data ?? []).map((b: BranchRPC) => ({
-        name: String(b.branch_name ?? ""),
-        pkr: Number(b.pkr ?? 0),
-        aed: Number(b.aed ?? 0),
-        usd: Number(b.usd ?? 0),
-        accounts: Number(b.accounts_count ?? 0),
-      }));
+      // Accurate Client-side Branch Distribution calculation
+      const branchMap = new Map<string, { name: string; pkr: number; aed: number; usd: number; accounts: number }>();
+      
+      // Initialize known branches
+      branchesList.forEach(b => {
+        branchMap.set(b.id, { name: b.name, pkr: 0, aed: 0, usd: 0, accounts: 0 });
+      });
+
+      allAccs.forEach(acc => {
+        const bal = balancesMap.get(acc.id) ?? 0;
+        const cur = acc.currency || "PKR";
+        const branchId = acc.branch_id || "unassigned";
+        const branchName = acc.branches?.name || "Main Branch";
+
+        if (!branchMap.has(branchId)) {
+          branchMap.set(branchId, { name: branchName, pkr: 0, aed: 0, usd: 0, accounts: 0 });
+        }
+        const b = branchMap.get(branchId)!;
+        b.accounts += 1;
+        if (cur === "PKR") b.pkr += bal;
+        else if (cur === "AED") b.aed += bal;
+        else if (cur === "USD") b.usd += bal;
+      });
+
+      const branchData = Array.from(branchMap.values()).filter(b => b.accounts > 0 || b.pkr !== 0 || b.aed !== 0 || b.usd !== 0);
 
       // Trend data for chart analytics
       const trendMap = new Map<string, { income: number; expense: number; pkr: number; aed: number; usd: number }>();
