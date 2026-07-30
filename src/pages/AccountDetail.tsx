@@ -145,7 +145,12 @@ export default function AccountDetail() {
 
   if (!account) return <div className="p-8"><Skeleton className="h-32" /></div>;
 
-  let running = 0;
+  const openingBalance = from
+    ? (txns ?? [])
+        .filter((t) => t.txn_date < from)
+        .reduce((acc, t) => acc + (Number(t.credit ?? 0) - Number(t.debit ?? 0)), 0)
+    : 0;
+
   const filteredRows = (txns ?? []).filter((t) => {
     if (from && t.txn_date < from) return false;
     if (to && t.txn_date > to) return false;
@@ -159,13 +164,32 @@ export default function AccountDetail() {
     return true;
   });
 
-  const rows = filteredRows.map((t) => {
+  let running = openingBalance;
+  const mappedRows = filteredRows.map((t) => {
     running += Number(t.credit ?? 0) - Number(t.debit ?? 0);
     return { ...t, balance: running } as TxnType & { balance: number };
   });
 
-  const totalDebit = rows.reduce((s, r) => s + Number(r.debit), 0);
-  const totalCredit = rows.reduce((s, r) => s + Number(r.credit), 0);
+  const rows = (() => {
+    if (from) {
+      const bfDebit = openingBalance < 0 ? Math.abs(openingBalance) : 0;
+      const bfCredit = openingBalance > 0 ? openingBalance : 0;
+      const bfRow = {
+        id: "bf-row",
+        txn_date: from,
+        txn_code: "B/F",
+        details: "B/F Balance (سابقہ بقایا / Brought Forward)",
+        debit: bfDebit,
+        credit: bfCredit,
+        balance: openingBalance,
+      } as unknown as TxnType & { balance: number };
+      return [bfRow, ...mappedRows];
+    }
+    return mappedRows;
+  })();
+
+  const totalDebit = filteredRows.reduce((s, r) => s + Number(r.debit || 0), 0);
+  const totalCredit = filteredRows.reduce((s, r) => s + Number(r.credit || 0), 0);
 
   const deleteAccount = async () => {
     setBusy(true);
@@ -627,11 +651,11 @@ export default function AccountDetail() {
                   </td>
                 </tr>
               ) : rows.map((t) => (
-                <tr key={t.id} className="border-t border-border/50 hover:bg-muted/30 group transition-colors">
+                <tr key={t.id} className={`border-t border-border/50 hover:bg-muted/30 group transition-colors ${t.id === "bf-row" ? "bg-primary/5 font-semibold" : ""}`}>
                   <td className="px-4 py-2.5 num text-muted-foreground whitespace-nowrap text-xs">{formatDate(t.txn_date)}</td>
                   <td className="px-4 py-2.5 font-mono text-xs font-semibold text-primary">{t.txn_code || "-"}</td>
                   <td className="px-4 py-2.5 font-medium text-xs">
-                    <div>{t.details}</div>
+                    <div className={t.id === "bf-row" ? "font-bold text-primary" : ""}>{t.details}</div>
                     {t.notes && <div className="text-[10px] text-muted-foreground/70 italic mt-0.5">{t.notes}</div>}
                   </td>
                   <td className="px-4 py-2.5 text-right num text-destructive font-semibold text-xs">{Number(t.debit) > 0 ? formatMoney(Number(t.debit), account.currency) : "-"}</td>
@@ -640,15 +664,19 @@ export default function AccountDetail() {
                     {formatMoney(t.balance, account.currency)} <span className="text-[9px] opacity-60 ml-0.5">{balanceLabel(t.balance)}</span>
                   </td>
                   <td className="px-4 py-2.5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-success hover:bg-success/10" onClick={() => sendWhatsApp(t)} title="Share via WhatsApp" aria-label="Send WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>
-                      {(role === "admin" || t.created_by === profile?.id) && (
-                        <>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted" onClick={() => openEditTx(t)} title="Edit transaction" aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setDeletingTx(t)} title="Delete transaction" aria-label="Delete transaction"><Trash2 className="w-3.5 h-3.5" /></Button>
-                        </>
-                      )}
-                    </div>
+                    {t.id === "bf-row" ? (
+                      <span className="text-[10px] font-mono text-muted-foreground italic">B/F Summary</span>
+                    ) : (
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-success hover:bg-success/10" onClick={() => sendWhatsApp(t)} title="Share via WhatsApp" aria-label="Send WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>
+                        {(role === "admin" || t.created_by === profile?.id) && (
+                          <>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted" onClick={() => openEditTx(t)} title="Edit transaction" aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setDeletingTx(t)} title="Delete transaction" aria-label="Delete transaction"><Trash2 className="w-3.5 h-3.5" /></Button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

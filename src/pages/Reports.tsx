@@ -171,10 +171,26 @@ export default function Reports() {
     }
 
     let running = openingBalance;
-    return filteredStatement.map(t => {
+    const mapped = filteredStatement.map(t => {
       running += Number(t.credit) - Number(t.debit);
       return { ...t, balance: running };
     });
+
+    if (from) {
+      const bfDebit = openingBalance < 0 ? Math.abs(openingBalance) : 0;
+      const bfCredit = openingBalance > 0 ? openingBalance : 0;
+      const bfRow: StatementTxn = {
+        id: "bf-row",
+        txn_date: from,
+        details: "B/F Balance (سابقہ بقایا / Brought Forward)",
+        debit: bfDebit,
+        credit: bfCredit,
+        balance: openingBalance,
+      };
+      return [bfRow, ...mapped];
+    }
+
+    return mapped;
   }, [filteredStatement, statementTxns, from]);
 
   const handleExportLedger = async () => {
@@ -237,6 +253,7 @@ export default function Reports() {
     let debit = 0;
     let credit = 0;
     statementRows.forEach((t) => {
+      if (t.id === "bf-row") return;
       debit += Number(t.debit) || 0;
       credit += Number(t.credit) || 0;
     });
@@ -810,9 +827,9 @@ export default function Reports() {
                           </td>
                         </tr>
                       ) : statementRows.map((t) => (
-                        <tr key={t.id} className="hover:bg-primary/[0.02] transition-colors ">
+                        <tr key={t.id} className={`hover:bg-primary/[0.02] transition-colors ${t.id === "bf-row" ? "bg-primary/5 font-semibold" : ""}`}>
                           <td className="px-6 py-4 num text-muted-foreground whitespace-nowrap">{formatDate(t.txn_date || "")}</td>
-                          <td className="px-6 py-4 font-medium text-foreground">{t.details}</td>
+                          <td className={`px-6 py-4 font-medium ${t.id === "bf-row" ? "font-bold text-primary" : "text-foreground"}`}>{t.details}</td>
                           <td className="px-6 py-4 text-right num text-destructive font-semibold">
                             {Number(t.debit) > 0 ? formatMoney(Number(t.debit), selectedAccount?.currency || "") : "-"}
                           </td>
