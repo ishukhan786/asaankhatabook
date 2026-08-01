@@ -6,13 +6,23 @@ import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Languages } from "lucide-react";
+import { Moon, Sun, Languages, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/clerk-react";
 import { GlobalSearch } from "./GlobalSearch";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AppLayout() {
   const { theme, setTheme } = useTheme();
@@ -20,6 +30,52 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const { i18n, t } = useTranslation();
+
+  interface SystemNotice {
+    id: string;
+    title: string;
+    message: string;
+    created_at: string;
+  }
+  const [activeNotice, setActiveNotice] = useState<SystemNotice | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Fetch the latest notice
+    supabase.from("system_notices")
+      .select("id, title, message, created_at")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          const dismissedId = localStorage.getItem("last_dismissed_notice_id");
+          if (dismissedId !== data.id) {
+            setActiveNotice(data as SystemNotice);
+          }
+        }
+      });
+
+    // Realtime subscription for live inserts
+    const channel = supabase.channel("system_notices_live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "system_notices" }, (payload) => {
+        const newNotice = payload.new as SystemNotice;
+        setActiveNotice(newNotice);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const dismissNotice = () => {
+    if (activeNotice) {
+      localStorage.setItem("last_dismissed_notice_id", activeNotice.id);
+      setActiveNotice(null);
+    }
+  };
 
   const toggleLanguage = () => {
     const nextLang = i18n.language === "ur" ? "en" : "ur";
@@ -137,6 +193,30 @@ export default function AppLayout() {
         </div>
       </div>
       <GlobalSearch open={searchOpen} setOpen={setSearchOpen} />
+
+      <AlertDialog open={!!activeNotice} onOpenChange={(open) => !open && dismissNotice()}>
+        <AlertDialogContent className="max-w-md rounded-2xl border border-blue-500/20 bg-background/95 backdrop-blur-xl shadow-lg">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-2 text-primary dark:text-blue-400 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Megaphone className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-wider">System Announcement</span>
+            </div>
+            <AlertDialogTitle className="text-lg font-bold leading-tight">
+              {activeNotice?.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground whitespace-pre-wrap pt-2 leading-relaxed">
+              {activeNotice?.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogAction onClick={dismissNotice} className="rounded-xl gradient-primary text-primary-foreground font-semibold px-5">
+              I Understand
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>
   );
 }

@@ -212,7 +212,7 @@ export default function Auth() {
                 {/* Error Banner */}
                 {error && (
                   <div className="p-3.5 rounded-xl text-xs font-medium text-destructive bg-destructive/10 border border-destructive/20 animate-in fade-in slide-in-from-top-1 duration-200">
-                    {error}
+                    <span>{error}</span>
                   </div>
                 )}
 
@@ -225,11 +225,11 @@ export default function Auth() {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Authenticating...
+                      <span>Authenticating...</span>
                     </>
                   ) : (
                     <>
-                      Sign In to Account
+                      <span>Sign In to Account</span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </>
                   )}

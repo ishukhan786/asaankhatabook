@@ -19,11 +19,17 @@ import {
   Trash2, 
   Search, 
   RefreshCw, 
-  CheckCircle2 
+  CheckCircle2,
+  Megaphone,
+  Loader
 } from "lucide-react";
 import { formatMoney, balanceLabel } from "@/lib/format";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 type RecentTransaction = {
   id?: string;
@@ -45,6 +51,61 @@ const getFontSizeClass = (val: string) => {
 
 export default function AdminPanel() {
   const { role, loading, user: me } = useAuth();
+  const [announcementsOpen, setAnnouncementsOpen] = useState(false);
+  const [notices, setNotices] = useState<Array<{ id: string; title: string; message: string; created_at: string }>>([]);
+  const [nTitle, setNTitle] = useState("");
+  const [nMessage, setNMessage] = useState("");
+  const [noticeBusy, setNoticeBusy] = useState(false);
+
+  const loadNotices = useCallback(async () => {
+    try {
+      const { data } = await supabase.from("system_notices").select("*").order("created_at", { ascending: false });
+      setNotices(data ?? []);
+    } catch (e) {
+      toast.error("Failed to load announcements");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (announcementsOpen) {
+      loadNotices();
+    }
+  }, [announcementsOpen, loadNotices]);
+  const publishNotice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nTitle.trim() || !nMessage.trim()) {
+      toast.error("Please fill in both title and message");
+      return;
+    }
+    setNoticeBusy(true);
+    try {
+      const { error } = await supabase.from("system_notices").insert({
+        title: nTitle.trim(),
+        message: nMessage.trim(),
+        created_by: me?.id,
+      });
+      if (error) throw error;
+      toast.success("Announcement broadcasted successfully!");
+      setNTitle("");
+      setNMessage("");
+      loadNotices();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to publish notice");
+    } finally {
+      setNoticeBusy(false);
+    }
+  };
+
+  const deleteNotice = async (id: string) => {
+    try {
+      const { error } = await supabase.from("system_notices").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Notice deleted successfully");
+      loadNotices();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete notice");
+    }
+  };
   const [s, setS] = useState<null | {
     branches: number;
     accounts: number;
@@ -174,6 +235,7 @@ export default function AdminPanel() {
   const tiles = [
     { title: "User Management", desc: "Create, edit, and assign roles to users", icon: UserCog, to: "/admin/users", grad: "from-blue-600 to-indigo-600" },
     { title: "Branches", desc: "Manage all company branches and codes", icon: Building2, to: "/branches", grad: "from-emerald-600 to-teal-600" },
+    { title: "Announcements", desc: "Broadcast real-time notices to all users", icon: Megaphone, onClick: () => setAnnouncementsOpen(true), grad: "from-purple-600 to-indigo-600" },
     { title: "Accounts", desc: "View and manage all ledger accounts", icon: Wallet, to: "/accounts", grad: "from-orange-600 to-amber-600" },
     { title: "All Transactions", desc: "Full history of all ledger entries", icon: Receipt, to: "/transactions", grad: "from-rose-600 to-pink-600" },
   ];
@@ -352,27 +414,37 @@ export default function AdminPanel() {
             <Database className="w-5 h-5 text-primary" /> Core Management
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {tiles.map((t, i) => (
-              <div key={t.title}>
-                <Link to={t.to}>
-                  <Card className="glass p-6 group hover:shadow-lift transition-all relative overflow-hidden h-full border-l-4 border-l-transparent hover:border-l-primary hover:bg-muted/10">
-                    <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br ${t.grad} opacity-5 blur-2xl group-hover:opacity-10 transition-opacity`} />
-                    <div className="relative flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${t.grad} flex items-center justify-center shadow-lg shadow-black/10 shrink-0 group-hover:scale-110 transition-transform`}>
-                        <t.icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-display font-bold text-lg text-foreground group-hover:text-primary transition-colors">{t.title}</h3>
-                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{t.desc}</p>
-                      </div>
+            {tiles.map((t, i) => {
+              const cardContent = (
+                <Card className="glass p-6 group hover:shadow-lift transition-all relative overflow-hidden h-full border-l-4 border-l-transparent hover:border-l-primary hover:bg-muted/10">
+                  <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br ${t.grad} opacity-5 blur-2xl group-hover:opacity-10 transition-opacity`} />
+                  <div className="relative flex items-start gap-4">
+                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${t.grad} flex items-center justify-center shadow-lg shadow-black/10 shrink-0 group-hover:scale-110 transition-transform`}>
+                      <t.icon className="w-6 h-6 text-white" />
                     </div>
-                  </Card>
-                </Link>
-              </div>
-            ))}
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-display font-bold text-lg text-foreground group-hover:text-primary transition-colors">{t.title}</h3>
+                        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{t.desc}</p>
+                    </div>
+                  </div>
+                </Card>
+              );
+
+              return (
+                <div key={t.title} className="h-full">
+                  {'to' in t && t.to ? (
+                    <Link to={t.to}>{cardContent}</Link>
+                  ) : 'onClick' in t && t.onClick ? (
+                    <div onClick={t.onClick} className="cursor-pointer h-full">{cardContent}</div>
+                  ) : (
+                    cardContent
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -473,6 +545,88 @@ export default function AdminPanel() {
               </p>
             </div>
           </Card>
+      {/* Announcements Management Dialog */}
+      <Dialog open={announcementsOpen} onOpenChange={setAnnouncementsOpen}>
+        <DialogContent className="max-w-2xl rounded-2xl border border-border bg-background/95 backdrop-blur-xl shadow-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              <Megaphone className="w-5 h-5 text-primary" /> System Announcements
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Form to Create Announcement */}
+          <form onSubmit={publishNotice} className="space-y-4 pt-2 border-b border-border/50 pb-6">
+            <h3 className="text-sm font-semibold text-foreground/80">Broadcast New Notice</h3>
+            <div className="space-y-1.5">
+              <Label htmlFor="notice-title">Notice Title</Label>
+              <Input
+                id="notice-title"
+                value={nTitle}
+                onChange={(e) => setNTitle(e.target.value)}
+                placeholder="e.g. System Maintenance Notice"
+                required
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="notice-msg">Message Content</Label>
+              <Textarea
+                id="notice-msg"
+                value={nMessage}
+                onChange={(e) => setNMessage(e.target.value)}
+                placeholder="Write your announcement details here..."
+                required
+                rows={4}
+                className="rounded-xl resize-none"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={noticeBusy} className="gradient-primary text-primary-foreground rounded-xl shadow-soft font-bold">
+                {noticeBusy ? (
+                  <>
+                    <Loader className="w-4 h-4 mr-2 animate-spin" /> Broadcasting...
+                  </>
+                ) : (
+                  <>
+                    <Megaphone className="w-4 h-4 mr-2" /> Send Broadcast Notice
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+
+          {/* Past Announcements List */}
+          <div className="space-y-3 pt-4">
+            <h3 className="text-sm font-semibold text-foreground/80">Past Broadcasts</h3>
+            {notices.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-4">No past notices sent yet.</p>
+            ) : (
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                {notices.map((n) => (
+                  <div key={n.id} className="p-3 rounded-xl border border-border/60 bg-muted/20 flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-sm truncate">{n.title}</h4>
+                      <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap leading-relaxed">{n.message}</p>
+                      <span className="text-[9px] text-muted-foreground/60 block mt-2 font-mono">
+                        Sent on {new Date(n.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
+                      onClick={() => deleteNotice(n.id)}
+                      aria-label="Delete notice"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
         </div>
       </div>
     </div>
