@@ -70,7 +70,7 @@ type TransactionWithAccount = Tables<"transactions"> & {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { profile, role, canWriteTransactions } = useAuth();
+  const { profile, role, canWriteTransactions, user } = useAuth();
   const { theme, setTheme } = useTheme();
 
   const [stats, setStats] = useState<Stats | null>(null);
@@ -371,7 +371,13 @@ export default function Dashboard() {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight">AsaanKhata Dashboard</h1>
-              <p className="text-xs text-muted-foreground">Multi-Currency Enterprise Accounting</p>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5 text-xs text-muted-foreground">
+                <span>Multi-Currency Enterprise Accounting</span>
+                <span className="hidden sm:inline opacity-40">·</span>
+                <span className="inline-flex items-center gap-1 bg-primary/10 text-primary dark:text-blue-400 px-2 py-0.5 rounded-md font-semibold text-[10px] uppercase tracking-wider">
+                  User ID: {user?.username || profile?.full_name || "Guest"} ({role})
+                </span>
+              </div>
             </div>
           </div>
 
