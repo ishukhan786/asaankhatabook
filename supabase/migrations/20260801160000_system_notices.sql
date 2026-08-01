@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.system_notices (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text NOT NULL,
   message text NOT NULL,
-  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_by text REFERENCES public.profiles(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 

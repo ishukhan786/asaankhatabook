@@ -82,7 +82,6 @@ export default function AdminPanel() {
       const { error } = await (supabase as any).from("system_notices").insert({
         title: nTitle.trim(),
         message: nMessage.trim(),
-        created_by: me?.id,
       });
       if (error) throw error;
       toast.success("Announcement broadcasted successfully!");
