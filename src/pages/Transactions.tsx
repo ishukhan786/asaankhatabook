@@ -42,7 +42,7 @@ export type TxnRow = {
   credit?: number | string | null;
   account_id?: string | null;
   created_by?: string | null;
-  accounts?: { name?: string | null; account_no?: string | null; currency?: string | null } | null;
+  accounts?: { name?: string | null; account_no?: string | null; currency?: string | null; branch_id?: string | null } | null;
 };
 
 const normalizeSearchTerm = (value: string) => value.trim().replace(/[,%()]/g, " ");
@@ -116,7 +116,7 @@ export default function Transactions() {
 
     setBusy(true);
     let query = supabase.from("transactions")
-      .select("id, txn_code, txn_date, details, debit, credit, account_id, created_by, accounts(name, account_no, currency)")
+      .select("id, txn_code, txn_date, details, debit, credit, account_id, created_by, accounts(name, account_no, currency, branch_id)")
       .order("txn_date", { ascending: false })
       .order("created_at", { ascending: false })
       .range(start, end);
@@ -287,7 +287,7 @@ export default function Transactions() {
                     <td className="px-4 py-2.5 hidden md:table-cell text-muted-foreground truncate max-w-md">{t.details}</td>
                     <td className="px-4 py-2.5 text-right num text-destructive">{Number(t.debit) > 0 ? formatMoney(Number(t.debit), t.accounts?.currency) : "-"}</td>
                     <td className="px-4 py-2.5 text-right num text-success">{Number(t.credit) > 0 ? formatMoney(Number(t.credit), t.accounts?.currency) : "-"}</td>
-                    {(role === "admin" || t.created_by === profile?.id) && (
+                    {(role === "admin" || t.created_by === profile?.id || ((role === "branch_manager" || role === "branch_user" || role === "accountant") && t.accounts?.branch_id === profile?.branch_id)) && (
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => editForm.openDialog(t)} aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>

@@ -481,7 +481,7 @@ export default function AccountDetail() {
       <div className="screen-ui p-2 md:p-4 max-w-[1600px] mx-auto space-y-3">
         <div className="flex items-center justify-between">
           <Link to="/accounts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4 mr-1" /> Accounts</Link>
-          {role === "admin" && (
+          {(role === "admin" || ((role === "branch_manager" || role === "branch_user" || role === "accountant") && account?.branch_id === profile?.branch_id)) && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10"><Trash2 className="w-4 h-4 mr-1" /> Delete Account</Button>
@@ -689,7 +689,7 @@ export default function AccountDetail() {
                     ) : (
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-success hover:bg-success/10" onClick={() => sendWhatsApp(t)} title="Share via WhatsApp" aria-label="Send WhatsApp"><MessageSquare className="w-3.5 h-3.5" /></Button>
-                        {(role === "admin" || t.created_by === profile?.id) && (
+                        {(role === "admin" || t.created_by === profile?.id || ((role === "branch_manager" || role === "branch_user" || role === "accountant") && account?.branch_id === profile?.branch_id)) && (
                           <>
                             <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted" onClick={() => openEditTx(t)} title="Edit transaction" aria-label="Edit transaction"><Pencil className="w-3.5 h-3.5" /></Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setDeletingTx(t)} title="Delete transaction" aria-label="Delete transaction"><Trash2 className="w-3.5 h-3.5" /></Button>

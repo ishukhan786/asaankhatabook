@@ -49,7 +49,7 @@ export type AccountSummary = {
 export default function Accounts() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { role, canWriteTransactions } = useAuth();
+  const { role, profile, canWriteTransactions } = useAuth();
   const [rows, setRows] = useState<AccountSummary[] | null>(null);
   const [branches, setBranches] = useState<Array<{ id: string; name: string }>>([]);
   const [q, setQ] = useState("");
@@ -232,7 +232,7 @@ export default function Accounts() {
                     <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{r.branches?.name ?? "N/A"}</td>
                     <td className="px-4 py-3"><Badge variant="secondary" className="font-mono">{r.currency}</Badge></td>
                     <td className="px-4 py-3 text-right space-x-1" onClick={(e) => e.stopPropagation()}>
-                      {role === "admin" && (
+                      {(role === "admin" || ((role === "branch_manager" || role === "branch_user" || role === "accountant") && r.branch_id === profile?.branch_id)) && (
                         <>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(r)} className="h-8 w-8" aria-label="Edit account"><Pencil className="w-3.5 h-3.5" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => setDeleting({ id: r.id, name: r.name })} className="h-8 w-8 text-destructive" aria-label="Delete account"><Trash2 className="w-3.5 h-3.5" /></Button>

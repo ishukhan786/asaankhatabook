@@ -12,6 +12,7 @@ export type Account = {
   mobile?: string | null;
   currency?: string | null;
   branches?: { name?: string } | null;
+  branch_id?: string | null;
   address?: string | null;
   created_at?: string;
   updated_at?: string;
