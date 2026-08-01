@@ -23,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { NotificationsDropdown } from "./NotificationsDropdown";
 
 export default function AppLayout() {
   const { theme, setTheme } = useTheme();
@@ -164,6 +165,8 @@ export default function AppLayout() {
               <div className="text-xs text-muted-foreground hidden sm:block font-medium">
                 {new Date().toLocaleDateString(i18n.language === "ur" ? "ur-PK" : "en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
               </div>
+
+              <NotificationsDropdown />
 
               <Button 
                 variant="ghost" 
