@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loading = !userLoaded || !authLoaded || (user ? loadingExtras : false);
 
   // RBAC Helpers
-  const canManageUsers = role === "admin" || role === "branch_manager";
+  const canManageUsers = role === "admin";
   const canWriteTransactions = role === "admin" || role === "branch_manager" || role === "accountant" || role === "branch_user" || role === "cashier";
   const canDeleteTransactions = role === "admin" || role === "branch_manager" || role === "branch_user" || role === "accountant";
   const canAccessReports = role === "admin" || role === "branch_manager" || role === "accountant" || role === "branch_user";

@@ -75,7 +75,7 @@ export function AppSidebar() {
       label: "Administration",
       items: [
         { title: t("AdminPanel"), url: "/admin", icon: Shield, adminOnly: true, exact: true, colorClass: "text-rose-500 dark:text-rose-400" },
-        { title: t("Users"), url: "/admin/users", icon: UserCog, managerOrAdmin: true, colorClass: "text-cyan-500 dark:text-cyan-400" },
+        { title: t("Users"), url: "/admin/users", icon: UserCog, adminOnly: true, colorClass: "text-cyan-500 dark:text-cyan-400" },
         { title: t("AuditLogs"), url: "/admin/audit", icon: History, adminOnly: true, colorClass: "text-slate-500 dark:text-slate-450" },
         { title: t("Branches"), url: "/branches", icon: Building2, adminOnly: true, colorClass: "text-sky-500 dark:text-sky-400" },
         { title: t("Settings"), url: "/settings", icon: SettingsIcon, colorClass: "text-pink-500 dark:text-pink-400" },

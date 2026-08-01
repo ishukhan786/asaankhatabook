@@ -169,7 +169,7 @@ export default function AdminUsers() {
   }, [reload, role]);
 
   if (loading) return <div className="p-8"><Skeleton className="h-32" /></div>;
-  if (role !== "admin" && role !== "branch_manager") return <Navigate to="/" replace />;
+  if (role !== "admin") return <Navigate to="/" replace />;
 
   const submitCreate = async (e: React.FormEvent) => {
     e.preventDefault();
