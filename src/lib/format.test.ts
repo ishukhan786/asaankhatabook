@@ -9,7 +9,7 @@ describe("format utilities", () => {
   });
 
   test("formatMoney prefixes currency when provided", () => {
-    expect(formatMoney(1500, "PKR")).toBe("PKR 1,500");
+    expect(formatMoney(1500, "PKR")).toBe("Rs 1,500");
     expect(formatMoney(0)).toBe("0");
   });
 
