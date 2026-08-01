@@ -59,7 +59,7 @@ export default function AdminPanel() {
 
   const loadNotices = useCallback(async () => {
     try {
-      const { data } = await supabase.from("system_notices").select("*").order("created_at", { ascending: false });
+      const { data } = await (supabase as any).from("system_notices").select("*").order("created_at", { ascending: false });
       setNotices(data ?? []);
     } catch (e) {
       toast.error("Failed to load announcements");
@@ -79,7 +79,7 @@ export default function AdminPanel() {
     }
     setNoticeBusy(true);
     try {
-      const { error } = await supabase.from("system_notices").insert({
+      const { error } = await (supabase as any).from("system_notices").insert({
         title: nTitle.trim(),
         message: nMessage.trim(),
         created_by: me?.id,
@@ -98,7 +98,7 @@ export default function AdminPanel() {
 
   const deleteNotice = async (id: string) => {
     try {
-      const { error } = await supabase.from("system_notices").delete().eq("id", id);
+      const { error } = await (supabase as any).from("system_notices").delete().eq("id", id);
       if (error) throw error;
       toast.success("Notice deleted successfully");
       loadNotices();

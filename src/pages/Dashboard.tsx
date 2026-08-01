@@ -330,6 +330,7 @@ export default function Dashboard() {
         totalExpenseUSD: periodExpenseUSD,
         byBranch: branchData,
         trend: trendData,
+        topCustomers: customerBalances,
       });
       setAlerts(lowBalanceAlerts);
       setRecent((recentTx ?? []) as Tables<"transactions">[]);

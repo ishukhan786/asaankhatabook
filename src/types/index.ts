@@ -23,6 +23,7 @@ export type Account = {
  */
 export type Transaction = {
   id?: string;
+  txn_code?: string | null;
   txn_date?: string | null;
   details?: string | null;
   notes?: string | null;
