@@ -351,22 +351,22 @@ export default function PayablesReceivables({ embedded = false }: { embedded?: b
     }, 150);
   };
 
-  const applyBranchFilter = (list: AccountBalance[]) => {
+  const applyBranchFilter = useCallback((list: AccountBalance[]) => {
     if (role === "admin") return selectedBranch !== "all" ? list.filter(a => a.branch_id === selectedBranch) : list;
     return profile?.branch_id ? list.filter(a => a.branch_id === profile.branch_id) : list;
-  };
+  }, [role, selectedBranch, profile?.branch_id]);
 
   const filteredReceivables = useMemo(() => {
     let res = applyBranchFilter(receivables);
     if (deferredRec) { const s = deferredRec.toLowerCase(); res = res.filter(a => a.name.toLowerCase().includes(s) || a.account_no.toLowerCase().includes(s) || (a.mobile ?? "").includes(s)); }
     return res;
-  }, [receivables, role, selectedBranch, profile?.branch_id, deferredRec]);
+  }, [receivables, deferredRec, applyBranchFilter]);
 
   const filteredPayables = useMemo(() => {
     let res = applyBranchFilter(payables);
     if (deferredPay) { const s = deferredPay.toLowerCase(); res = res.filter(a => a.name.toLowerCase().includes(s) || a.account_no.toLowerCase().includes(s) || (a.mobile ?? "").includes(s)); }
     return res;
-  }, [payables, role, selectedBranch, profile?.branch_id, deferredPay]);
+  }, [payables, deferredPay, applyBranchFilter]);
 
   const recTotals = useMemo(() => aggregateByCurrency(filteredReceivables), [filteredReceivables]);
   const payTotals = useMemo(() => aggregateByCurrency(filteredPayables), [filteredPayables]);

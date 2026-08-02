@@ -88,7 +88,9 @@ export default function AppLayout() {
       const raw = localStorage.getItem("asaankhata.preferences");
       const prefs = raw ? JSON.parse(raw) : {};
       localStorage.setItem("asaankhata.preferences", JSON.stringify({ ...prefs, language: nextLang }));
-    } catch {}
+    } catch (err) {
+      console.warn("Could not sync preferences", err);
+    }
   };
 
   useEffect(() => {
