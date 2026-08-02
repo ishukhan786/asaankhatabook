@@ -16,10 +16,8 @@ export type Database = {
     Tables: {
       accounts: {
         Row: {
-          account_type: Database["public"]["Enums"]["account_type"]
           account_no: string
           address: string | null
-          alert_threshold: number | null
           branch_id: string
           created_at: string
           created_by: string | null
@@ -29,10 +27,8 @@ export type Database = {
           name: string
         }
         Insert: {
-          account_type?: Database["public"]["Enums"]["account_type"]
           account_no: string
           address?: string | null
-          alert_threshold?: number | null
           branch_id: string
           created_at?: string
           created_by?: string | null
@@ -42,10 +38,8 @@ export type Database = {
           name: string
         }
         Update: {
-          account_type?: Database["public"]["Enums"]["account_type"]
           account_no?: string
           address?: string | null
-          alert_threshold?: number | null
           branch_id?: string
           created_at?: string
           created_by?: string | null
@@ -63,42 +57,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      audit_logs: {
-        Row: {
-          action_type: string
-          created_at: string
-          id: string
-          new_data: Json | null
-          old_data: Json | null
-          record_id: string
-          table_name: string
-          user_email: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action_type: string
-          created_at?: string
-          id?: string
-          new_data?: Json | null
-          old_data?: Json | null
-          record_id: string
-          table_name: string
-          user_email?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action_type?: string
-          created_at?: string
-          id?: string
-          new_data?: Json | null
-          old_data?: Json | null
-          record_id?: string
-          table_name?: string
-          user_email?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
       }
       branches: {
         Row: {
@@ -121,77 +79,21 @@ export type Database = {
         }
         Relationships: []
       }
-      expenses: {
-        Row: {
-          amount: number
-          branch_id: string
-          category: string
-          created_at: string
-          created_by: string | null
-          currency: string
-          description: string | null
-          expense_date: string
-          id: string
-        }
-        Insert: {
-          amount?: number
-          branch_id: string
-          category: string
-          created_at?: string
-          created_by?: string | null
-          currency?: string
-          description?: string | null
-          expense_date?: string
-          id?: string
-        }
-        Update: {
-          amount?: number
-          branch_id?: string
-          category?: string
-          created_at?: string
-          created_by?: string | null
-          currency?: string
-          description?: string | null
-          expense_date?: string
-          id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "expenses_branch_id_fkey"
-            columns: ["branch_id"]
-            isOneToOne: false
-            referencedRelation: "branches"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           branch_id: string | null
-          avatar_url: string | null
-          business_address: string | null
-          business_name: string | null
-          business_phone: string | null
           created_at: string
           full_name: string | null
           id: string
         }
         Insert: {
           branch_id?: string | null
-          avatar_url?: string | null
-          business_address?: string | null
-          business_name?: string | null
-          business_phone?: string | null
           created_at?: string
           full_name?: string | null
           id: string
         }
         Update: {
           branch_id?: string | null
-          avatar_url?: string | null
-          business_address?: string | null
-          business_name?: string | null
-          business_phone?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
@@ -206,63 +108,6 @@ export type Database = {
           },
         ]
       }
-      recurring_transactions: {
-        Row: {
-          id: string
-          account_id: string
-          amount: number
-          type: "debit" | "credit"
-          details: string | null
-          frequency: "daily" | "weekly" | "monthly"
-          next_run_date: string
-          active: boolean
-          branch_id: string | null
-          created_by: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          account_id: string
-          amount: number
-          type: "debit" | "credit"
-          details?: string | null
-          frequency: "daily" | "weekly" | "monthly"
-          next_run_date: string
-          active?: boolean
-          branch_id?: string | null
-          created_by?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          account_id?: string
-          amount?: number
-          type?: "debit" | "credit"
-          details?: string | null
-          frequency?: "daily" | "weekly" | "monthly"
-          next_run_date?: string
-          active?: boolean
-          branch_id?: string | null
-          created_by?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "recurring_transactions_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "recurring_transactions_branch_id_fkey"
-            columns: ["branch_id"]
-            isOneToOne: false
-            referencedRelation: "branches"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       transactions: {
         Row: {
           account_id: string
@@ -272,7 +117,6 @@ export type Database = {
           debit: number
           details: string
           id: string
-          transaction_type: Database["public"]["Enums"]["transaction_type"]
           txn_code: string
           txn_date: string
         }
@@ -284,7 +128,6 @@ export type Database = {
           debit?: number
           details: string
           id?: string
-          transaction_type?: Database["public"]["Enums"]["transaction_type"]
           txn_code: string
           txn_date?: string
         }
@@ -296,7 +139,6 @@ export type Database = {
           debit?: number
           details?: string
           id?: string
-          transaction_type?: Database["public"]["Enums"]["transaction_type"]
           txn_code?: string
           txn_date?: string
         }
@@ -334,43 +176,6 @@ export type Database = {
     }
     Functions: {
       current_user_branch: { Args: never; Returns: string }
-      dashboard_summary: {
-        Args: never
-        Returns: {
-          accounts_count: number
-          branches_count: number
-          net_pkr: number
-          net_aed: number
-          today_debit_pkr: number
-          today_credit_pkr: number
-          today_debit_aed: number
-          today_credit_aed: number
-          total_expense_pkr: number
-          total_expense_aed: number
-          total_receivable: number
-          total_payable: number
-        }[]
-      }
-      dashboard_branch_distribution: {
-        Args: never
-        Returns: {
-          branch_id: string
-          branch_name: string
-          accounts_count: number
-          pkr: number
-          aed: number
-        }[]
-      }
-      dashboard_trend: {
-        Args: {
-          p_days?: number
-        }
-        Returns: {
-          txn_date: string
-          pkr: number
-          aed: number
-        }[]
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -378,23 +183,10 @@ export type Database = {
         }
         Returns: boolean
       }
-      report_account_totals: {
-        Args: {
-          p_from?: string | null
-          p_to?: string | null
-        }
-        Returns: {
-          account_id: string
-          debit: number
-          credit: number
-        }[]
-      }
     }
     Enums: {
-      account_type: "customer" | "supplier" | "employee" | "bank" | "cash" | "party"
-      app_role: "admin" | "branch_manager" | "accountant" | "cashier" | "viewer" | "branch_user"
+      app_role: "admin" | "branch_user"
       currency_code: "PKR" | "AED"
-      transaction_type: "general" | "payment" | "receipt" | "transfer" | "expense" | "journal"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -522,10 +314,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_type: ["customer", "supplier", "employee", "bank", "cash", "party"],
       app_role: ["admin", "branch_user"],
       currency_code: ["PKR", "AED"],
-      transaction_type: ["general", "payment", "receipt", "transfer", "expense", "journal"],
     },
   },
 } as const
