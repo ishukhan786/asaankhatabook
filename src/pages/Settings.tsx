@@ -58,6 +58,7 @@ export default function Settings() {
   useEffect(() => {
     if (prefs.language && i18n.language !== prefs.language) {
       i18n.changeLanguage(prefs.language);
+      localStorage.setItem("app_lang", prefs.language);
     }
   }, [prefs.language, i18n]);
   
@@ -188,6 +189,9 @@ export default function Settings() {
 
   const savePreferences = () => {
     localStorage.setItem("asaankhata.preferences", JSON.stringify(prefs));
+    localStorage.setItem("app_lang", prefs.language);
+    i18n.changeLanguage(prefs.language);
+    document.documentElement.dir = prefs.language === "ur" ? "rtl" : "ltr";
     toast.success("Preferences saved");
   };
 

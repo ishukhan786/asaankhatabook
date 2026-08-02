@@ -81,6 +81,14 @@ export default function AppLayout() {
   const toggleLanguage = () => {
     const nextLang = i18n.language === "ur" ? "en" : "ur";
     i18n.changeLanguage(nextLang);
+    localStorage.setItem("app_lang", nextLang);
+    document.documentElement.dir = nextLang === "ur" ? "rtl" : "ltr";
+    // Sync with settings preferences
+    try {
+      const raw = localStorage.getItem("asaankhata.preferences");
+      const prefs = raw ? JSON.parse(raw) : {};
+      localStorage.setItem("asaankhata.preferences", JSON.stringify({ ...prefs, language: nextLang }));
+    } catch {}
   };
 
   useEffect(() => {
