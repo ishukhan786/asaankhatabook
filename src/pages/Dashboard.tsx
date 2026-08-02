@@ -360,7 +360,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto text-slate-800 dark:text-slate-100">
+    <div className="p-4 md:px-8 md:pt-4 md:pb-8 space-y-6 max-w-[1600px] mx-auto text-slate-800 dark:text-slate-100">
       
       {/* 🌟 TOP NAVIGATION / CONTROL BAR */}
       <div className="bg-card border border-border/80 rounded-2xl pt-4 px-4 pb-5 shadow-sm sticky top-16 z-20 backdrop-blur-md" style={{ isolation: 'isolate' }}>
