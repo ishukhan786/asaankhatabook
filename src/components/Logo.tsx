@@ -17,7 +17,7 @@ export function AsaanKhataLogo({
   return (
     <div className={cn("flex items-center gap-3 select-none", className)}>
       {/* Brand Icon SVG Wrapper */}
-      <div 
+      <div
         className="relative shrink-0 flex items-center justify-center overflow-hidden"
         style={{ width: size, height: size }}
       >
@@ -33,7 +33,7 @@ export function AsaanKhataLogo({
               <stop offset="0%" stopColor="#10B981" />
               <stop offset="100%" stopColor="#059669" />
             </linearGradient>
-            
+
             <filter id="akIconShadow" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="6" stdDeviation="8" floodOpacity="0.12" />
             </filter>
@@ -72,7 +72,7 @@ export function AsaanKhataLogo({
       {showText && (
         <div className="flex flex-col select-none">
           <div className="flex items-baseline">
-            <span 
+            <span
               className={cn(
                 "font-display text-[21px] font-extrabold tracking-tight text-slate-800 dark:text-white leading-none",
                 textClassName
@@ -80,7 +80,7 @@ export function AsaanKhataLogo({
             >
               Asaan
             </span>
-            <span 
+            <span
               className={cn(
                 "font-display text-[21px] font-extrabold tracking-tight text-[#059669] dark:text-[#34D399] leading-none",
                 textClassName
@@ -91,7 +91,7 @@ export function AsaanKhataLogo({
           </div>
           <span className="text-[7.2px] font-bold uppercase tracking-[0.14em] text-slate-600 dark:text-slate-400 mt-1.5 flex items-center gap-1">
             <span className="h-px w-2 bg-slate-400/40" />
-            Smart Accounting, Simplified
+            Smart Accounting
             <span className="h-px w-2 bg-slate-400/40" />
           </span>
         </div>
