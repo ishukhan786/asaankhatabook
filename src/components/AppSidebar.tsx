@@ -82,7 +82,6 @@ export function AppSidebar() {
       ],
     },
   ];
-
   const visibleSections = sections
     .map((section) => ({
       ...section,
@@ -122,7 +121,7 @@ export function AppSidebar() {
           layout
           className={cn("flex items-center", collapsed ? "justify-center" : "gap-4")}
         >
-          <AsaanKhataLogo size={42} showText={!collapsed} />
+          <AsaanKhataLogo size={38} showText={!collapsed} />
         </motion.div>
       </SidebarHeader>
 
@@ -171,8 +170,8 @@ export function AppSidebar() {
                           <span
                             className={cn(
                               "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-300 relative z-10",
-                              active 
-                                ? "bg-sidebar-accent/10 border border-sidebar-border/20 shadow-inner scale-110" 
+                              active
+                                ? "bg-sidebar-accent/10 border border-sidebar-border/20 shadow-inner scale-110"
                                 : "opacity-75 group-hover/item:opacity-100 group-hover/item:scale-110",
                               item.colorClass || "text-muted-foreground"
                             )}
