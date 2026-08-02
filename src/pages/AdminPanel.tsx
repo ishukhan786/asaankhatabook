@@ -59,7 +59,8 @@ export default function AdminPanel() {
 
   const loadNotices = useCallback(async () => {
     try {
-      const { data } = await (supabase as any).from("system_notices").select("*").order("created_at", { ascending: false });
+      // @ts-expect-error - table might not be in types yet
+      const { data } = await supabase.from("system_notices").select("*").order("created_at", { ascending: false });
       setNotices(data ?? []);
     } catch (e) {
       toast.error("Failed to load announcements");
@@ -79,7 +80,8 @@ export default function AdminPanel() {
     }
     setNoticeBusy(true);
     try {
-      const { error } = await (supabase as any).from("system_notices").insert({
+      // @ts-expect-error - table might not be in types yet
+      const { error } = await supabase.from("system_notices").insert({
         title: nTitle.trim(),
         message: nMessage.trim(),
       });
@@ -88,8 +90,8 @@ export default function AdminPanel() {
       setNTitle("");
       setNMessage("");
       loadNotices();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to publish notice");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to publish notice");
     } finally {
       setNoticeBusy(false);
     }
@@ -97,12 +99,13 @@ export default function AdminPanel() {
 
   const deleteNotice = async (id: string) => {
     try {
-      const { error } = await (supabase as any).from("system_notices").delete().eq("id", id);
+      // @ts-expect-error - table might not be in types yet
+      const { error } = await supabase.from("system_notices").delete().eq("id", id);
       if (error) throw error;
       toast.success("Notice deleted successfully");
       loadNotices();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to delete notice");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete notice");
     }
   };
   const [s, setS] = useState<null | {

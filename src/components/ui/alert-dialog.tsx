@@ -10,12 +10,12 @@ const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
 const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
-const PrimitiveOverlay = AlertDialogPrimitive.Overlay as any;
-const PrimitiveContent = AlertDialogPrimitive.Content as any;
-const PrimitiveTitle = AlertDialogPrimitive.Title as any;
-const PrimitiveDescription = AlertDialogPrimitive.Description as any;
-const PrimitiveAction = AlertDialogPrimitive.Action as any;
-const PrimitiveCancel = AlertDialogPrimitive.Cancel as any;
+const PrimitiveOverlay = AlertDialogPrimitive.Overlay as React.ElementType;
+const PrimitiveContent = AlertDialogPrimitive.Content as React.ElementType;
+const PrimitiveTitle = AlertDialogPrimitive.Title as React.ElementType;
+const PrimitiveDescription = AlertDialogPrimitive.Description as React.ElementType;
+const PrimitiveAction = AlertDialogPrimitive.Action as React.ElementType;
+const PrimitiveCancel = AlertDialogPrimitive.Cancel as React.ElementType;
 
 const AlertDialogOverlay = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Overlay>,

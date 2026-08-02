@@ -44,12 +44,13 @@ export default function AppLayout() {
     if (!user) return;
 
     // Fetch the latest notice
-    (supabase as any).from("system_notices")
+    // @ts-expect-error - table might not be in types yet
+    supabase.from("system_notices")
       .select("id, title, message, created_at")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()
-      .then(({ data }: any) => {
+      .then(({ data }) => {
         if (data) {
           const dismissedId = localStorage.getItem("last_dismissed_notice_id");
           if (dismissedId !== data.id) {

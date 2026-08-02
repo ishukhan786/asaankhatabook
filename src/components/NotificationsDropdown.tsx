@@ -42,7 +42,8 @@ export function NotificationsDropdown() {
 
   const fetchNotices = async () => {
     setLoading(true);
-    const { data, error } = await (supabase as any)
+    // @ts-expect-error - table might not be in types yet
+    const { data, error } = await supabase
       .from("system_notices")
       .select("id, title, message, created_at")
       .order("created_at", { ascending: false })
