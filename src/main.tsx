@@ -17,8 +17,8 @@ createRoot(document.getElementById("root")!).render(
       publishableKey={PUBLISHABLE_KEY || "missing"}
       signInUrl="/#/auth"
       signUpUrl="/#/auth/sign-up"
-      afterSignInUrl="/#/"
-      afterSignUpUrl="/#/"
+      signInFallbackRedirectUrl="/#/"
+      signUpFallbackRedirectUrl="/#/"
     >
       <App />
     </ClerkProvider>
