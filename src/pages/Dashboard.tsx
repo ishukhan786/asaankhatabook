@@ -445,43 +445,7 @@ export default function Dashboard() {
       </div>
 
       {/* 📍 SECTION 1: FINANCIAL OVERVIEW (TOP ROW) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 !mt-10">
-        {/* PKR Balance */}
-        <Card className="rounded-2xl p-4 border border-emerald-200/60 dark:border-emerald-900/40 bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/20 dark:to-card shadow-xs relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">{t("PKRBalance")}</span>
-            <Badge className="bg-emerald-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">PKR</Badge>
-          </div>
-          <div className="text-xl md:text-2xl font-extrabold num text-emerald-700 dark:text-emerald-400 mt-2">
-            {formatMoney(stats.netPKR, "PKR")}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">{balanceLabel(stats.netPKR)}</p>
-        </Card>
-
-        {/* AED Balance */}
-        <Card className="rounded-2xl p-4 border border-blue-200/60 dark:border-blue-900/40 bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/20 dark:to-card shadow-xs relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">{t("AEDBalance")}</span>
-            <Badge className="bg-blue-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">AED</Badge>
-          </div>
-          <div className="text-xl md:text-2xl font-extrabold num text-blue-700 dark:text-blue-400 mt-2">
-            {formatMoney(stats.netAED, "AED")}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">{balanceLabel(stats.netAED)}</p>
-        </Card>
-
-        {/* USD Balance */}
-        <Card className="rounded-2xl p-4 border border-purple-200/60 dark:border-purple-900/40 bg-gradient-to-br from-purple-50/50 to-white dark:from-purple-950/20 dark:to-card shadow-xs relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">{t("USDBalance")}</span>
-            <Badge className="bg-purple-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">USD</Badge>
-          </div>
-          <div className="text-xl md:text-2xl font-extrabold num text-purple-700 dark:text-purple-400 mt-2">
-            {formatMoney(stats.netUSD, "USD")}
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">{balanceLabel(stats.netUSD)}</p>
-        </Card>
-
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 !mt-10">
         {/* Total Customers */}
         <Card className="rounded-2xl p-4 border border-border/80 bg-card shadow-xs">
           <div className="flex items-center justify-between">
