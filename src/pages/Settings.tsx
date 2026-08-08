@@ -83,7 +83,7 @@ export default function Settings() {
 
   useEffect(() => {
     i18n.changeLanguage(prefs.language);
-    document.documentElement.dir = prefs.language === "ur" ? "rtl" : "ltr";
+    document.documentElement.dir = "ltr";
   }, [i18n, prefs.language]);
 
   const updateProfile = async (e: React.FormEvent) => {
@@ -191,7 +191,7 @@ export default function Settings() {
     localStorage.setItem("asaankhata.preferences", JSON.stringify(prefs));
     localStorage.setItem("app_lang", prefs.language);
     i18n.changeLanguage(prefs.language);
-    document.documentElement.dir = prefs.language === "ur" ? "rtl" : "ltr";
+    document.documentElement.dir = "ltr";
     toast.success("Preferences saved");
   };
 

@@ -83,7 +83,7 @@ export default function AppLayout() {
     const nextLang = i18n.language === "ur" ? "en" : "ur";
     i18n.changeLanguage(nextLang);
     localStorage.setItem("app_lang", nextLang);
-    document.documentElement.dir = nextLang === "ur" ? "rtl" : "ltr";
+    document.documentElement.dir = "ltr";
     // Sync with settings preferences
     try {
       const raw = localStorage.getItem("asaankhata.preferences");
