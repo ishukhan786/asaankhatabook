@@ -64,51 +64,32 @@ export default function CustomerPassbook() {
       const searchTerm = q.trim();
       const cleanSearch = searchTerm.replace(/[\s-]/g, "");
       const digitsOnly = searchTerm.replace(/\D/g, "");
-      const last7Digits = digitsOnly.length >= 7 ? digitsOnly.slice(-7) : digitsOnly;
 
-      let accountsList: any[] = [];
+      let list: any[] = [];
 
-      // Tier 1: Query by mobile ilike %last7Digits% (Matches 03331122333, +923331122333, 0333-1122333, etc.)
-      if (last7Digits.length >= 4) {
-        const { data: mobData } = await supabase
-          .from("accounts")
-          .select("id, name, account_no, currency, mobile, address, branch_id")
-          .ilike("mobile", `%${last7Digits}%`);
-        if (mobData && mobData.length > 0) {
-          accountsList = mobData;
-        }
+      // 1. Fetch accounts directly from Supabase
+      const { data: accountsData, error: accErr } = await supabase
+        .from("accounts")
+        .select("id, name, account_no, currency, mobile, address, branch_id");
+
+      if (accErr) {
+        console.error("Passbook accounts fetch error:", accErr);
       }
 
-      // Tier 2: Query by account_no ilike %cleanSearch%
-      if (accountsList.length === 0) {
-        const { data: accData } = await supabase
-          .from("accounts")
-          .select("id, name, account_no, currency, mobile, address, branch_id")
-          .ilike("account_no", `%${cleanSearch}%`);
-        if (accData && accData.length > 0) {
-          accountsList = accData;
-        }
+      if (accountsData && accountsData.length > 0) {
+        list = [...accountsData];
       }
 
-      // Tier 3: Direct select all accounts
-      if (accountsList.length === 0) {
-        const { data: allData } = await supabase
-          .from("accounts")
-          .select("id, name, account_no, currency, mobile, address, branch_id");
-        if (allData && allData.length > 0) {
-          accountsList = allData;
-        }
-      }
-
-      // Tier 4: SECURITY DEFINER RPC report_account_totals (RLS Bypass)
-      if (accountsList.length === 0) {
+      // 2. Fallback: call report_account_totals SECURITY DEFINER RPC
+      if (list.length === 0) {
         try {
-          const { data: rpcData } = await supabase.rpc("report_account_totals" as any, {
+          const { data: rpcData, error: rpcErr } = await supabase.rpc("report_account_totals" as any, {
             p_from: null,
             p_to: null,
           });
+          if (rpcErr) console.error("Passbook RPC error:", rpcErr);
           if (rpcData && (rpcData as any[]).length > 0) {
-            accountsList = (rpcData as any[]).map((r: any) => ({
+            list = (rpcData as any[]).map((r: any) => ({
               id: r.account_id || r.id,
               name: r.name || r.account_name,
               account_no: r.account_no,
@@ -116,46 +97,54 @@ export default function CustomerPassbook() {
               mobile: r.mobile,
               address: r.address,
               branch_id: r.branch_id,
-              branches: { name: r.branch_name || "Main Branch" }
             }));
           }
-        } catch (rpcErr) {
-          console.error("Passbook RPC fallback error:", rpcErr);
+        } catch (err) {
+          console.error("Passbook RPC exception:", err);
         }
       }
 
-      if (accountsList.length === 0) {
-        toast.error(`Mobile number '${searchTerm}' not found in database.`);
+      if (list.length === 0) {
+        if (accErr) {
+          toast.error(`Database error: ${accErr.message || "Access denied"}`);
+        } else {
+          toast.error(`No account found matching '${searchTerm}'. Please verify input.`);
+        }
         setLoading(false);
         return;
       }
 
-      // 5. Multi-format matching: digit-suffix, clean string, account_no, name
-      const matchedAccount = accountsList.find(acc => {
+      // 3. Robust Multi-format Matching (Mobile digits, Account No, Name)
+      const matchedAccount = list.find((acc: any) => {
         const accNo = String(acc.account_no ?? "").toLowerCase().trim();
         const cleanAccNo = accNo.replace(/[\s-]/g, "");
-        const mobile = String(acc.mobile ?? "").trim();
-        const mobDigits = mobile.replace(/\D/g, "");
+        const mob = String(acc.mobile ?? "").toLowerCase().trim();
+        const mobDigits = mob.replace(/\D/g, "");
         const name = String(acc.name ?? "").toLowerCase().trim();
 
-        const matchMobile = 
-          (digitsOnly.length >= 4 && mobDigits.endsWith(last7Digits)) ||
-          (digitsOnly.length >= 4 && mobDigits.includes(digitsOnly)) ||
-          (digitsOnly.length >= 4 && digitsOnly.includes(mobDigits)) ||
-          mobile.includes(searchTerm);
+        // Mobile match checks
+        if (mob && (mob === searchTerm.toLowerCase() || mob.includes(cleanSearch) || cleanSearch.includes(mob))) {
+          return true;
+        }
+        if (digitsOnly && digitsOnly.length >= 4 && mobDigits && (mobDigits.includes(digitsOnly) || digitsOnly.includes(mobDigits))) {
+          return true;
+        }
 
-        const matchAccountNo = 
-          accNo === searchTerm.toLowerCase() ||
-          cleanAccNo === cleanSearch ||
-          accNo.includes(searchTerm.toLowerCase());
+        // Account No match checks
+        if (accNo === searchTerm.toLowerCase() || cleanAccNo === cleanSearch || accNo.includes(searchTerm.toLowerCase())) {
+          return true;
+        }
 
-        const matchName = name.includes(searchTerm.toLowerCase());
+        // Name match checks
+        if (name && name.includes(searchTerm.toLowerCase())) {
+          return true;
+        }
 
-        return matchMobile || matchAccountNo || matchName;
+        return false;
       });
 
       if (!matchedAccount) {
-        toast.error(`Mobile number '${searchTerm}' not found. Please verify your Mobile No.`);
+        toast.error(`Account or Mobile Number '${searchTerm}' not found.`);
         setLoading(false);
         return;
       }
