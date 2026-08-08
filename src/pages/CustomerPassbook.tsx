@@ -64,23 +64,49 @@ export default function CustomerPassbook() {
       const searchTerm = q.trim();
       const cleanSearch = searchTerm.replace(/[\s-]/g, "");
       const digitsOnly = searchTerm.replace(/\D/g, "");
+      const last7Digits = digitsOnly.length >= 7 ? digitsOnly.slice(-7) : digitsOnly;
 
       let list: any[] = [];
 
-      // 1. Fetch accounts directly from Supabase
-      const { data: accountsData, error: accErr } = await supabase
+      // Construct explicit PostgREST filter string targeting mobile, account_no, and digits
+      const filterConditions = [
+        `mobile.eq.${searchTerm}`,
+        `mobile.ilike.*${cleanSearch}*`,
+        last7Digits.length >= 4 ? `mobile.ilike.*${last7Digits}*` : null,
+        `account_no.eq.${searchTerm}`,
+        `account_no.ilike.*${cleanSearch}*`,
+        `name.ilike.*${cleanSearch}*`
+      ].filter(Boolean).join(",");
+
+      // 1. Filtered Supabase Query (Satisfies RLS WHERE filter)
+      const { data: filteredData, error: filterErr } = await supabase
         .from("accounts")
-        .select("id, name, account_no, currency, mobile, address, branch_id");
+        .select("id, name, account_no, currency, mobile, address, branch_id")
+        .or(filterConditions);
 
-      if (accErr) {
-        console.error("Passbook accounts fetch error:", accErr);
+      if (filteredData && filteredData.length > 0) {
+        list = [...filteredData];
       }
 
-      if (accountsData && accountsData.length > 0) {
-        list = [...accountsData];
+      // 2. Direct mobile ilike query fallback
+      if (list.length === 0 && last7Digits.length >= 4) {
+        const { data: mobData } = await supabase
+          .from("accounts")
+          .select("id, name, account_no, currency, mobile, address, branch_id")
+          .ilike("mobile", `%${last7Digits}%`);
+        if (mobData && mobData.length > 0) list = [...mobData];
       }
 
-      // 2. Fallback: call report_account_totals SECURITY DEFINER RPC
+      // 3. Direct account_no query fallback
+      if (list.length === 0) {
+        const { data: accNoData } = await supabase
+          .from("accounts")
+          .select("id, name, account_no, currency, mobile, address, branch_id")
+          .ilike("account_no", `%${cleanSearch}%`);
+        if (accNoData && accNoData.length > 0) list = [...accNoData];
+      }
+
+      // 4. SECURITY DEFINER RPC report_account_totals Fallback
       if (list.length === 0) {
         try {
           const { data: rpcData, error: rpcErr } = await supabase.rpc("report_account_totals" as any, {
@@ -105,8 +131,8 @@ export default function CustomerPassbook() {
       }
 
       if (list.length === 0) {
-        if (accErr) {
-          toast.error(`Database error: ${accErr.message || "Access denied"}`);
+        if (filterErr) {
+          toast.error(`Database error: ${filterErr.message || "Access denied"}`);
         } else {
           toast.error(`No account found matching '${searchTerm}'. Please verify input.`);
         }
