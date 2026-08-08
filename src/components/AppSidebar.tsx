@@ -97,7 +97,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      side={i18n.language === "ur" ? "right" : "left"}
+      side="left"
       className="border-r border-sidebar-border text-sidebar-foreground shadow-2xl overflow-hidden"
       style={{
         background: "var(--sidebar-glass-bg)",
