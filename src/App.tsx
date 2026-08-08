@@ -26,6 +26,7 @@ const AuditLogs = lazyWithRetry(() => import("./pages/AuditLogs"), "audit-logs")
 const PayablesReceivables = lazyWithRetry(() => import("./pages/PayablesReceivables"), "payables-receivables");
 const Receivables = lazyWithRetry(() => import("./pages/Receivables"), "receivables");
 const Payables = lazyWithRetry(() => import("./pages/Payables"), "payables");
+const CustomerPassbook = lazyWithRetry(() => import("./pages/CustomerPassbook"), "customer-passbook");
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "not-found");
 
 const queryClient = new QueryClient({
@@ -58,6 +59,8 @@ const App = () => {
               <Suspense fallback={<PageFallback />}>
                 <Routes>
                   <Route path="/auth/*" element={<Auth />} />
+                  <Route path="/passbook" element={<CustomerPassbook />} />
+                  <Route path="/my-khata" element={<CustomerPassbook />} />
                   <Route element={<AppLayout />}>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/accounts" element={<Accounts />} />

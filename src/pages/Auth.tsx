@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignIn, useAuth as useClerkAuth } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, User, Lock, Loader2, ArrowRight, ShieldCheck, Zap, Globe2, CheckCircle2 } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, User, Lock, Loader2, ArrowRight, ShieldCheck, Zap, Globe2, CheckCircle2, Wallet } from "lucide-react";
 import { AsaanKhataLogo } from "@/components/Logo";
 
 export default function Auth() {
@@ -237,10 +237,13 @@ export default function Auth() {
               </form>
 
               {/* Bottom Security Assurance Note */}
-              <div className="mt-8 pt-6 border-t border-border/50 text-center">
-                <p className="text-[11px] text-muted-foreground flex items-center justify-center gap-1.5">
+              <div className="mt-8 pt-6 border-t border-border/50 text-center space-y-4">
+                <Link to="/passbook" className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold text-xs transition-all shadow-xs">
+                  <Wallet className="w-4 h-4" /> Customer Online Khata Lookup
+                </Link>
+                <p className="text-[11px] text-muted-foreground flex items-center justify-center gap-1.5 pt-1">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  Protected by Clerk Authentication & Supabase RBAC
+                  Protected by Clerk Authentication &amp; Supabase RBAC
                 </p>
               </div>
             </div>

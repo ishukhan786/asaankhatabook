@@ -69,6 +69,7 @@ export function AppSidebar() {
         { title: t("Receivables"), url: "/receivables", icon: ArrowDownLeft, colorClass: "text-red-500 dark:text-red-400" },
         { title: t("Payables"), url: "/payables", icon: ArrowUpRight, colorClass: "text-emerald-500 dark:text-emerald-400" },
         { title: t("Reports"), url: "/reports", icon: FileBarChart, colorClass: "text-purple-500 dark:text-purple-400" },
+        { title: "Customer Passbook", url: "/passbook", icon: Wallet, colorClass: "text-blue-500 dark:text-blue-400" },
       ],
     },
     {
