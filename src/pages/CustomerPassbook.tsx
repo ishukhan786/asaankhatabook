@@ -240,15 +240,13 @@ export default function CustomerPassbook() {
           <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <AsaanKhataLogo showText size={38} />
-              <Badge variant="outline" className="hidden sm:inline-flex bg-primary/10 text-primary border-primary/30 font-semibold px-2.5 py-0.5">
-                Digital Passbook
+              <Badge variant="outline" className="inline-flex bg-primary/10 text-primary border-primary/30 font-semibold px-2.5 py-0.5">
+                Online Khata Portal
               </Badge>
             </div>
-            <Link to="/auth">
-              <Button variant="outline" size="sm" className="rounded-xl border-border/60 font-semibold gap-1.5">
-                <ArrowLeft className="w-4 h-4" /> Admin Login
-              </Button>
-            </Link>
+            <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" /> Official Passbook
+            </div>
           </div>
         </header>
 
