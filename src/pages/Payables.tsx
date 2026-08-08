@@ -207,7 +207,7 @@ export default function Payables() {
                   <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
                     {cur} TOTAL
                   </div>
-                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#059669", fontFamily: "monospace", marginTop: "2px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#059669", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                     {formatMoney(amount, cur)}
                   </div>
                 </div>
@@ -215,7 +215,7 @@ export default function Payables() {
               {totals.length === 0 && (
                 <div style={{ borderLeft: "3px solid #059669", paddingLeft: "10px" }}>
                   <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL</div>
-                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#059669", fontFamily: "monospace", marginTop: "2px" }}>0.00</div>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#059669", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>0.00</div>
                 </div>
               )}
             </div>
@@ -244,11 +244,11 @@ export default function Payables() {
                 filtered.map((a, i) => (
                   <tr key={a.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
                     <td style={{ padding: "7px 8px", color: "#94a3b8", fontWeight: "600" }}>{i + 1}</td>
-                    <td style={{ padding: "7px 8px", fontFamily: "monospace", fontWeight: "700", color: "#0369a1" }}>{a.account_no}</td>
+                    <td style={{ padding: "7px 8px", fontFamily: "Arial, sans-serif", fontWeight: "700", color: "#0369a1" }}>{a.account_no}</td>
                     <td style={{ padding: "7px 8px", fontWeight: "700", color: "#0f172a" }}>{a.name}</td>
                     <td style={{ padding: "7px 8px", color: "#475569" }}>{a.mobile || "-"}</td>
                     <td style={{ padding: "7px 8px", color: "#475569" }}>{a.branch_name}</td>
-                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#059669", fontFamily: "monospace", fontSize: "11px" }}>
+                    <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: "#059669", fontFamily: "Arial, sans-serif", fontSize: "11px" }}>
                       {formatMoney(Math.abs(a.balance), a.currency)}
                     </td>
                   </tr>

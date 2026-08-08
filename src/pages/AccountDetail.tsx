@@ -918,7 +918,7 @@ export default function AccountDetail() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 20px", fontSize: "11px" }}>
               <div><span style={{ color: "#64748b" }}>Account Name:</span> <strong style={{ color: "#0f172a", fontSize: "11.5px" }}>{account.name}</strong></div>
-              <div><span style={{ color: "#64748b" }}>Account No:</span> <strong style={{ color: "#0369a1", fontFamily: "monospace", fontSize: "11.5px" }}>{account.account_no}</strong></div>
+              <div><span style={{ color: "#64748b" }}>Account No:</span> <strong style={{ color: "#0369a1", fontFamily: "Arial, sans-serif", fontSize: "11.5px" }}>{account.account_no}</strong></div>
               <div><span style={{ color: "#64748b" }}>Mobile / Phone:</span> <strong style={{ color: "#0f172a" }}>{account.mobile || "-"}</strong></div>
               <div><span style={{ color: "#64748b" }}>Address:</span> <strong style={{ color: "#0f172a" }}>{account.address || "-"}</strong></div>
             </div>
@@ -932,19 +932,19 @@ export default function AccountDetail() {
             <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
               <div style={{ borderLeft: "3px solid #047857", paddingLeft: "10px" }}>
                 <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CREDIT (JAMA)</div>
-                <div style={{ fontSize: "15px", fontWeight: "900", color: "#047857", fontFamily: "monospace", marginTop: "2px" }}>
+                <div style={{ fontSize: "15px", fontWeight: "900", color: "#047857", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                   {formatMoney(totalCredit, account.currency)}
                 </div>
               </div>
               <div style={{ borderLeft: "3px solid #b91c1c", paddingLeft: "10px" }}>
                 <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL DEBIT (NIKALA)</div>
-                <div style={{ fontSize: "15px", fontWeight: "900", color: "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                <div style={{ fontSize: "15px", fontWeight: "900", color: "#b91c1c", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                   {formatMoney(totalDebit, account.currency)}
                 </div>
               </div>
               <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "10px" }}>
                 <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>CLOSING NET BALANCE</div>
-                <div style={{ fontSize: "15px", fontWeight: "900", color: running >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                <div style={{ fontSize: "15px", fontWeight: "900", color: running >= 0 ? "#047857" : "#b91c1c", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                   {formatMoney(running, account.currency)} ({balanceLabel(running)})
                 </div>
               </div>
@@ -965,15 +965,15 @@ export default function AccountDetail() {
             <tbody>
               {rows.map((r, idx) => (
                 <tr key={r.id || idx} style={{ borderBottom: "1px solid #e2e8f0", background: idx % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
-                  <td style={{ padding: "6px 8px", color: "#475569", whiteSpace: "nowrap" }}>{formatDate(String(r.txn_date ?? ""))}</td>
+                  <td style={{ padding: "6px 8px", color: "#475569", whiteSpace: "nowrap", fontFamily: "Arial, sans-serif" }}>{formatDate(String(r.txn_date ?? ""))}</td>
                   <td style={{ padding: "6px 8px", color: "#0f172a", fontWeight: "500" }}>{r.details || "—"}</td>
-                  <td style={{ padding: "6px 8px", textAlign: "right", color: Number(r.debit) > 0 ? "#b91c1c" : "#94a3b8", fontWeight: Number(r.debit) > 0 ? "700" : "normal" }}>
+                  <td style={{ padding: "6px 8px", textAlign: "right", color: Number(r.debit) > 0 ? "#b91c1c" : "#94a3b8", fontWeight: Number(r.debit) > 0 ? "700" : "normal", fontFamily: "Arial, sans-serif" }}>
                     {Number(r.debit) > 0 ? formatMoney(Number(r.debit)) : "—"}
                   </td>
-                  <td style={{ padding: "6px 8px", textAlign: "right", color: Number(r.credit) > 0 ? "#047857" : "#94a3b8", fontWeight: Number(r.credit) > 0 ? "700" : "normal" }}>
+                  <td style={{ padding: "6px 8px", textAlign: "right", color: Number(r.credit) > 0 ? "#047857" : "#94a3b8", fontWeight: Number(r.credit) > 0 ? "700" : "normal", fontFamily: "Arial, sans-serif" }}>
                     {Number(r.credit) > 0 ? formatMoney(Number(r.credit)) : "—"}
                   </td>
-                  <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: "700", color: (r.balance ?? 0) >= 0 ? "#047857" : "#b91c1c" }}>
+                  <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: "700", color: (r.balance ?? 0) >= 0 ? "#047857" : "#b91c1c", fontFamily: "Arial, sans-serif" }}>
                     {formatMoney(r.balance ?? 0)}
                   </td>
                 </tr>

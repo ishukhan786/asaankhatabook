@@ -313,7 +313,7 @@ export default function Reports() {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 20px", fontSize: "11px" }}>
                 <div><span style={{ color: "#64748b" }}>Customer Name:</span> <strong style={{ color: "#0f172a", fontSize: "11.5px" }}>{selectedAccount.name}</strong></div>
-                <div><span style={{ color: "#64748b" }}>Account No:</span> <strong style={{ color: "#0369a1", fontFamily: "monospace", fontSize: "11.5px" }}>{selectedAccount.account_no}</strong></div>
+                <div><span style={{ color: "#64748b" }}>Account No:</span> <strong style={{ color: "#0369a1", fontFamily: "Arial, sans-serif", fontSize: "11.5px" }}>{selectedAccount.account_no}</strong></div>
                 <div><span style={{ color: "#64748b" }}>Mobile No:</span> <strong style={{ color: "#0f172a" }}>{selectedAccount.mobile || "-"}</strong></div>
                 <div><span style={{ color: "#64748b" }}>Address:</span> <strong style={{ color: "#0f172a" }}>{selectedAccount.address || "-"}</strong></div>
               </div>
@@ -329,25 +329,25 @@ export default function Reports() {
               <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
                 <div style={{ borderLeft: "3px solid #0369a1", paddingLeft: "10px" }}>
                   <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>OPENING BALANCE</div>
-                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#0f172a", fontFamily: "monospace", marginTop: "2px" }}>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#0f172a", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                     {formatMoney(statementTotals.opening, selectedAccount?.currency || "")}
                   </div>
                 </div>
                 <div style={{ borderLeft: "3px solid #047857", paddingLeft: "10px" }}>
                   <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CREDIT (CASH IN)</div>
-                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#047857", fontFamily: "monospace", marginTop: "2px" }}>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#047857", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                     {formatMoney(statementTotals.credit, selectedAccount?.currency || "")}
                   </div>
                 </div>
                 <div style={{ borderLeft: "3px solid #b91c1c", paddingLeft: "10px" }}>
                   <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL DEBIT (CASH OUT)</div>
-                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: "#b91c1c", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                     {formatMoney(statementTotals.debit, selectedAccount?.currency || "")}
                   </div>
                 </div>
                 <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "10px" }}>
                   <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>CLOSING BALANCE</div>
-                  <div style={{ fontSize: "15px", fontWeight: "900", color: statementTotals.closing >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                  <div style={{ fontSize: "15px", fontWeight: "900", color: statementTotals.closing >= 0 ? "#047857" : "#b91c1c", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                     {formatMoney(statementTotals.closing, selectedAccount?.currency || "")}
                   </div>
                 </div>
@@ -356,19 +356,19 @@ export default function Reports() {
               <div style={{ display: "flex", gap: "28px", flexWrap: "wrap" }}>
                 <div style={{ borderLeft: "3px solid #b91c1c", paddingLeft: "10px" }}>
                   <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CASH OUT (DEBITS)</div>
-                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#b91c1c", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                     {formatMoney(ledgerTotals.debit, ledgerTotals.currency)}
                   </div>
                 </div>
                 <div style={{ borderLeft: "3px solid #047857", paddingLeft: "10px" }}>
                   <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CASH IN (CREDITS)</div>
-                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#047857", fontFamily: "monospace", marginTop: "2px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: "#047857", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                     {formatMoney(ledgerTotals.credit, ledgerTotals.currency)}
                   </div>
                 </div>
                 <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "10px" }}>
                   <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>NET LEDGER BALANCE</div>
-                  <div style={{ fontSize: "16px", fontWeight: "900", color: ledgerTotals.net >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: "900", color: ledgerTotals.net >= 0 ? "#047857" : "#b91c1c", fontFamily: "Arial, sans-serif", marginTop: "2px" }}>
                     {formatMoney(ledgerTotals.net, ledgerTotals.currency)}
                   </div>
                 </div>
@@ -396,15 +396,15 @@ export default function Reports() {
                 ) : (
                   statementRows.map((t, idx) => (
                     <tr key={t.id || idx} style={{ borderBottom: "1px solid #e2e8f0" }}>
-                      <td style={{ padding: "7px 8px", color: "#64748b", fontFamily: "monospace" }}>{formatDate(t.txn_date || "")}</td>
+                      <td style={{ padding: "7px 8px", color: "#64748b", fontFamily: "Arial, sans-serif" }}>{formatDate(t.txn_date || "")}</td>
                       <td style={{ padding: "7px 8px", fontWeight: "700", color: "#0f172a" }}>{t.details}</td>
-                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "monospace", fontWeight: "700" }}>
+                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "Arial, sans-serif", fontWeight: "700" }}>
                         {Number(t.debit) > 0 ? formatMoney(Number(t.debit)) : "-"}
                       </td>
-                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "monospace", fontWeight: "700" }}>
+                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "Arial, sans-serif", fontWeight: "700" }}>
                         {Number(t.credit) > 0 ? formatMoney(Number(t.credit)) : "-"}
                       </td>
-                      <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: t.balance >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace" }}>
+                      <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: t.balance >= 0 ? "#047857" : "#b91c1c", fontFamily: "Arial, sans-serif" }}>
                         {formatMoney(t.balance, selectedAccount?.currency || "")} {balanceLabel(t.balance)}
                       </td>
                     </tr>
@@ -433,13 +433,13 @@ export default function Reports() {
                 ) : (
                   summary.map((r) => (
                     <tr key={r.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
-                      <td style={{ padding: "7px 8px", fontFamily: "monospace", fontWeight: "700", color: "#0369a1" }}>{r.account_no}</td>
+                      <td style={{ padding: "7px 8px", fontFamily: "Arial, sans-serif", fontWeight: "700", color: "#0369a1" }}>{r.account_no}</td>
                       <td style={{ padding: "7px 8px", fontWeight: "700", color: "#0f172a" }}>{r.name}</td>
                       <td style={{ padding: "7px 8px", color: "#475569" }}>{r.branches?.name || "N/A"}</td>
                       <td style={{ padding: "7px 8px", color: "#475569", fontWeight: "700" }}>{r.currency === "PKR" ? "Rs" : r.currency}</td>
-                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "monospace", fontWeight: "700" }}>{formatMoney(r.debit)}</td>
-                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "monospace", fontWeight: "700" }}>{formatMoney(r.credit)}</td>
-                      <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: r.net >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace" }}>
+                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "Arial, sans-serif", fontWeight: "700" }}>{formatMoney(r.debit)}</td>
+                      <td style={{ padding: "7px 8px", textAlign: "right", color: "#0f172a", fontFamily: "Arial, sans-serif", fontWeight: "700" }}>{formatMoney(r.credit)}</td>
+                      <td style={{ padding: "7px 8px", textAlign: "right", fontWeight: "900", color: r.net >= 0 ? "#047857" : "#b91c1c", fontFamily: "Arial, sans-serif" }}>
                         {formatMoney(r.net, r.currency)} {balanceLabel(r.net)}
                       </td>
                     </tr>

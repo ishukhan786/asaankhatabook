@@ -110,13 +110,13 @@ const PrintDocument = React.memo(({
               {list.map((a, i) => (
                 <tr key={a.id} style={{ background: i % 2 === 0 ? "#ffffff" : "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
                   <td style={{ padding: "7px 10px", color: "#9ca3af", fontSize: "10px" }}>{i + 1}</td>
-                  <td style={{ padding: "7px 10px" }}><span style={{ fontFamily: "monospace", fontSize: "10px", background: "#f3f4f6", padding: "2px 5px", borderRadius: "4px", fontWeight: "700" }}>{a.account_no}</span></td>
+                  <td style={{ padding: "7px 10px" }}><span style={{ fontFamily: "Arial, sans-serif", fontSize: "10px", background: "#f3f4f6", padding: "2px 5px", borderRadius: "4px", fontWeight: "700" }}>{a.account_no}</span></td>
                   <td style={{ padding: "7px 10px", fontWeight: "700", color: "#111827", fontSize: "11px" }}>{a.name}</td>
                   <td style={{ padding: "7px 10px", color: "#6b7280", fontSize: "10px" }}>{a.branch_name}</td>
-                  <td style={{ padding: "7px 10px", fontFamily: "monospace", fontSize: "10px" }}>{a.mobile || "N/A"}</td>
+                  <td style={{ padding: "7px 10px", fontFamily: "Arial, sans-serif", fontSize: "10px" }}>{a.mobile || "N/A"}</td>
                   <td style={{ padding: "7px 10px", color: "#6b7280", fontSize: "10px" }}>{a.address || "N/A"}</td>
                   <td style={{ padding: "7px 10px", textAlign: "right" }}>
-                    <div style={{ fontWeight: "800", fontSize: "12px", color: accent }}>{formatMoney(Math.abs(a.balance), a.currency)}</div>
+                    <div style={{ fontWeight: "800", fontSize: "12px", color: accent, fontFamily: "Arial, sans-serif" }}>{formatMoney(Math.abs(a.balance), a.currency)}</div>
                   </td>
                 </tr>
               ))}
