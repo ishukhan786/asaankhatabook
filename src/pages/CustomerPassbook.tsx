@@ -62,23 +62,51 @@ export default function CustomerPassbook() {
 
     try {
       const searchTerm = q.trim();
+      const cleanSearch = searchTerm.replace(/[\s-]/g, "");
 
-      // Fetch all accounts to filter flexibly
-      const { data: accountsData, error: accErr } = await supabase
+      // Query Supabase with explicit filter so RLS permits public passbook lookup
+      let accountsData: any[] | null = null;
+      let accErr: any = null;
+
+      const res = await supabase
         .from("accounts")
-        .select("id, name, account_no, currency, mobile, address, branch_id");
+        .select("id, name, account_no, currency, mobile, address, branch_id")
+        .or(`mobile.ilike.%${cleanSearch}%,account_no.ilike.%${cleanSearch}%,mobile.ilike.%${searchTerm}%,account_no.ilike.%${searchTerm}%`);
 
-      if (accErr) throw accErr;
+      accountsData = res.data;
+      accErr = res.error;
+
+      // If no result with .or(), try fallback query on mobile field directly
+      if (!accountsData || accountsData.length === 0) {
+        const fallbackRes = await supabase
+          .from("accounts")
+          .select("id, name, account_no, currency, mobile, address, branch_id")
+          .ilike("mobile", `%${cleanSearch}%`);
+        
+        if (fallbackRes.data && fallbackRes.data.length > 0) {
+          accountsData = fallbackRes.data;
+        }
+      }
+
+      // Final fallback: fetch all if allowed
+      if (!accountsData || accountsData.length === 0) {
+        const allRes = await supabase
+          .from("accounts")
+          .select("id, name, account_no, currency, mobile, address, branch_id");
+        if (allRes.data && allRes.data.length > 0) {
+          accountsData = allRes.data;
+        }
+      }
+
+      if (accErr && (!accountsData || accountsData.length === 0)) throw accErr;
 
       if (!accountsData || accountsData.length === 0) {
-        toast.error("No accounts found. Please verify your system database.");
+        toast.error(`Mobile number '${searchTerm}' not found in system.`);
         setLoading(false);
         return;
       }
 
       // Flexible matching: Strips spaces and hyphens for comparisons
-      const cleanSearch = searchTerm.toLowerCase().replace(/[\s-]/g, "");
-
       const matchedAccount = accountsData.find(acc => {
         const accNo = String(acc.account_no ?? "").toLowerCase();
         const cleanAccNo = accNo.replace(/[\s-]/g, "");
@@ -86,16 +114,17 @@ export default function CustomerPassbook() {
         const name = String(acc.name ?? "").toLowerCase();
 
         return (
+          mobile === cleanSearch ||
+          (mobile && mobile.includes(cleanSearch)) ||
           accNo === searchTerm.toLowerCase() ||
           cleanAccNo === cleanSearch ||
           accNo.includes(searchTerm.toLowerCase()) ||
-          (mobile && (mobile === cleanSearch || mobile.includes(cleanSearch))) ||
           name.includes(searchTerm.toLowerCase())
         );
       });
 
       if (!matchedAccount) {
-        toast.error(`Account '${searchTerm}' not found. Please verify Account No or Mobile No.`);
+        toast.error(`Mobile number '${searchTerm}' not found. Please verify your Mobile No.`);
         setLoading(false);
         return;
       }
