@@ -478,7 +478,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-emerald-500" />
-              <h2 className="font-bold text-sm">PKR {t("FinancialSummary")}</h2>
+              <h2 className="font-bold text-base">PKR {t("FinancialSummary")}</h2>
             </div>
             <Badge className="bg-emerald-600 text-white font-bold text-[10px]">PKR</Badge>
           </div>
@@ -516,7 +516,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <h2 className="font-bold text-sm">AED {t("FinancialSummary")}</h2>
+              <h2 className="font-bold text-base">AED {t("FinancialSummary")}</h2>
             </div>
             <Badge className="bg-blue-600 text-white font-bold text-[10px]">AED</Badge>
           </div>
@@ -554,7 +554,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-purple-500" />
-              <h2 className="font-bold text-sm">USD {t("FinancialSummary")}</h2>
+              <h2 className="font-bold text-base">USD {t("FinancialSummary")}</h2>
             </div>
             <Badge className="bg-purple-600 text-white font-bold text-[10px]">USD</Badge>
           </div>
