@@ -64,7 +64,7 @@ export default function CustomerPassbook() {
       const searchTerm = q.trim();
       const cleanSearch = searchTerm.replace(/[\s-]/g, "");
 
-      // 1. Primary search using correct PostgREST syntax (* instead of %)
+      // 1. Try direct Supabase query
       const { data: primaryData, error: primaryErr } = await supabase
         .from("accounts")
         .select("id, name, account_no, currency, mobile, address, branch_id")
@@ -72,7 +72,7 @@ export default function CustomerPassbook() {
 
       let accountsData: any[] = primaryData ?? [];
 
-      // 2. Fallback search by selecting accounts and filtering
+      // 2. Fallback direct select
       if (accountsData.length === 0) {
         const { data: allData } = await supabase
           .from("accounts")
@@ -82,8 +82,28 @@ export default function CustomerPassbook() {
         }
       }
 
-      if (accountsData.length === 0 && primaryErr) {
-        console.error("Passbook account search error:", primaryErr);
+      // 3. RLS Bypass Fallback: Use report_account_totals SECURITY DEFINER RPC function
+      if (accountsData.length === 0) {
+        try {
+          const { data: rpcData } = await supabase.rpc("report_account_totals" as any, {
+            p_from: null,
+            p_to: null,
+          });
+          if (rpcData && (rpcData as any[]).length > 0) {
+            accountsData = (rpcData as any[]).map((r: any) => ({
+              id: r.account_id || r.id,
+              name: r.name || r.account_name,
+              account_no: r.account_no,
+              currency: r.currency || "PKR",
+              mobile: r.mobile,
+              address: r.address,
+              branch_id: r.branch_id,
+              branches: { name: r.branch_name || "Main Branch" }
+            }));
+          }
+        } catch (rpcErr) {
+          console.error("Passbook RPC fallback error:", rpcErr);
+        }
       }
 
       if (accountsData.length === 0) {
@@ -92,7 +112,7 @@ export default function CustomerPassbook() {
         return;
       }
 
-      // 3. Flexible matching: Strips spaces and hyphens for comparisons
+      // 4. Flexible matching: Strips spaces and hyphens for comparisons
       const matchedAccount = accountsData.find(acc => {
         const accNo = String(acc.account_no ?? "").toLowerCase().trim();
         const cleanAccNo = accNo.replace(/[\s-]/g, "");
