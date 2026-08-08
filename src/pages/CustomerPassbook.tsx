@@ -61,23 +61,62 @@ export default function CustomerPassbook() {
     setTxns([]);
 
     try {
-      // Search account by account_no or mobile
+      const searchTerm = q.trim();
+
+      // Fetch all accounts to filter flexibly
       const { data: accountsData, error: accErr } = await supabase
         .from("accounts")
-        .select("id, name, account_no, currency, mobile, address, branch_id, branches(name)")
-        .or(`account_no.ilike.${q},mobile.ilike.%${q}%`)
-        .limit(1);
+        .select("id, name, account_no, currency, mobile, address, branch_id");
 
       if (accErr) throw accErr;
 
       if (!accountsData || accountsData.length === 0) {
-        toast.error("Account not found. Please verify your Account No or Mobile No.");
+        toast.error("No accounts found. Please verify your system database.");
         setLoading(false);
         return;
       }
 
-      const acc = accountsData[0] as unknown as Account;
-      setAccount(acc);
+      // Flexible matching: Strips spaces and hyphens for comparisons
+      const cleanSearch = searchTerm.toLowerCase().replace(/[\s-]/g, "");
+
+      const matchedAccount = accountsData.find(acc => {
+        const accNo = String(acc.account_no ?? "").toLowerCase();
+        const cleanAccNo = accNo.replace(/[\s-]/g, "");
+        const mobile = String(acc.mobile ?? "").replace(/[\s-]/g, "");
+        const name = String(acc.name ?? "").toLowerCase();
+
+        return (
+          accNo === searchTerm.toLowerCase() ||
+          cleanAccNo === cleanSearch ||
+          accNo.includes(searchTerm.toLowerCase()) ||
+          (mobile && (mobile === cleanSearch || mobile.includes(cleanSearch))) ||
+          name.includes(searchTerm.toLowerCase())
+        );
+      });
+
+      if (!matchedAccount) {
+        toast.error(`Account '${searchTerm}' not found. Please verify Account No or Mobile No.`);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch branch name if branch_id exists
+      let branchName = "Main Branch";
+      if (matchedAccount.branch_id) {
+        const { data: bData } = await supabase
+          .from("branches")
+          .select("name")
+          .eq("id", matchedAccount.branch_id)
+          .maybeSingle();
+        if (bData?.name) branchName = bData.name;
+      }
+
+      const accWithBranch = {
+        ...matchedAccount,
+        branches: { name: branchName }
+      } as unknown as Account;
+
+      setAccount(accWithBranch);
 
       // Fetch transactions for this account
       const { data: txnsData, error: txnErr } = await supabase
