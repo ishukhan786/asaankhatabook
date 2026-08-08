@@ -63,34 +63,52 @@ export default function CustomerPassbook() {
     try {
       const searchTerm = q.trim();
       const cleanSearch = searchTerm.replace(/[\s-]/g, "");
+      const digitsOnly = searchTerm.replace(/\D/g, "");
+      const last7Digits = digitsOnly.length >= 7 ? digitsOnly.slice(-7) : digitsOnly;
 
-      // 1. Try direct Supabase query
-      const { data: primaryData, error: primaryErr } = await supabase
-        .from("accounts")
-        .select("id, name, account_no, currency, mobile, address, branch_id")
-        .or(`mobile.ilike.*${cleanSearch}*,account_no.ilike.*${cleanSearch}*,mobile.ilike.*${searchTerm}*,account_no.ilike.*${searchTerm}*`);
+      let accountsList: any[] = [];
 
-      let accountsData: any[] = primaryData ?? [];
+      // Tier 1: Query by mobile ilike %last7Digits% (Matches 03331122333, +923331122333, 0333-1122333, etc.)
+      if (last7Digits.length >= 4) {
+        const { data: mobData } = await supabase
+          .from("accounts")
+          .select("id, name, account_no, currency, mobile, address, branch_id")
+          .ilike("mobile", `%${last7Digits}%`);
+        if (mobData && mobData.length > 0) {
+          accountsList = mobData;
+        }
+      }
 
-      // 2. Fallback direct select
-      if (accountsData.length === 0) {
+      // Tier 2: Query by account_no ilike %cleanSearch%
+      if (accountsList.length === 0) {
+        const { data: accData } = await supabase
+          .from("accounts")
+          .select("id, name, account_no, currency, mobile, address, branch_id")
+          .ilike("account_no", `%${cleanSearch}%`);
+        if (accData && accData.length > 0) {
+          accountsList = accData;
+        }
+      }
+
+      // Tier 3: Direct select all accounts
+      if (accountsList.length === 0) {
         const { data: allData } = await supabase
           .from("accounts")
           .select("id, name, account_no, currency, mobile, address, branch_id");
         if (allData && allData.length > 0) {
-          accountsData = allData;
+          accountsList = allData;
         }
       }
 
-      // 3. RLS Bypass Fallback: Use report_account_totals SECURITY DEFINER RPC function
-      if (accountsData.length === 0) {
+      // Tier 4: SECURITY DEFINER RPC report_account_totals (RLS Bypass)
+      if (accountsList.length === 0) {
         try {
           const { data: rpcData } = await supabase.rpc("report_account_totals" as any, {
             p_from: null,
             p_to: null,
           });
           if (rpcData && (rpcData as any[]).length > 0) {
-            accountsData = (rpcData as any[]).map((r: any) => ({
+            accountsList = (rpcData as any[]).map((r: any) => ({
               id: r.account_id || r.id,
               name: r.name || r.account_name,
               account_no: r.account_no,
@@ -106,27 +124,34 @@ export default function CustomerPassbook() {
         }
       }
 
-      if (accountsData.length === 0) {
+      if (accountsList.length === 0) {
         toast.error(`Mobile number '${searchTerm}' not found in database.`);
         setLoading(false);
         return;
       }
 
-      // 4. Flexible matching: Strips spaces and hyphens for comparisons
-      const matchedAccount = accountsData.find(acc => {
+      // 5. Multi-format matching: digit-suffix, clean string, account_no, name
+      const matchedAccount = accountsList.find(acc => {
         const accNo = String(acc.account_no ?? "").toLowerCase().trim();
         const cleanAccNo = accNo.replace(/[\s-]/g, "");
-        const mobile = String(acc.mobile ?? "").trim().replace(/[\s-]/g, "");
+        const mobile = String(acc.mobile ?? "").trim();
+        const mobDigits = mobile.replace(/\D/g, "");
         const name = String(acc.name ?? "").toLowerCase().trim();
 
-        return (
-          mobile === cleanSearch ||
-          (mobile && (mobile.includes(cleanSearch) || cleanSearch.includes(mobile))) ||
+        const matchMobile = 
+          (digitsOnly.length >= 4 && mobDigits.endsWith(last7Digits)) ||
+          (digitsOnly.length >= 4 && mobDigits.includes(digitsOnly)) ||
+          (digitsOnly.length >= 4 && digitsOnly.includes(mobDigits)) ||
+          mobile.includes(searchTerm);
+
+        const matchAccountNo = 
           accNo === searchTerm.toLowerCase() ||
           cleanAccNo === cleanSearch ||
-          accNo.includes(searchTerm.toLowerCase()) ||
-          name.includes(searchTerm.toLowerCase())
-        );
+          accNo.includes(searchTerm.toLowerCase());
+
+        const matchName = name.includes(searchTerm.toLowerCase());
+
+        return matchMobile || matchAccountNo || matchName;
       });
 
       if (!matchedAccount) {
