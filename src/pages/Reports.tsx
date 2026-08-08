@@ -75,7 +75,7 @@ export default function Reports() {
     Promise.all([
       supabase.from("accounts").select("id, account_no, name, mobile, address, currency, branches(name)"),
       supabase
-        .rpc("report_account_totals", {
+        .rpc("report_account_totals" as any, {
           p_from: from || null,
           p_to: to || null,
         }),
@@ -83,7 +83,7 @@ export default function Reports() {
       if (a.error) throw a.error;
       if (totals.error) throw totals.error;
       setAccounts(a.data ?? []);
-      setTxns((totals.data as AccountTotals[]) ?? []);
+      setTxns(((totals.data as unknown) as AccountTotals[]) ?? []);
     }).catch((err) => {
       logger.error("Reports load error:", err);
       toast.error("Failed to load report data");
