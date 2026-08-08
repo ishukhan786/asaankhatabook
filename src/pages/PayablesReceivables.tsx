@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useDeferredValue } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useDeferredValue } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { logger } from "@/lib/logger";
 import { PageHeader } from "@/components/PageHeader";
 import { debounce } from "@/lib/utils";
+
+import { triggerPrint } from "@/lib/print";
 
 interface AccountBalance {
   id: string;
@@ -42,31 +44,23 @@ const aggregateByCurrency = (list: AccountBalance[]) => {
 
 const PRINT_STYLES = `
 @media print {
-  .screen-ui, header, aside, nav, footer, button { 
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  .screen-ui, header, aside, nav, footer, button, .print\\:hidden { 
     display: none !important; 
   }
-  body, html, #root, main, .min-h-screen, .flex-1 {
+  #print-payables-receivables-wrapper {
     display: block !important;
-    position: static !important;
     width: 100% !important;
-    height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    background: #ffffff !important;
-  }
-  #print-wrapper { 
-    display: block !important; 
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
-    background: #ffffff !important;
-    color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
-  @page { margin: 1cm; size: A4; }
+  @page {
+    size: A4 portrait;
+    margin: 10mm 5mm 10mm 5mm;
+  }
 }
 `;
 
@@ -346,7 +340,7 @@ export default function PayablesReceivables({ embedded = false }: { embedded?: b
   const handlePrint = (type: "both" | "receivable" | "payable") => {
     setPrintType(type);
     setTimeout(() => {
-      window.print();
+      triggerPrint("print-payables-receivables-wrapper");
       setTimeout(() => setPrintType("both"), 1000);
     }, 150);
   };
@@ -391,7 +385,7 @@ export default function PayablesReceivables({ embedded = false }: { embedded?: b
   return (
     <>
       <style>{PRINT_STYLES}</style>
-      <div id="print-wrapper" style={{ display: "none" }}>
+      <div id="print-payables-receivables-wrapper" className="hidden print:block">
         <PrintDocument
           receivables={filteredReceivables} payables={filteredPayables}
           branchHeaderLabel={branchHeaderLabel}

@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Search, FileDown, FileBarChart, Users, Receipt, ArrowUpRight, ArrowDownLeft, Scale, Building2, Phone, MapPin, Printer } from "lucide-react";
 import { formatMoney, balanceLabel, formatDate } from "@/lib/format";
 import { exportLedgerPDF, exportStatementPDF } from "@/lib/pdf";
+import { triggerPrint } from "@/lib/print";
 
 import { useDebounce } from "@/hooks/useDebounce";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -279,7 +280,7 @@ export default function Reports() {
       <style>{PRINT_STYLES}</style>
 
       {/* Printable Financial Summary & Ledger Statement Templates */}
-      <div className="print-report-wrapper" style={{ display: "none" }}>
+      <div id="print-report-wrapper" className="print-report-wrapper hidden print:block">
         <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
           
           {/* 1. Top Business Information */}
@@ -561,7 +562,7 @@ export default function Reports() {
                 <FileDown className="w-4 h-4" /> 
                 {exporting ? "Exporting..." : "Export Ledger PDF"}
               </Button>
-              <Button onClick={() => window.print()} variant="outline" className="h-11 px-5 gap-2 border-2 rounded-xl font-semibold hover:bg-primary/10">
+              <Button onClick={() => triggerPrint("print-report-wrapper", handleExportLedger)} variant="outline" className="h-11 px-5 gap-2 border-2 rounded-xl font-semibold hover:bg-primary/10">
                 <Printer className="w-4 h-4" /> Print Report
               </Button>
             </div>
@@ -691,7 +692,7 @@ export default function Reports() {
               </Button>
               <Button 
                 disabled={!selectedAccount || statementRows.length === 0}
-                onClick={() => window.print()} 
+                onClick={() => triggerPrint("print-report-wrapper", () => handleExportStatement(selectedAccount, statementRows))} 
                 variant="outline" 
                 className="h-11 px-5 gap-2 border-2 rounded-xl font-semibold hover:bg-primary/10"
               >

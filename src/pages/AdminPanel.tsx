@@ -59,9 +59,8 @@ export default function AdminPanel() {
 
   const loadNotices = useCallback(async () => {
     try {
-      // @ts-expect-error - table might not be in types yet
-      const { data } = await supabase.from("system_notices").select("*").order("created_at", { ascending: false });
-      setNotices(data ?? []);
+      const { data } = await supabase.from("system_notices" as any).select("*").order("created_at", { ascending: false });
+      setNotices((data as any) ?? []);
     } catch (e) {
       toast.error("Failed to load announcements");
     }
@@ -80,8 +79,7 @@ export default function AdminPanel() {
     }
     setNoticeBusy(true);
     try {
-      // @ts-expect-error - table might not be in types yet
-      const { error } = await supabase.from("system_notices").insert({
+      const { error } = await supabase.from("system_notices" as any).insert({
         title: nTitle.trim(),
         message: nMessage.trim(),
       });

@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { Account, Transaction, TransactionWithBalance } from "@/types";
 
+import { triggerPrint } from "@/lib/print";
+
 const PRINT_STYLES = `
 @media print {
   body {
@@ -565,7 +567,7 @@ export default function AccountDetail() {
                     {exporting ? <Loader className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
                     <span className="ml-2 sm:hidden">Export PDF</span>
                   </Button>
-                  <Button variant="outline" className="flex-1 sm:flex-none h-11 px-3 bg-background" onClick={() => window.print()} title="Print">
+                  <Button variant="outline" className="flex-1 sm:flex-none h-11 px-3 bg-background" onClick={() => triggerPrint("print-account-detail-wrapper", handleExportStatement)} title="Print">
                     <Printer className="w-4 h-4" />
                     <span className="ml-2 sm:hidden">Print</span>
                   </Button>
@@ -881,6 +883,115 @@ export default function AccountDetail() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <style>{PRINT_STYLES}</style>
+
+      {/* Printable Account Statement Template */}
+      <div id="print-account-detail-wrapper" className="hidden print:block">
+        <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
+          {/* Top Business Info */}
+          <div style={{ textAlign: "center", borderBottom: "1px solid #cbd5e1", paddingBottom: "8px" }}>
+            <div style={{ fontSize: "22px", fontWeight: "900", color: "#0f172a", letterSpacing: "-0.5px" }}>
+              {profile?.business_name || "AsaanKhata"}
+            </div>
+            <div style={{ fontSize: "10px", color: "#64748b", marginTop: "3px" }}>
+              {profile?.business_phone && <span>Phone: {profile.business_phone} · </span>}
+              {profile?.business_address && <span>Address: {profile.business_address}</span>}
+            </div>
+          </div>
+
+          {/* Statement Header Title */}
+          <div style={{ textAlign: "center", margin: "12px 0 10px 0" }}>
+            <div style={{ fontSize: "14px", fontWeight: "900", color: "#0369a1", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "2px solid #0369a1", display: "inline-block", paddingBottom: "2px" }}>
+              ACCOUNT STATEMENT &amp; LEDGER
+            </div>
+            <div style={{ fontSize: "9.5px", color: "#64748b", marginTop: "4px" }}>
+              Printed Date: <strong>{new Date().toLocaleDateString("en-PK")}</strong> · Account Ref: <strong>{account.account_no}</strong>
+              {from && <span> · Period: <strong>{from} to {to || "Today"}</strong></span>}
+            </div>
+          </div>
+
+          {/* Customer Info Card */}
+          <div style={{ margin: "10px 0 14px 0", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "10px 14px" }}>
+            <div style={{ fontSize: "9px", fontWeight: "800", textTransform: "uppercase", color: "#0369a1", letterSpacing: "0.5px", marginBottom: "6px" }}>
+              ACCOUNT HOLDER DETAILS
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 20px", fontSize: "11px" }}>
+              <div><span style={{ color: "#64748b" }}>Account Name:</span> <strong style={{ color: "#0f172a", fontSize: "11.5px" }}>{account.name}</strong></div>
+              <div><span style={{ color: "#64748b" }}>Account No:</span> <strong style={{ color: "#0369a1", fontFamily: "monospace", fontSize: "11.5px" }}>{account.account_no}</strong></div>
+              <div><span style={{ color: "#64748b" }}>Mobile / Phone:</span> <strong style={{ color: "#0f172a" }}>{account.mobile || "-"}</strong></div>
+              <div><span style={{ color: "#64748b" }}>Address:</span> <strong style={{ color: "#0f172a" }}>{account.address || "-"}</strong></div>
+            </div>
+          </div>
+
+          {/* Account Metrics Summary */}
+          <div style={{ margin: "14px 0", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "12px 16px" }}>
+            <div style={{ fontSize: "9.5px", fontWeight: "800", textTransform: "uppercase", color: "#0369a1", letterSpacing: "0.5px", marginBottom: "8px" }}>
+              STATEMENT SUMMARY ({account.currency || "PKR"})
+            </div>
+            <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
+              <div style={{ borderLeft: "3px solid #047857", paddingLeft: "10px" }}>
+                <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL CREDIT (JAMA)</div>
+                <div style={{ fontSize: "15px", fontWeight: "900", color: "#047857", fontFamily: "monospace", marginTop: "2px" }}>
+                  {formatMoney(totalCredit, account.currency)}
+                </div>
+              </div>
+              <div style={{ borderLeft: "3px solid #b91c1c", paddingLeft: "10px" }}>
+                <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>TOTAL DEBIT (NIKALA)</div>
+                <div style={{ fontSize: "15px", fontWeight: "900", color: "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                  {formatMoney(totalDebit, account.currency)}
+                </div>
+              </div>
+              <div style={{ borderLeft: "3px solid #0f172a", paddingLeft: "10px" }}>
+                <div style={{ fontSize: "9px", fontWeight: "700", color: "#64748b" }}>CLOSING NET BALANCE</div>
+                <div style={{ fontSize: "15px", fontWeight: "900", color: running >= 0 ? "#047857" : "#b91c1c", fontFamily: "monospace", marginTop: "2px" }}>
+                  {formatMoney(running, account.currency)} ({balanceLabel(running)})
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Transactions Table */}
+          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
+            <thead>
+              <tr style={{ background: "#0f172a", color: "#ffffff", fontSize: "9px", textTransform: "uppercase" }}>
+                <th style={{ padding: "6px 8px", textAlign: "left" }}>Date</th>
+                <th style={{ padding: "6px 8px", textAlign: "left" }}>Voucher Details</th>
+                <th style={{ padding: "6px 8px", textAlign: "right" }}>Debit (Nikala)</th>
+                <th style={{ padding: "6px 8px", textAlign: "right" }}>Credit (Jama)</th>
+                <th style={{ padding: "6px 8px", textAlign: "right" }}>Running Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, idx) => (
+                <tr key={r.id || idx} style={{ borderBottom: "1px solid #e2e8f0", background: idx % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
+                  <td style={{ padding: "6px 8px", color: "#475569", whiteSpace: "nowrap" }}>{formatDate(String(r.txn_date ?? ""))}</td>
+                  <td style={{ padding: "6px 8px", color: "#0f172a", fontWeight: "500" }}>{r.details || "—"}</td>
+                  <td style={{ padding: "6px 8px", textAlign: "right", color: Number(r.debit) > 0 ? "#b91c1c" : "#94a3b8", fontWeight: Number(r.debit) > 0 ? "700" : "normal" }}>
+                    {Number(r.debit) > 0 ? formatMoney(Number(r.debit)) : "—"}
+                  </td>
+                  <td style={{ padding: "6px 8px", textAlign: "right", color: Number(r.credit) > 0 ? "#047857" : "#94a3b8", fontWeight: Number(r.credit) > 0 ? "700" : "normal" }}>
+                    {Number(r.credit) > 0 ? formatMoney(Number(r.credit)) : "—"}
+                  </td>
+                  <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: "700", color: (r.balance ?? 0) >= 0 ? "#047857" : "#b91c1c" }}>
+                    {formatMoney(r.balance ?? 0)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Footer Signature & Stamp area */}
+          <div style={{ marginTop: "40px", display: "flex", justifyContent: "space-between", fontSize: "10px", color: "#64748b" }}>
+            <div>Prepared By: ___________________</div>
+            <div>Authorized Signature &amp; Stamp: ___________________</div>
+          </div>
+
+          <div style={{ marginTop: "20px", textAlign: "center", fontSize: "8.5px", color: "#94a3b8", borderTop: "1px solid #e2e8f0", paddingTop: "6px" }}>
+            AsaanKhata System · Official Audit Statement
+          </div>
+        </div>
+      </div>
     </div>
     </>
   );

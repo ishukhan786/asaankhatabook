@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { logger } from "@/lib/logger";
 import { PageHeader } from "@/components/PageHeader";
 import { exportToCSV } from "@/lib/export";
+import { triggerPrint } from "@/lib/print";
 
 interface AccountBalance {
   id: string;
@@ -170,7 +171,7 @@ export default function Receivables() {
       <style>{PRINT_STYLES}</style>
 
       {/* Dedicated High-End Print Document */}
-      <div id="print-receivables-wrapper" style={{ display: "none" }}>
+      <div id="print-receivables-wrapper" className="hidden print:block">
         <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#ffffff", color: "#0f172a", fontSize: "11px", padding: "10px" }}>
           
           {/* 1. Top Business Information */}
@@ -290,7 +291,7 @@ export default function Receivables() {
               <Button onClick={handleExportCSV} variant="outline" className="h-11 px-4 gap-2 border-2 rounded-xl font-semibold">
                 <Download className="w-4 h-4" /> Export CSV
               </Button>
-              <Button onClick={() => window.print()} variant="outline" className="h-11 px-4 gap-2 border-2 rounded-xl font-semibold hover:bg-red-600 hover:text-white">
+              <Button onClick={() => triggerPrint("print-receivables-wrapper")} variant="outline" className="h-11 px-4 gap-2 border-2 rounded-xl font-semibold hover:bg-red-600 hover:text-white">
                 <Printer className="w-4 h-4" /> Print Statement
               </Button>
             </div>
