@@ -51,7 +51,7 @@ export default function CustomerPassbook() {
     if (e) e.preventDefault();
     const q = query.trim();
     if (!q) {
-      toast.error("Please enter an Account Number or Mobile Number");
+      toast.error("Please enter your registered Mobile Number");
       return;
     }
 
@@ -303,17 +303,17 @@ export default function CustomerPassbook() {
                 Apna Khata Balance Dekhein
               </h1>
               <p className="text-sm text-muted-foreground">
-                Apna <strong>Account Number</strong> (e.g. 2026-001) ya <strong>Mobile Number</strong> darj karein.
+                Apna registered <strong>Mobile Number</strong> (e.g. 03001234567) darj karein.
               </p>
 
               <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 pt-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input 
-                    type="text"
+                    type="tel"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
-                    placeholder="Enter Account No (e.g. 2026-001) or Mobile No..." 
+                    placeholder="Enter Mobile Number (e.g. 03001234567)..." 
                     className="pl-12 h-13 text-base rounded-2xl border-2 border-border/80 focus:border-primary bg-background shadow-inner"
                   />
                 </div>
@@ -487,7 +487,7 @@ export default function CustomerPassbook() {
               </div>
               <h3 className="text-xl font-bold font-display">AasanKhata Digital Passbook</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-                Apna <strong>Account Number</strong> (e.g. 2026-001) ya registered <strong>Mobile Number</strong> upar box mein likhein aur <strong>"Khaata Dekhein"</strong> par click karein.
+                Apna registered <strong>Mobile Number</strong> (e.g. 03001234567) upar box mein likhein aur <strong>"Khaata Dekhein"</strong> par click karein.
               </p>
             </Card>
           )}
