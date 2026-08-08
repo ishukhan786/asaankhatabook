@@ -264,7 +264,7 @@ export default function CustomerPassbook() {
                 Apna Khata Balance Dekhein
               </h1>
               <p className="text-sm text-muted-foreground">
-                Apna <strong>Account Number</strong> (e.g. ACC-1001) ya <strong>Mobile Number</strong> darj karein.
+                Apna <strong>Account Number</strong> (e.g. 2026-001) ya <strong>Mobile Number</strong> darj karein.
               </p>
 
               <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -274,7 +274,7 @@ export default function CustomerPassbook() {
                     type="text"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
-                    placeholder="Enter Account No (e.g. ACC-1001) or Mobile No..." 
+                    placeholder="Enter Account No (e.g. 2026-001) or Mobile No..." 
                     className="pl-12 h-13 text-base rounded-2xl border-2 border-border/80 focus:border-primary bg-background shadow-inner"
                   />
                 </div>
@@ -448,7 +448,7 @@ export default function CustomerPassbook() {
               </div>
               <h3 className="text-xl font-bold font-display">AasanKhata Digital Passbook</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-                Apna <strong>Account Number</strong> (e.g. ACC-1001) ya registered <strong>Mobile Number</strong> upar box mein likhein aur <strong>"Khaata Dekhein"</strong> par click karein.
+                Apna <strong>Account Number</strong> (e.g. 2026-001) ya registered <strong>Mobile Number</strong> upar box mein likhein aur <strong>"Khaata Dekhein"</strong> par click karein.
               </p>
             </Card>
           )}

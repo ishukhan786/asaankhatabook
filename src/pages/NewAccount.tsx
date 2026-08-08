@@ -23,13 +23,15 @@ const schema = z.object({
   branch_id: z.string().uuid("Select a branch").optional().or(z.literal("")),
 });
 
+const currentYear = new Date().getFullYear();
+
 const accountTypeOptions = [
-  { value: "customer", label: "Customer", preview: "CUS-0001" },
-  { value: "supplier", label: "Supplier", preview: "SUP-0001" },
-  { value: "employee", label: "Employee", preview: "EMP-0001" },
-  { value: "bank", label: "Bank", preview: "BNK-0001" },
-  { value: "cash", label: "Cash", preview: "CAS-0001" },
-  { value: "party", label: "Party", preview: "PRT-0001" },
+  { value: "customer", label: "Customer", preview: `${currentYear}-001` },
+  { value: "supplier", label: "Supplier", preview: `${currentYear}-002` },
+  { value: "employee", label: "Employee", preview: `${currentYear}-003` },
+  { value: "bank", label: "Bank", preview: `${currentYear}-004` },
+  { value: "cash", label: "Cash", preview: `${currentYear}-005` },
+  { value: "party", label: "Party", preview: `${currentYear}-006` },
 ] as const;
 
 const accountTypePrefix = {
@@ -72,17 +74,17 @@ export default function NewAccount() {
     });
   }, []);
 
-  const nextAccountNo = useCallback(async (accountType: keyof typeof accountTypePrefix, offset = 1) => {
-    const prefix = accountTypePrefix[accountType];
+  const nextAccountNo = useCallback(async (_accountType?: string, offset = 1) => {
+    const year = new Date().getFullYear();
     const { data } = await supabase
       .from("accounts")
       .select("account_no")
-      .like("account_no", `${prefix}-%`)
+      .like("account_no", `${year}-%`)
       .order("account_no", { ascending: false })
       .limit(1);
 
-    const lastNumber = Number(String(data?.[0]?.account_no ?? "").match(new RegExp(`^${prefix}-(\\d+)$`))?.[1] ?? "0");
-    return `${prefix}-${String(lastNumber + offset).padStart(4, "0")}`;
+    const lastNumber = Number(String(data?.[0]?.account_no ?? "").match(new RegExp(`^${year}-(\\d+)$`))?.[1] ?? "0");
+    return `${year}-${String(lastNumber + offset).padStart(3, "0")}`;
   }, []);
 
   const submit = async (e: React.FormEvent) => {
@@ -101,8 +103,10 @@ export default function NewAccount() {
 
     setBusy(true);
     const { data: { user } } = await supabase.auth.getUser();
+    const generatedAccountNo = await nextAccountNo(form.account_type);
+
     const accountPayload = {
-      account_no: "",
+      account_no: generatedAccountNo,
       name: form.name.trim(),
       mobile: form.mobile?.trim() || null,
       address: form.address?.trim() || null,
@@ -116,9 +120,9 @@ export default function NewAccount() {
       account_type: form.account_type,
     }]).select("id, account_no").single();
 
-    if (error && error.message.includes("'account_type' column")) {
+    if (error) {
       for (let attempt = 1; attempt <= 3; attempt += 1) {
-        const fallbackAccountNo = await nextAccountNo(form.account_type, attempt);
+        const fallbackAccountNo = await nextAccountNo(form.account_type, attempt + 1);
         const fallback = await supabase
           .from("accounts")
           .insert([{ ...accountPayload, account_no: fallbackAccountNo }])
