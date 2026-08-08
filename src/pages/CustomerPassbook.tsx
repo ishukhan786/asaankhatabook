@@ -182,7 +182,7 @@ export default function CustomerPassbook() {
       const { data: txnsData, error: txnErr } = await supabase
         .from("transactions")
         .select("*")
-        .eq("account_id", acc.id)
+        .eq("account_id", matchedAccount.id)
         .order("txn_date", { ascending: true })
         .order("created_at", { ascending: true });
 
