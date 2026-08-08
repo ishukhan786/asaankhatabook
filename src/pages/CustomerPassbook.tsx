@@ -64,58 +64,44 @@ export default function CustomerPassbook() {
       const searchTerm = q.trim();
       const cleanSearch = searchTerm.replace(/[\s-]/g, "");
 
-      // Query Supabase with explicit filter so RLS permits public passbook lookup
-      let accountsData: any[] | null = null;
-      let accErr: any = null;
-
-      const res = await supabase
+      // 1. Primary search using correct PostgREST syntax (* instead of %)
+      const { data: primaryData, error: primaryErr } = await supabase
         .from("accounts")
         .select("id, name, account_no, currency, mobile, address, branch_id")
-        .or(`mobile.ilike.%${cleanSearch}%,account_no.ilike.%${cleanSearch}%,mobile.ilike.%${searchTerm}%,account_no.ilike.%${searchTerm}%`);
+        .or(`mobile.ilike.*${cleanSearch}*,account_no.ilike.*${cleanSearch}*,mobile.ilike.*${searchTerm}*,account_no.ilike.*${searchTerm}*`);
 
-      accountsData = res.data;
-      accErr = res.error;
+      let accountsData: any[] = primaryData ?? [];
 
-      // If no result with .or(), try fallback query on mobile field directly
-      if (!accountsData || accountsData.length === 0) {
-        const fallbackRes = await supabase
-          .from("accounts")
-          .select("id, name, account_no, currency, mobile, address, branch_id")
-          .ilike("mobile", `%${cleanSearch}%`);
-        
-        if (fallbackRes.data && fallbackRes.data.length > 0) {
-          accountsData = fallbackRes.data;
-        }
-      }
-
-      // Final fallback: fetch all if allowed
-      if (!accountsData || accountsData.length === 0) {
-        const allRes = await supabase
+      // 2. Fallback search by selecting accounts and filtering
+      if (accountsData.length === 0) {
+        const { data: allData } = await supabase
           .from("accounts")
           .select("id, name, account_no, currency, mobile, address, branch_id");
-        if (allRes.data && allRes.data.length > 0) {
-          accountsData = allRes.data;
+        if (allData && allData.length > 0) {
+          accountsData = allData;
         }
       }
 
-      if (accErr && (!accountsData || accountsData.length === 0)) throw accErr;
+      if (accountsData.length === 0 && primaryErr) {
+        console.error("Passbook account search error:", primaryErr);
+      }
 
-      if (!accountsData || accountsData.length === 0) {
-        toast.error(`Mobile number '${searchTerm}' not found in system.`);
+      if (accountsData.length === 0) {
+        toast.error(`Mobile number '${searchTerm}' not found in database.`);
         setLoading(false);
         return;
       }
 
-      // Flexible matching: Strips spaces and hyphens for comparisons
+      // 3. Flexible matching: Strips spaces and hyphens for comparisons
       const matchedAccount = accountsData.find(acc => {
-        const accNo = String(acc.account_no ?? "").toLowerCase();
+        const accNo = String(acc.account_no ?? "").toLowerCase().trim();
         const cleanAccNo = accNo.replace(/[\s-]/g, "");
-        const mobile = String(acc.mobile ?? "").replace(/[\s-]/g, "");
-        const name = String(acc.name ?? "").toLowerCase();
+        const mobile = String(acc.mobile ?? "").trim().replace(/[\s-]/g, "");
+        const name = String(acc.name ?? "").toLowerCase().trim();
 
         return (
           mobile === cleanSearch ||
-          (mobile && mobile.includes(cleanSearch)) ||
+          (mobile && (mobile.includes(cleanSearch) || cleanSearch.includes(mobile))) ||
           accNo === searchTerm.toLowerCase() ||
           cleanAccNo === cleanSearch ||
           accNo.includes(searchTerm.toLowerCase()) ||
